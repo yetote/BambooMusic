@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.4.1)
 set(PATH_PROJECT D:/AndroidStudioProjects/BambooMusic)
 set(LIBS_PATH ${PATH_PROJECT}/app/libs)
 set(OBOE_PATH D:/audiotest/oboe-1.1.1)
-file(GLOB util_lib "util/*.cpp")
+file(GLOB util_lib "com/yetote/bamboomusic/util/*.cpp")
 
 add_subdirectory(${OBOE_PATH} ./oboe)
 

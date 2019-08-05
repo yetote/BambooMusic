@@ -20,7 +20,7 @@ import com.yetote.bamboomusic.R;
 /**
  * @author yetote QQ:503779938
  * @name BambooMusic
- * @class name：com.yetote.bamboomusic.myview
+ * @class name：com.yetote.bamboomusic.com.yetote.bamboomusic.myview
  * @class 播放控制器
  * @time 2019/8/5 13:32
  * @change

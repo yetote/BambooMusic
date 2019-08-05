@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BambooMusic</string>
+    <string name="music_lib">音乐馆</string>
+    <string name="recommend">推荐</string>
+    <string name="found">发现</string>
+    <string name="mine">我的</string>
+</resources>

@@ -1,0 +1,19 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <declare-styleable name="MusicProgressButton">
+        <attr name="totalProgress" format="integer" />
+        <attr name="playState" format="enum">
+            <enum name="state_progress" value="0" />
+            <enum name="state_playing" value="1" />
+            <enum name="state_stop" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>

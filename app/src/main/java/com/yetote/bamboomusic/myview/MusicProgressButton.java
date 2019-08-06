@@ -116,18 +116,18 @@ public class MusicProgressButton extends View {
         playState = ta.getInt(R.styleable.MusicProgressButton_playState, 0);
         ta.recycle();
         circlePaint = new Paint();
-        circlePaint.setColor(Color.rgb(60, 179, 113));
+        circlePaint.setColor(Color.rgb(35, 212, 157));
         circlePaint.setStyle(Paint.Style.STROKE);
         circlePaint.setStrokeWidth(5);
         circlePaint.setAntiAlias(true);
 
         statePaint = new Paint();
-        statePaint.setColor(Color.rgb(60, 179, 113));
+        statePaint.setColor(Color.rgb(35, 212, 157));
         statePaint.setAntiAlias(true);
 
         pausePaint = new Paint();
         pausePaint.setStrokeWidth(5);
-        pausePaint.setColor(Color.rgb(60, 179, 113));
+        pausePaint.setColor(Color.rgb(35, 212, 157));
         pausePaint.setAntiAlias(true);
 
         trianglePath = new Path();

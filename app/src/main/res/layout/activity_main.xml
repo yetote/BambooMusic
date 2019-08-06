@@ -14,7 +14,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:subtitleTextColor="@color/lightgreen"
         app:titleTextColor="@color/black" />
 
     <androidx.viewpager.widget.ViewPager
@@ -71,6 +70,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
+        app:tabSelectedTextColor="@color/lightgreen"
+        app:tabIndicatorColor="@color/lightgreen"
         app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.tabs.TabItem

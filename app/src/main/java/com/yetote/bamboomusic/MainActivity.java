@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,6 +26,7 @@ import com.yetote.bamboomusic.fragment.MineFragment;
 import com.yetote.bamboomusic.fragment.MusicLibFragment;
 import com.yetote.bamboomusic.fragment.RecommendFragment;
 import com.yetote.bamboomusic.media.MusicService;
+import com.yetote.bamboomusic.media.OnPrepareCallback;
 import com.yetote.bamboomusic.myview.MusicProgressButton;
 
 import java.util.ArrayList;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e(TAG, "onServiceConnected: service connect");
             musicBinder = (MusicService.MusicBinder) service;
+            callBack();
         }
 
         @Override
@@ -81,6 +84,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
+
+    }
+
+    private void callBack() {
+        musicBinder.setOnPrepareCallback(new OnPrepareCallback() {
+            @Override
+            public void onPrepare(boolean prepare) {
+                Toast.makeText(MainActivity.this, "打开" + prepare, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initView() {
@@ -111,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    musicBinder.play(getExternalFilesDir(null).getPath()+"/test.mp3");
+                    musicBinder.play(getExternalFilesDir(null).getPath() + "/test.mp3");
                 }
                 break;
             default:

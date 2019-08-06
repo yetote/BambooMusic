@@ -23,6 +23,7 @@ public class MusicService extends Service {
     private MusicBinder musicBinder = new MusicBinder();
     private MyPlayer player;
 
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -35,12 +36,11 @@ public class MusicService extends Service {
         super.onCreate();
         Log.e(TAG, "onCreate: service create");
         player = new MyPlayer();
-        player.setPrepareCallback(new OnPrepareCallback() {
-            @Override
-            public void onPrepare(boolean prepare) {
-                if (prepare) {
-                    player.play();
-                }
+        player.setPrepareCallback(prepare -> {
+            Log.e(TAG, "onCreate: " + prepare);
+            musicBinder.callPrepare(prepare);
+            if (prepare) {
+                player.play();
             }
         });
     }
@@ -59,10 +59,21 @@ public class MusicService extends Service {
     }
 
     public class MusicBinder extends Binder {
+        private OnPrepareCallback onPrepareCallback;
+
+        public void setOnPrepareCallback(OnPrepareCallback onPrepareCallback) {
+            this.onPrepareCallback = onPrepareCallback;
+        }
+
+        protected void callPrepare(boolean success) {
+            onPrepareCallback.onPrepare(success);
+        }
+
         public void play(String path) {
             if (player != null) {
                 player.prepare(path);
             }
         }
+
     }
 }

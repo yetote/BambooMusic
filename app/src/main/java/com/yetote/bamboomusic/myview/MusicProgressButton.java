@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -83,20 +84,18 @@ public class MusicProgressButton extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.e(TAG, "onDraw: ");
         canvas.drawCircle(width / 2, height / 2, width / 2 - 5, circlePaint);
         switch (playState) {
             case STATE_PROGRESS:
-
                 canvas.drawLine(0.35f * width, 0.3f * height, 0.35f * width, 0.7f * height, pausePaint);
                 canvas.drawLine(0.65f * width, 0.3f * height, 0.65f * width, 0.7f * height, pausePaint);
                 canvas.drawArc(10, 10, width - 10, height - 10, -90, sweepAngle, false, circlePaint);
-
                 break;
             case STATE_PLAYING:
                 canvas.drawLine(0.35f * width, 0.3f * height, 0.35f * width, 0.7f * height, pausePaint);
                 canvas.drawLine(0.65f * width, 0.3f * height, 0.65f * width, 0.7f * height, pausePaint);
                 canvas.drawArc(10, 10, width - 10, height - 10, -90, playAngle, false, circlePaint);
-                Log.e(TAG, "onDraw: " + "bbb");
                 break;
             case STATE_STOP:
                 trianglePath.moveTo(0.35f * width, 0.3f * height);

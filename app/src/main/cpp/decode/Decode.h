@@ -7,6 +7,7 @@
 
 #include <string>
 #include <android/log.h>
+#include "../util/Callback.h"
 
 
 extern "C" {
@@ -19,11 +20,14 @@ extern "C" {
 
 class Decode {
 public:
+    Callback callback;
+
+
     void prepare(const std::string path);
 
     void play();
 
-    Decode();
+    Decode(const Callback &callback);
 
     ~Decode();
 

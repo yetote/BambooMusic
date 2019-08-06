@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#E38EB8</color>
-    <color name="colorPrimaryDark">#AD92C2</color>
-    <color name="colorAccent">#AD92C2</color>
+    <color name="colorPrimary">#ECECEC</color>
+    <color name="colorPrimaryDark">#ECECEC</color>
+    <color name="colorAccent">#ECECEC</color>
     <color name="textColor">#AD92C2</color>
     <color name="verifyLoginColor">#322F50</color>
     <color name="transparent">#00000000</color><!--透明色 -->
@@ -150,4 +150,5 @@
     <color name="gray_8f">#8f8f8f</color><!--灰色8f -->
     <color name="tianyi">#66ccff</color><!--天依蓝-->
     <color name="gray_ec">#ECECEC</color><!--灰色cc -->
+    <color name="gray_f0">#F0F0F0</color><!--灰色cc -->
 </resources>

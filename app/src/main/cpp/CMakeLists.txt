@@ -8,7 +8,8 @@ cmake_minimum_required(VERSION 3.4.1)
 set(PATH_PROJECT D:/AndroidStudioProjects/BambooMusic)
 set(LIBS_PATH ${PATH_PROJECT}/app/libs)
 set(OBOE_PATH D:/audiotest/oboe-1.1.1)
-file(GLOB util_lib "com/yetote/bamboomusic/util/*.cpp")
+
+file(GLOB util_lib "util/*.cpp")
 
 add_subdirectory(${OBOE_PATH} ./oboe)
 
@@ -23,9 +24,7 @@ set_target_properties(avutil
         ${LIBS_PATH}/${ANDROID_ABI}/libavutil.so)
 
 add_library(swresample SHARED IMPORTED)
-set_target_properties(swresample
-        PROPERTIES IMPORTED_LOCATION
-        ${LIBS_PATH}/${ANDROID_ABI}/libswresample.so)
+set_target_properties(swresample PROPERTIES IMPORTED_LOCATION ${LIBS_PATH}/${ANDROID_ABI}/libswresample.so)
 
 add_library(avcodec
         SHARED
@@ -91,6 +90,9 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         native-lib.cpp
+
+        decode/Decode.cpp
+
         )
 
 

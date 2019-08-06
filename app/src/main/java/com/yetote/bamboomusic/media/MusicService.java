@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 public class MusicService extends Service {
     private static final String TAG = "MusicService";
     private MusicBinder musicBinder = new MusicBinder();
+    private MyPlayer player;
 
     @Nullable
     @Override
@@ -33,6 +34,15 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.e(TAG, "onCreate: service create");
+        player = new MyPlayer();
+        player.setPrepareCallback(new OnPrepareCallback() {
+            @Override
+            public void onPrepare(boolean prepare) {
+                if (prepare) {
+                    player.play();
+                }
+            }
+        });
     }
 
     @Override
@@ -49,8 +59,10 @@ public class MusicService extends Service {
     }
 
     public class MusicBinder extends Binder {
-        public void play() {
-            Log.e(TAG, "play: startPlaying");
+        public void play(String path) {
+            if (player != null) {
+                player.prepare(path);
+            }
         }
     }
 }

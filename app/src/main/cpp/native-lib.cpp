@@ -1,11 +1,16 @@
 #include <jni.h>
 #include <string>
+#include "decode/Decode.h"
 
+
+Decode decode{};
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path) {
-    // TODO: implement prepare()
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path_) {
+    const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
+    decode.prepare(path);
+
 }extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_play(JNIEnv *env, jobject thiz) {

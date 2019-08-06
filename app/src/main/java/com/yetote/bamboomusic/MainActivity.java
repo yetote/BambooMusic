@@ -80,11 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
-        try {
-            Thread.sleep(50000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private void initView() {
@@ -115,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    musicBinder.play();
+                    musicBinder.play(getExternalFilesDir(null).getPath()+"/test.mp3");
                 }
                 break;
             default:

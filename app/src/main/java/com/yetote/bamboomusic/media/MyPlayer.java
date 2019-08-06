@@ -15,6 +15,9 @@ public class MyPlayer {
         System.loadLibrary("native-lib");
     }
 
+    public MyPlayer() {
+    }
+
     private OnPrepareCallback prepareCallback;
 
     public native void prepare(String path);

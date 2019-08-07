@@ -15,4 +15,7 @@
             <enum name="state_stop" value="2" />
         </attr>
     </declare-styleable>
+    <style name="MusicLib_Button_Style">
+        <item name="android:gravity">center|bottom</item>
+    </style>
 </resources>

@@ -1,7 +1,7 @@
 *.iml
 .gradle
 /local.properties
-/.idea
+/.idea/*
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
@@ -12,3 +12,13 @@
 /captures
 .externalNativeBuild
 .cxx
+app/bugly/*
+app/proguard-rules.pro
+app/src/androidTest/java/com/yetote/bamboomusic/ExampleInstrumentedTest.java
+app/src/test/java/com/yetote/bamboomusic/ExampleUnitTest.java
+adb
+*.zip
+gradle.properties
+gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.properties
+*.bat

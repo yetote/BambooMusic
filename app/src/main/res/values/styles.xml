@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
+
     <declare-styleable name="MusicProgressButton">
         <attr name="totalProgress" format="integer" />
         <attr name="playState" format="enum">
@@ -15,4 +16,8 @@
             <enum name="state_stop" value="2" />
         </attr>
     </declare-styleable>
+
+    <style name="MusicLib_Button_Style">
+        <item name="android:gravity">center|bottom</item>
+    </style>
 </resources>

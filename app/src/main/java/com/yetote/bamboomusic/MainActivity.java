@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         popBack = popWindow.findViewById(R.id.main_pop_back);
         popMusicQueue = popWindow.findViewById(R.id.main_pop_musicQueue_rv);
         popupWindow = new PopupWindow(popWindow, MATCH_PARENT, WRAP_CONTENT, false);
-
     }
 
 

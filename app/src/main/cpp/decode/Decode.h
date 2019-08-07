@@ -8,7 +8,8 @@
 #include <string>
 #include <android/log.h>
 #include "../util/Callback.h"
-
+#include "../audio/AudioPlay.h"
+#include <thread>
 
 extern "C" {
 #include "../includes/libavformat/avformat.h"
@@ -34,11 +35,10 @@ public:
 private:
     AVFormatContext *pFmtCtx = nullptr;
     AVCodec *pCodec = nullptr;
-    AVCodecContext *pCodecCtx = nullptr;
     AVStream *pStream = nullptr;
     int audioIndex = -1;
     int videoIndex = -1;
-
+    AudioPlay *audioPlay;
 
 };
 

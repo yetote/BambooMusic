@@ -16,6 +16,7 @@ void Decode::prepare(const std::string path) {
     int rst;
     pFmtCtx = avformat_alloc_context();
     rst = avformat_open_input(&pFmtCtx, path.c_str(), nullptr, nullptr);
+    LOGE(Decode_TAG, "%s:path:%s", __func__, path.c_str());
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开文件失败%s", __func__, av_err2str(rst));
         callback.callPrepare(callback.MAIN_THREAD, false);
@@ -89,7 +90,7 @@ void Decode::play() {
             continue;
         }
         audioPlay->pushData(packet);
-        sleep(1);
+
 //        rst = avcodec_send_packet(audioPlay->pCodecCtx, packet);
 //        switch (rst) {
 //            case AVERROR(EAGAIN):
@@ -123,8 +124,8 @@ void Decode::play() {
     }
 }
 
-Decode::Decode(const Callback &callback) : callback(callback) {
-    audioPlay = new AudioPlay();
+Decode::Decode(const Callback &callback,const std::string wpath) : callback(callback) {
+    audioPlay = new AudioPlay(wpath);
 }
 
 

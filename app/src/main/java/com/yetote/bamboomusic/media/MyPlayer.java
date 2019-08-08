@@ -20,7 +20,7 @@ public class MyPlayer {
 
     private OnPrepareCallback prepareCallback;
 
-    public native void prepare(String path);
+    public native void prepare(String path,String wpath);
 
     public native void play();
 

@@ -10,6 +10,7 @@
 #include <android/log.h>
 #include <queue>
 #include <unistd.h>
+#include <string>
 
 extern "C" {
 #include <libswresample/swresample.h>
@@ -21,7 +22,7 @@ extern "C" {
 class AudioPlay : oboe::AudioStreamCallback {
 public:
 
-    AudioPlay();
+    AudioPlay(std::string wpath);
 
     ~AudioPlay();
 
@@ -50,7 +51,15 @@ private:
     void popData();
 
     uint8_t *outBuffer;
-
+    int betterSize = 0;
+    //当前索引开始位置
+    int readPos = 0;
+    //可用的数据大小
+    int dataSize = 0;
+    //写入位置
+    int writtenPos = 0;
+    bool canPlay = false;
+    FILE *file;
 };
 
 

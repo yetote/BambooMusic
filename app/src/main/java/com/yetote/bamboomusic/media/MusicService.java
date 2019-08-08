@@ -69,9 +69,9 @@ public class MusicService extends Service {
             onPrepareCallback.onPrepare(success);
         }
 
-        public void play(String path) {
+        public void play(String path,String wpath) {
             if (player != null) {
-                player.prepare(path);
+                player.prepare(path,wpath);
             }
         }
 

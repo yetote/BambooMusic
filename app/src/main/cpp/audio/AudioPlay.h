@@ -8,8 +8,11 @@
 #include <oboe/AudioStream.h>
 #include <oboe/LatencyTuner.h>
 #include <android/log.h>
+#include <queue>
+#include <unistd.h>
 
 extern "C" {
+#include <libswresample/swresample.h>
 #include <libavcodec/avcodec.h>
 };
 #define AudioPlay_TAG "AudioPlay"
@@ -24,7 +27,14 @@ public:
 
     AVCodecContext *pCodecCtx = nullptr;
 
+    void pushData(AVPacket *packet);
+
+    void initSwr();
+
 private:
+    SwrContext *swrCtx;
+    std::queue<AVPacket *> audioQueue;
+
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
@@ -32,6 +42,15 @@ private:
     oboe::AudioStream *audioStream;
     oboe::AudioStreamBuilder *builder;
     oboe::LatencyTuner *latencyTuner;
+
+    uint8_t *data;
+
+    int outChannelNum;
+
+    void popData();
+
+    uint8_t *outBuffer;
+
 };
 
 

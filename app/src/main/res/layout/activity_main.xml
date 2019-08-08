@@ -29,7 +29,7 @@
         android:id="@+id/main_music_playing_icon"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_gravity=""
+        android:src="@drawable/ic_launcher_background"
         app:layout_constraintBottom_toTopOf="@+id/tabLayout"
         app:layout_constraintStart_toStartOf="@+id/viewPager" />
 

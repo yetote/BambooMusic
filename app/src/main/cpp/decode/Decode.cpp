@@ -2,6 +2,7 @@
 // Created by ether on 2019/8/6.
 //
 
+#include <unistd.h>
 #include "Decode.h"
 
 
@@ -45,6 +46,7 @@ void Decode::prepare(const std::string path) {
 }
 
 void Decode::play() {
+    LOGE(Decode_TAG, "%s:当前线程id%ull", __func__, std::this_thread::get_id());
     int rst;
     LOGE(Decode_TAG, "%s:准备成功，开始播放", __func__);
     if (audioIndex == -1) {
@@ -72,6 +74,7 @@ void Decode::play() {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
     }
+    audioPlay->initSwr();
     int frameCount = 0;
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *packet = av_packet_alloc();
@@ -85,40 +88,45 @@ void Decode::play() {
             LOGE(Decode_TAG, "%s:不是对应的轨道索引", __func__);
             continue;
         }
-        rst = avcodec_send_packet(audioPlay->pCodecCtx, packet);
-        switch (rst) {
-            case AVERROR(EAGAIN):
-                LOGE(Decode_TAG, "%s:暂不接受当前输入", __func__);
-                continue;
-            case AVERROR_EOF:
-                LOGE(Decode_TAG, "%s:解码完毕", __func__);
-                return;
-            case AVERROR(EINVAL) :
-                LOGE(Decode_TAG, "%s:打开错误的编解码器", __func__);
-                return;
-            case AVERROR(ENOMEM):
-                LOGE(Decode_TAG, "%s:添加输入数据", __func__);
-                continue;
-            default:
-                if (rst < 0) {
-                    LOGE(Decode_TAG, "%s:未知错误%d,详情%s", __func__, rst, av_err2str(rst));
-                }
-                break;
-        }
-        while (true) {
-            rst = avcodec_receive_frame(audioPlay->pCodecCtx, pFrame);
-            if (rst != 0) {
-                LOGE(Decode_TAG, "%s:接受帧数据失败%s", __func__, av_err2str(rst));
-                break;
-            }
-            frameCount++;
-            LOGE(Decode_TAG, "%s:解码了%d帧", __func__, frameCount);
-        }
+        audioPlay->pushData(packet);
+        sleep(1);
+//        rst = avcodec_send_packet(audioPlay->pCodecCtx, packet);
+//        switch (rst) {
+//            case AVERROR(EAGAIN):
+//                LOGE(Decode_TAG, "%s:暂不接受当前输入%d", __func__, rst);
+//                continue;
+//            case AVERROR_EOF:
+//                LOGE(Decode_TAG, "%s:解码完毕%s", __func__, av_err2str(rst));
+//                return;
+//            case AVERROR(EINVAL) :
+//                LOGE(Decode_TAG, "%s:打开错误的编解码器%s", __func__, av_err2str(rst));
+//                return;
+//            case AVERROR(ENOMEM):
+//                LOGE(Decode_TAG, "%s:添加输入数据%s", __func__, av_err2str(rst));
+//                continue;
+//            default:
+//                if (rst < 0) {
+//                    LOGE(Decode_TAG, "%s:未知错误%d,详情%s", __func__, rst, av_err2str(rst));
+//                }
+//                break;
+//        }
+//        while (true) {
+//            sleep(1);
+//            rst = avcodec_receive_frame(audioPlay->pCodecCtx, pFrame);
+//            if (rst != 0) {
+////                LOGE(Decode_TAG, "%s:接受帧数据失败%s", __func__, av_err2str(rst));
+//                break;
+//            }
+//            frameCount++;
+//            LOGE(Decode_TAG, "%s:解码了%d帧", __func__, frameCount);
+//        }
     }
 }
 
 Decode::Decode(const Callback &callback) : callback(callback) {
     audioPlay = new AudioPlay();
 }
+
+
 
 

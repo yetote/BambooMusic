@@ -6,6 +6,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -40,17 +41,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView musicIcon;
     private Toolbar toolbar;
     private ImageView myMusicQueueIv;
-    private View popWindow;
+    private View musicQueueView;
     private ImageView popChangePlayMode, popDownload, popAdd, popDelete;
     private TextView popPlayMode, popBack;
     private RecyclerView popMusicQueue;
-    private PopupWindow popupWindow;
+    private PopupWindow musicQueuePopupWindow, musicDetailsPopupWindow;
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private ViewPagerAdapter viewPagerAdapter;
     private ArrayList<Fragment> fragments;
     private ArrayList<String> title;
     private MusicService.MusicBinder musicBinder;
+    private View musicDetailsView;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -72,11 +74,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         initView();
         initPopupWindow();
+
         toolbar.inflateMenu(R.menu.main_toolbar_menu);
         toolbar.setTitle("音乐馆");
 
         myMusicQueueIv.setOnClickListener(this);
         musicProgressButton.setOnClickListener(this);
+        musicIcon.setOnClickListener(this);
 
         Intent musicService = new Intent(this, MusicService.class);
         bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicProgressButton = findViewById(R.id.main_musicProgress_btn);
         toolbar = findViewById(R.id.main_toolbar);
         myMusicQueueIv = findViewById(R.id.main_musicQueue_ImageView);
+
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         fragments = new ArrayList<>();
@@ -120,12 +125,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.main_musicQueue_ImageView:
-                popupWindow.showAsDropDown(v);
+                musicQueuePopupWindow.showAsDropDown(v);
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    musicBinder.play(getExternalFilesDir(null).getPath() + "/test.mp3");
+                    musicBinder.play(getExternalFilesDir(null).getPath() + "/new.mp3");
                 }
+                break;
+            case R.id.main_music_playing_icon:
+                Log.e(TAG, "onClick: ");
+                musicDetailsPopupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
                 break;
             default:
                 break;
@@ -133,15 +142,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initPopupWindow() {
-        popWindow = LayoutInflater.from(this).inflate(R.layout.popupwindow_main_music_queue, null);
-        popChangePlayMode = popWindow.findViewById(R.id.main_pop_change_playMode);
-        popDownload = popWindow.findViewById(R.id.main_pop_download);
-        popAdd = popWindow.findViewById(R.id.main_pop_add);
-        popDelete = popWindow.findViewById(R.id.main_pop_delete);
-        popPlayMode = popWindow.findViewById(R.id.main_pop_playMode);
-        popBack = popWindow.findViewById(R.id.main_pop_back);
-        popMusicQueue = popWindow.findViewById(R.id.main_pop_musicQueue_rv);
-        popupWindow = new PopupWindow(popWindow, MATCH_PARENT, WRAP_CONTENT, false);
+        musicQueueView = LayoutInflater.from(this).inflate(R.layout.popupwindow_main_music_queue, null);
+        popChangePlayMode = musicQueueView.findViewById(R.id.main_pop_change_playMode);
+        popDownload = musicQueueView.findViewById(R.id.main_pop_download);
+        popAdd = musicQueueView.findViewById(R.id.main_pop_add);
+        popDelete = musicQueueView.findViewById(R.id.main_pop_delete);
+        popPlayMode = musicQueueView.findViewById(R.id.main_pop_playMode);
+        popBack = musicQueueView.findViewById(R.id.main_pop_back);
+        popMusicQueue = musicQueueView.findViewById(R.id.main_pop_musicQueue_rv);
+        musicQueuePopupWindow = new PopupWindow(musicQueueView, MATCH_PARENT, WRAP_CONTENT, false);
+
+        musicDetailsView = LayoutInflater.from(this).inflate(R.layout.popupwindow_music_details, null);
+        musicDetailsPopupWindow = new PopupWindow(musicDetailsView, MATCH_PARENT, MATCH_PARENT, true);
     }
 
 

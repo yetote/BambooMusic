@@ -84,9 +84,17 @@ void printAudioStreamInfo(AudioStream *stream) {
 }
 
 AudioPlay::AudioPlay(std::string wpath) {
+    packet = av_packet_alloc();
+    pFrame = av_frame_alloc();
     file = fopen(wpath.c_str(), "wb+");
     builder = new AudioStreamBuilder();
+    builder->setChannelCount(ChannelCount::Stereo);
     builder->setSampleRate(48000);
+    builder->setPerformanceMode(PerformanceMode::LowLatency);
+    builder->setSharingMode(SharingMode::Exclusive);
+    builder->setDirection(Direction::Output);
+    builder->setFormat(AudioFormat::I16);
+    builder->setCallback(this);
     Result result;
     builder->setCallback(this);
     result = builder->openStream(&audioStream);
@@ -96,7 +104,7 @@ AudioPlay::AudioPlay(std::string wpath) {
 
     latencyTuner = new LatencyTuner(*audioStream);
     printAudioStreamInfo(audioStream);
-    data = new uint8_t[48000 * 2 * 4];
+    data = new uint8_t[48000 * 2 * 2];
     outBuffer = static_cast<uint8_t *>(av_malloc(MAX_AUDIO_FRAME_SIZE));
     audioStream->requestStart();
 
@@ -114,27 +122,26 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     if (!canPlay) {
         return DataCallbackResult::Continue;
     }
-//    auto buffer = static_cast<uint8_t *> (audioData);
-//    latencyTuner->tune();
-//    if (dataSize > betterSize) {
-//        LOGE(AudioPlay_TAG, "%s:播放中", __func__);
-//        for (int i = 0; i < betterSize; ++i) {
-//            buffer[i] = data[readPos];
-//            LOGE(AudioPlay_TAG, "%s:data%d", __func__, data[readPos]);
-//            readPos++;
-//            if (i >= MAX_AUDIO_FRAME_SIZE) {
-//                readPos = 0;
-//            }
-//        }
-//        dataSize -= betterSize;
-//    }
-//    LOGE(AudioPlay_TAG, "%s:%d,%d,%d,%d", __func__, buffer[10], buffer[100], buffer[150],
-//         buffer[200]);
-//    if (dataSize <= betterSize * 2) {
-//        LOGE(AudioPlay_TAG, "%s:数据不足，准备解码", __func__);
-//        popData();
-//    }
-    popData();
+    auto buffer = static_cast<uint8_t *> (audioData);
+    latencyTuner->tune();
+    if (dataSize <= betterSize * 2) {
+        LOGE(AudioPlay_TAG, "%s:数据不足，准备解码", __func__);
+        popData();
+    }
+    LOGE(AudioPlay_TAG, "%s:数据读取索引%d", __func__, readPos);
+    if (dataSize > betterSize) {
+        for (int i = 0; i < betterSize; ++i) {
+            buffer[i] = data[readPos];
+            readPos++;
+            if (readPos >= 48000 * 4) {
+                readPos = 0;
+            }
+        }
+        dataSize -= betterSize;
+        LOGE(AudioPlay_TAG, "%s:读取后数据容量%d", __func__, dataSize);
+    }
+
+//    popData();
 
     return DataCallbackResult::Continue;
 }
@@ -142,19 +149,19 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
 void AudioPlay::pushData(AVPacket *packet) {
     canPlay = true;
     audioQueue.push(packet);
-    LOGE(AudioPlay_TAG, "%s:queue's size=%d ", __func__, audioQueue.size());
+//    popData(packet);
+//    LOGE(AudioPlay_TAG, "%s:queue's size=%d ", __func__, audioQueue.size());
 }
 
 void AudioPlay::popData() {
-
     memset(outBuffer, 0, MAX_AUDIO_FRAME_SIZE);
     if (audioQueue.empty()) {
-//        LOGE(AudioPlay_TAG, "%s:对列为null", __func__);
+        LOGE(AudioPlay_TAG, "%s:对列为null", __func__);
         return;
     }
-    AVPacket *packet = audioQueue.front();
-    AVFrame *pFrame = av_frame_alloc();
-    int rst = avcodec_send_packet(pCodecCtx, packet);
+    int rst;
+    rst = av_packet_ref(packet, audioQueue.front());
+    rst = avcodec_send_packet(pCodecCtx, packet);
     if (rst != 0) {
         LOGE(AudioPlay_TAG, "%s:发送数据出错%s", __func__, av_err2str(rst));
         audioQueue.pop();
@@ -163,54 +170,56 @@ void AudioPlay::popData() {
     if ((rst = avcodec_receive_frame(pCodecCtx, pFrame)) == 0) {
         auto frameCount = swr_convert(swrCtx,
                                       &outBuffer,
-                                      pFrame->nb_samples,
+                                      48000 * 2,
                                       (const uint8_t **) (pFrame->data),
                                       pFrame->nb_samples);
         auto bufferSize = av_samples_get_buffer_size(nullptr, outChannelNum, frameCount,
                                                      AV_SAMPLE_FMT_S16, 1);
 //        LOGE(AudioPlay_TAG, "%s:解码后大小为%d", __func__, bufferSize);
 //        LOGE(AudioPlay_TAG, "%s:copy前数据为%d", __func__, outBuffer[bufferSize / 2]);
-        auto size = fwrite(outBuffer, 1, (size_t) bufferSize, file);
-        LOGE(AudioPlay_TAG, "%s:size=%d", __func__, size);
-//        if ((MAX_AUDIO_FRAME_SIZE - dataSize) >= bufferSize) {
-//            memcpy(data + writtenPos, outBuffer, bufferSize);
-//            LOGE(AudioPlay_TAG, "%s:copy后数据为%d", __func__,
-//                 data[dataSize + writtenPos + bufferSize / 2]);
-//            writtenPos += bufferSize;
-//        } else {
-//            auto remainingSize = MAX_AUDIO_FRAME_SIZE - dataSize;
-//            memcpy(data + writtenPos, outBuffer, remainingSize);
-//            writtenPos = 0;
-//            memcpy(data + writtenPos, outBuffer + remainingSize, bufferSize - remainingSize);
-//            writtenPos += bufferSize - remainingSize;
-//        }
-//        dataSize += bufferSize;
+//        auto size = fwrite(outBuffer, 1, (size_t) bufferSize, file);
+        if ((MAX_AUDIO_FRAME_SIZE - dataSize) >= bufferSize) {
+            memcpy(data + writtenPos, outBuffer, bufferSize);
+            writtenPos += bufferSize;
+        } else {
+            auto remainingSize = MAX_AUDIO_FRAME_SIZE - dataSize;
+            memcpy(data + writtenPos, outBuffer, remainingSize);
+            writtenPos = 0;
+            memcpy(data + writtenPos, outBuffer + remainingSize, bufferSize - remainingSize);
+            writtenPos += bufferSize - remainingSize;
+        }
+        LOGE(AudioPlay_TAG, "%s:拷贝数据写入索引%d", __func__, writtenPos);
+        dataSize += bufferSize;
+        LOGE(AudioPlay_TAG, "%s:拷贝后数据总容量%d", __func__, dataSize);
     } else {
-        LOGE(AudioPlay_TAG, "%s:解码出错%d", __func__, rst);
+        LOGE(AudioPlay_TAG, "%s:解码出错%s", __func__, av_err2str(rst));
     }
     audioQueue.pop();
+
 }
 
 
 void AudioPlay::initSwr() {
     swrCtx = swr_alloc();
-    auto inSampleFmt = pCodecCtx->sample_fmt;
-    auto outSampleFmt = AV_SAMPLE_FMT_S16;
-
-    auto inChannelLayout = pCodecCtx->channel_layout;
-    auto outChannelLayout = AV_CH_LAYOUT_STEREO;
-
-    auto inSampleRate = pCodecCtx->sample_rate;
-    auto outSampleRate = 44100;
-
+    //采样格式
+    enum AVSampleFormat inSampleFmt = pCodecCtx->sample_fmt;
+    enum AVSampleFormat outSampleFmt = AV_SAMPLE_FMT_S16;
+    //采样率
+    int inSampleRate = pCodecCtx->sample_rate;
+    int outSampleRate = 48000;
+    //声道类别
+    uint64_t inSampleChannel = pCodecCtx->channel_layout;
+    uint64_t outSampleChannel = AV_CH_LAYOUT_STEREO;
+    //添加配置
     swr_alloc_set_opts(swrCtx,
-                       outChannelLayout,
+                       outSampleChannel,
                        outSampleFmt,
                        outSampleRate,
-                       inChannelLayout,
+                       inSampleChannel,
                        inSampleFmt,
                        inSampleRate,
-                       0, nullptr);
+                       0,
+                       NULL);
     swr_init(swrCtx);
-    outChannelNum = av_get_channel_layout_nb_channels(outChannelLayout);
+    outChannelNum = av_get_channel_layout_nb_channels(outSampleChannel);
 }

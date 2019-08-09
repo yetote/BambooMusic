@@ -40,7 +40,14 @@ private:
     int videoIndex = -1;
     AudioPlay *audioPlay;
 
+    AVCodecContext *pCodecCtx;
+    SwrContext *swrContext;
 
+    void initSwr();
+
+    int outChannelNum;
+    FILE *file;
+    std::string wpath;
 };
 
 

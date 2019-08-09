@@ -11,6 +11,7 @@ Decode::~Decode() {
 }
 
 void Decode::prepare(const std::string path) {
+    file = fopen(wpath.c_str(), "wb+");
     av_register_all();
     avformat_network_init();
     int rst;
@@ -47,6 +48,7 @@ void Decode::prepare(const std::string path) {
 }
 
 void Decode::play() {
+    uint8_t *outBuffer = new uint8_t[44100 * 4];
     LOGE(Decode_TAG, "%s:当前线程id%ull", __func__, std::this_thread::get_id());
     int rst;
     LOGE(Decode_TAG, "%s:准备成功，开始播放", __func__);
@@ -80,6 +82,7 @@ void Decode::play() {
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *packet = av_packet_alloc();
     while (true) {
+        usleep(1000);
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             LOGE(Decode_TAG, "%s:解码失败%s", __func__, av_err2str(rst));
@@ -89,43 +92,59 @@ void Decode::play() {
             LOGE(Decode_TAG, "%s:不是对应的轨道索引", __func__);
             continue;
         }
-        audioPlay->pushData(packet);
-
 //        rst = avcodec_send_packet(audioPlay->pCodecCtx, packet);
-//        switch (rst) {
-//            case AVERROR(EAGAIN):
-//                LOGE(Decode_TAG, "%s:暂不接受当前输入%d", __func__, rst);
-//                continue;
-//            case AVERROR_EOF:
-//                LOGE(Decode_TAG, "%s:解码完毕%s", __func__, av_err2str(rst));
-//                return;
-//            case AVERROR(EINVAL) :
-//                LOGE(Decode_TAG, "%s:打开错误的编解码器%s", __func__, av_err2str(rst));
-//                return;
-//            case AVERROR(ENOMEM):
-//                LOGE(Decode_TAG, "%s:添加输入数据%s", __func__, av_err2str(rst));
-//                continue;
-//            default:
-//                if (rst < 0) {
-//                    LOGE(Decode_TAG, "%s:未知错误%d,详情%s", __func__, rst, av_err2str(rst));
-//                }
-//                break;
+        audioPlay->pushData(packet);
+//        if (rst != 0) {
+//            LOGE(Decode_TAG, "%s:发送数据失败%s", __func__, av_err2str(rst));
+//            continue;
 //        }
-//        while (true) {
-//            sleep(1);
-//            rst = avcodec_receive_frame(audioPlay->pCodecCtx, pFrame);
-//            if (rst != 0) {
-////                LOGE(Decode_TAG, "%s:接受帧数据失败%s", __func__, av_err2str(rst));
-//                break;
-//            }
-//            frameCount++;
-//            LOGE(Decode_TAG, "%s:解码了%d帧", __func__, frameCount);
+//        rst = avcodec_receive_frame(audioPlay->pCodecCtx, pFrame);
+//        if (rst != 0) {
+//            LOGE(Decode_TAG, "%s:接受解码后数据失败%s", __func__, av_err2str(rst));
+//            continue;
 //        }
+//
+//        int frameCount = swr_convert(audioPlay->swrCtx,
+//                                     &outBuffer,
+//                                     44100 * 2,
+//                                     (const uint8_t **) (pFrame->data),
+//                                     pFrame->nb_samples);
+//        int outBufferSize = av_samples_get_buffer_size(nullptr, audioPlay->outChannelNum,
+//                                                       frameCount,
+//                                                       AV_SAMPLE_FMT_S16, 1);
+//        auto size = fwrite(outBuffer, 1, outBufferSize, file);
+//        LOGE(Decode_TAG, "%s写入了%d字节:", __func__, size);
     }
 }
 
-Decode::Decode(const Callback &callback,const std::string wpath) : callback(callback) {
+Decode::Decode(const Callback &callback, const std::string wpath) : callback(callback) {
     audioPlay = new AudioPlay(wpath);
+    this->wpath = wpath;
+}
+
+void Decode::initSwr() {
+    swrContext = swr_alloc();
+    //采样格式
+    auto inSampleFmt = pCodecCtx->sample_fmt;
+    auto outSampleFmt = AV_SAMPLE_FMT_S16;
+    //采样率
+    auto inSampleRate = pCodecCtx->sample_rate;
+    auto outSampleRate = 44100;
+    //声道类别
+    auto inSampleChannel = pCodecCtx->channel_layout;
+    auto outSampleChannel = AV_CH_LAYOUT_STEREO;
+    //添加配置
+    swr_alloc_set_opts(swrContext,
+                       outSampleChannel,
+                       outSampleFmt,
+                       outSampleRate,
+                       inSampleChannel,
+                       inSampleFmt,
+                       inSampleRate,
+                       0,
+                       NULL);
+    swr_init(swrContext);
+    outChannelNum = av_get_channel_layout_nb_channels(outSampleChannel);
 }
 
 

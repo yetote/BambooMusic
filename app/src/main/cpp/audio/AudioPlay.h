@@ -32,8 +32,10 @@ public:
 
     void initSwr();
 
-private:
     SwrContext *swrCtx;
+    int outChannelNum;
+    FILE *file;
+private:
     std::queue<AVPacket *> audioQueue;
 
     oboe::DataCallbackResult
@@ -46,7 +48,6 @@ private:
 
     uint8_t *data;
 
-    int outChannelNum;
 
     void popData();
 
@@ -59,7 +60,8 @@ private:
     //写入位置
     int writtenPos = 0;
     bool canPlay = false;
-    FILE *file;
+    AVPacket *packet;
+    AVFrame *pFrame;
 };
 
 

@@ -82,7 +82,6 @@ void Decode::play() {
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *packet = av_packet_alloc();
     while (true) {
-        usleep(1000);
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             LOGE(Decode_TAG, "%s:解码失败%s", __func__, av_err2str(rst));

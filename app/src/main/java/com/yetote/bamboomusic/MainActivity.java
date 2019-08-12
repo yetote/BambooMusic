@@ -130,8 +130,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    musicBinder.play("http://wsaudio.bssdlbig.kugou.com/1908082111/jYgNlG5nSmsauxMyqpdYaA/1565356291/bss/extname/wsaudio/bccd9d4f224f7fc0978efa29213370ff.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
-//                    musicBinder.play(this.getExternalFilesDir(null).getPath()+"/new.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
+//                    musicBinder.play("http://wsaudio.bssdlbig.kugou.com/1908082111/jYgNlG5nSmsauxMyqpdYaA/1565356291/bss/extname/wsaudio/bccd9d4f224f7fc0978efa29213370ff.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
+                    musicBinder.play(this.getExternalFilesDir(null).getPath()+"/new.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
                 }
                 break;
             case R.id.main_music_playing_icon:

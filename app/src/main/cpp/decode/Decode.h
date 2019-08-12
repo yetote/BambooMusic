@@ -28,7 +28,7 @@ public:
 
     void play();
 
-    Decode(const Callback &callback, const std::string wpath);
+    Decode(const Callback &callback);
 
     ~Decode();
 

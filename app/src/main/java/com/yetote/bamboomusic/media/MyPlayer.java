@@ -19,8 +19,9 @@ public class MyPlayer {
     }
 
     private OnPrepareCallback prepareCallback;
+    private OnPlayCallback playCallback;
 
-    public native void prepare(String path,String wpath);
+    public native void prepare(String path);
 
     public native void play();
 
@@ -28,14 +29,25 @@ public class MyPlayer {
 
     public native void stop();
 
+
     public void setPrepareCallback(OnPrepareCallback prepareCallback) {
         this.prepareCallback = prepareCallback;
     }
 
-    public void callPrepare(boolean isPrepare) {
+    public void setPlayCallback(OnPlayCallback playCallback) {
+        this.playCallback = playCallback;
+    }
+
+    public void callPrepare(boolean isPrepare, int totalTime) {
         if (prepareCallback != null) {
-            prepareCallback.onPrepare(isPrepare);
+            prepareCallback.onPrepare(isPrepare, totalTime);
         }
     }
 
+
+    public void callPlay(int currentTime) {
+        if (prepareCallback != null) {
+            playCallback.onPlaying(currentTime);
+        }
+    }
 }

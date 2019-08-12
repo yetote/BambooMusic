@@ -84,10 +84,10 @@ void printAudioStreamInfo(AudioStream *stream) {
     }
 }
 
-AudioPlay::AudioPlay(std::string wpath) {
+
+AudioPlay::AudioPlay(const Callback &callback) : callback(callback) {
     packet = av_packet_alloc();
     pFrame = av_frame_alloc();
-    file = fopen(wpath.c_str(), "wb+");
     builder = new AudioStreamBuilder();
     builder->setChannelCount(ChannelCount::Stereo);
     builder->setSampleRate(48000);
@@ -110,40 +110,33 @@ AudioPlay::AudioPlay(std::string wpath) {
     audioStream->requestStart();
 
     betterSize = audioStream->getBufferSizeInFrames();
-
-}
-
-AudioPlay::~AudioPlay() {
-
 }
 
 DataCallbackResult
 AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-//    LOGE(AudioPlay_TAG, "%s:回调了", __func__);
     int betterSize = numFrames * 4;
-    LOGE(AudioPlay_TAG, "%s:float大小%d，int大小%d,int32%d", __func__, sizeof(float), sizeof(uint8_t),
-         sizeof(int32_t));
     if (!canPlay) {
         return DataCallbackResult::Continue;
     }
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
     if (dataSize <= betterSize) {
-        LOGE(AudioPlay_TAG, "%s:数据不足，准备解码", __func__);
+//        LOGE(AudioPlay_TAG, "%s:数据不足，准备解码", __func__);
         popData();
     }
-    LOGE(AudioPlay_TAG, "%s:数据读取索引%d", __func__, readPos);
     if (dataSize >= betterSize) {
         for (int i = 0; i < betterSize; ++i) {
             buffer[i] = data[readPos];
-//            LOGE(AudioPlay_TAG, "%s:data数据%d", __func__, data[readPos]);
             readPos++;
             if (readPos >= MAX_AUDIO_FRAME_SIZE) {
                 readPos = 0;
             }
         }
         dataSize -= betterSize;
-        LOGE(AudioPlay_TAG, "%s:读取后数据容量%d", __func__, dataSize);
+    }
+    if ((currentTime - lastTime) >= 1) {
+        callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
+        lastTime = static_cast<int>(currentTime);
     }
     return DataCallbackResult::Continue;
 }
@@ -153,12 +146,10 @@ void AudioPlay::pushData(AVPacket *packet) {
     AVPacket *temp = av_packet_alloc();
     av_packet_ref(temp, packet);
     audioQueue.push(temp);
-//    popData();
-//    LOGE(AudioPlay_TAG, "%s:queue's size=%d ", __func__, audioQueue.size());
+
 }
 
 void AudioPlay::popData() {
-//    memset(outBuffer, 0, MAX_AUDIO_FRAME_SIZE);
     if (audioQueue.empty()) {
         LOGE(AudioPlay_TAG, "%s:对列为null", __func__);
         return;
@@ -182,6 +173,7 @@ void AudioPlay::popData() {
                                       pFrame->nb_samples);
         auto bufferSize = av_samples_get_buffer_size(nullptr, outChannelNum, frameCount,
                                                      AV_SAMPLE_FMT_S16, 1);
+        currentTime = pFrame->pts * av_q2d(timeBase);
         if ((MAX_AUDIO_FRAME_SIZE - writtenPos) >= bufferSize) {
             memcpy(data + writtenPos, outBuffer, bufferSize);
             writtenPos += bufferSize;
@@ -224,3 +216,10 @@ void AudioPlay::initSwr() {
     swr_init(swrCtx);
     outChannelNum = av_get_channel_layout_nb_channels(outSampleChannel);
 }
+
+
+AudioPlay::~AudioPlay() {
+
+}
+
+

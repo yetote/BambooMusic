@@ -36,12 +36,15 @@ public class MusicService extends Service {
         super.onCreate();
         Log.e(TAG, "onCreate: service create");
         player = new MyPlayer();
-        player.setPrepareCallback(prepare -> {
-            Log.e(TAG, "onCreate: " + prepare);
-            musicBinder.callPrepare(prepare);
+        player.setPrepareCallback((prepare, totalTime) -> {
+            musicBinder.callPrepare(prepare, totalTime);
             if (prepare) {
                 player.play();
             }
+        });
+
+        player.setPlayCallback(currentTime -> {
+            musicBinder.callPlay(currentTime);
         });
     }
 
@@ -65,13 +68,23 @@ public class MusicService extends Service {
             this.onPrepareCallback = onPrepareCallback;
         }
 
-        protected void callPrepare(boolean success) {
-            onPrepareCallback.onPrepare(success);
+        private OnPlayCallback onPlayCallback;
+
+        public void setPlayCallback(OnPlayCallback playCallback) {
+            this.onPlayCallback = playCallback;
         }
 
-        public void play(String path,String wpath) {
+        protected void callPrepare(boolean success, int totalTime) {
+            onPrepareCallback.onPrepare(success, totalTime);
+        }
+
+        protected void callPlay(int currentTime) {
+            onPlayCallback.onPlaying(currentTime);
+        }
+
+        public void play(String path) {
             if (player != null) {
-                player.prepare(path,wpath);
+                player.prepare(path);
             }
         }
 

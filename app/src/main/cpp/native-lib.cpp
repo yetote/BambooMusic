@@ -8,16 +8,13 @@ Decode *decode;
 Callback *callback;
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path_,
-                                                   jstring wpath_) {
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path_) {
     const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
-    const char *wpath = env->GetStringUTFChars(wpath_, JNI_FALSE);
     LOGE(NATIVE_TAG, "%s:main thread id%ull", __func__, std::this_thread::get_id());
     callback = new Callback{env, thiz};
-    decode = new Decode{*callback, wpath};
+    decode = new Decode{*callback};
     decode->prepare(path);
     env->ReleaseStringUTFChars(path_, path);
-    env->ReleaseStringUTFChars(wpath_, wpath);
 }
 
 extern "C"

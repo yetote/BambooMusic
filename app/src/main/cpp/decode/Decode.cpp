@@ -20,13 +20,13 @@ void Decode::prepare(const std::string path) {
     LOGE(Decode_TAG, "%s:path:%s", __func__, path.c_str());
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开文件失败%s", __func__, av_err2str(rst));
-        callback.callPrepare(callback.MAIN_THREAD, false);
+        callback.callPrepare(callback.MAIN_THREAD, false,0);
         return;
     }
     rst = avformat_find_stream_info(pFmtCtx, nullptr);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:寻找流信息失败%d", __func__, rst);
-        callback.callPrepare(callback.MAIN_THREAD, false);
+        callback.callPrepare(callback.MAIN_THREAD, false,0);
         return;
     }
     for (int i = 0; i < pFmtCtx->nb_streams; ++i) {
@@ -38,17 +38,20 @@ void Decode::prepare(const std::string path) {
     }
     if (audioIndex == -1 && videoIndex == -1) {
         LOGE(Decode_TAG, "%s:未找到相应的流索引，请检查", __func__);
-        callback.callPrepare(callback.MAIN_THREAD, false);
+        callback.callPrepare(callback.MAIN_THREAD, false, 0);
         return;
     }
+    pStream = pFmtCtx->streams[audioIndex];
     LOGE(Decode_TAG, "%s:ffmpeg准备成功", __func__);
-    callback.callPrepare(callback.MAIN_THREAD, true);
+    audioPlay->totalTime = pFmtCtx->duration / AV_TIME_BASE;
+    LOGE(Decode_TAG,"%s:总时长%d",__func__,audioPlay->totalTime);
+    audioPlay->timeBase = pStream->time_base;
+    callback.callPrepare(callback.MAIN_THREAD, true, audioPlay->totalTime);
 
 
 }
 
 void Decode::play() {
-    uint8_t *outBuffer = new uint8_t[44100 * 4];
     LOGE(Decode_TAG, "%s:当前线程id%ull", __func__, std::this_thread::get_id());
     int rst;
     LOGE(Decode_TAG, "%s:准备成功，开始播放", __func__);
@@ -56,7 +59,6 @@ void Decode::play() {
         LOGE(Decode_TAG, "%s:未找到音频索引，无法播放", __func__);
         return;
     }
-    pStream = pFmtCtx->streams[audioIndex];
     pCodec = avcodec_find_decoder(pStream->codecpar->codec_id);
     if (pCodec == nullptr) {
         LOGE(Decode_TAG, "%s:无法打开解码器", __func__);
@@ -73,6 +75,7 @@ void Decode::play() {
         return;
     }
     rst = avcodec_open2(audioPlay->pCodecCtx, pCodec, nullptr);
+
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
@@ -91,33 +94,12 @@ void Decode::play() {
             LOGE(Decode_TAG, "%s:不是对应的轨道索引", __func__);
             continue;
         }
-//        rst = avcodec_send_packet(audioPlay->pCodecCtx, packet);
         audioPlay->pushData(packet);
-//        if (rst != 0) {
-//            LOGE(Decode_TAG, "%s:发送数据失败%s", __func__, av_err2str(rst));
-//            continue;
-//        }
-//        rst = avcodec_receive_frame(audioPlay->pCodecCtx, pFrame);
-//        if (rst != 0) {
-//            LOGE(Decode_TAG, "%s:接受解码后数据失败%s", __func__, av_err2str(rst));
-//            continue;
-//        }
-//
-//        int frameCount = swr_convert(audioPlay->swrCtx,
-//                                     &outBuffer,
-//                                     44100 * 2,
-//                                     (const uint8_t **) (pFrame->data),
-//                                     pFrame->nb_samples);
-//        int outBufferSize = av_samples_get_buffer_size(nullptr, audioPlay->outChannelNum,
-//                                                       frameCount,
-//                                                       AV_SAMPLE_FMT_S16, 1);
-//        auto size = fwrite(outBuffer, 1, outBufferSize, file);
-//        LOGE(Decode_TAG, "%s写入了%d字节:", __func__, size);
     }
 }
 
-Decode::Decode(const Callback &callback, const std::string wpath) : callback(callback) {
-    audioPlay = new AudioPlay(wpath);
+Decode::Decode(const Callback &callback) : callback(callback) {
+    audioPlay = new AudioPlay(callback);
     this->wpath = wpath;
 }
 

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatSeekBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,8 +28,8 @@ import com.yetote.bamboomusic.fragment.MineFragment;
 import com.yetote.bamboomusic.fragment.MusicLibFragment;
 import com.yetote.bamboomusic.fragment.RecommendFragment;
 import com.yetote.bamboomusic.media.MusicService;
-import com.yetote.bamboomusic.media.OnPrepareCallback;
 import com.yetote.bamboomusic.myview.MusicProgressButton;
+import com.yetote.bamboomusic.util.TextUtil;
 
 import java.util.ArrayList;
 
@@ -42,9 +43,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
     private ImageView myMusicQueueIv;
     private View musicQueueView;
-    private ImageView popChangePlayMode, popDownload, popAdd, popDelete;
-    private TextView popPlayMode, popBack;
-    private RecyclerView popMusicQueue;
+    private ImageView musicQueuePopChangePlayMode, musicQueuePopDownload, musicQueuePopAdd, musicQueuePopDelete;
+    private ImageView musicDetailsPopPlayMode, musicDetailsPopOn, musicDetailsPopUnder, musicDetailsPopPlayController, musicDetailsPopMusicQueue, musicDetailsPopLike, musicDetailsPopDownload, musicDetailsPopShare, musicDetailsPopDiscuss;
+    private Toolbar musicDetailsPopToolbar;
+    private TextView musicDetailsPopCurrentTime, musicDetailsPopTotalTime;
+    private AppCompatSeekBar musicDetailsPopProgress;
+    private TextView musicQueuePopPlayMode, musicQueuePopBack;
+    private RecyclerView musicQueuePopMusicQueue;
     private PopupWindow musicQueuePopupWindow, musicDetailsPopupWindow;
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -73,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         initView();
-        initPopupWindow();
+
 
         toolbar.inflateMenu(R.menu.main_toolbar_menu);
         toolbar.setTitle("音乐馆");
@@ -92,11 +97,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void callBack() {
-        musicBinder.setOnPrepareCallback(new OnPrepareCallback() {
-            @Override
-            public void onPrepare(boolean prepare) {
-                Toast.makeText(MainActivity.this, "打开" + prepare, Toast.LENGTH_SHORT).show();
-            }
+        musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
+            Toast.makeText(MainActivity.this, "打开" + totalTime, Toast.LENGTH_SHORT).show();
+            musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
+            musicDetailsPopProgress.setMax(totalTime);
+        });
+
+        musicBinder.setPlayCallback(currentTime -> {
+            musicDetailsPopProgress.setProgress(currentTime);
+            musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
         });
     }
 
@@ -119,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("我的");
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
         musicIcon = findViewById(R.id.main_music_playing_icon);
-
+        initPopupWindow();
     }
 
     @Override
@@ -131,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
 //                    musicBinder.play("http://wsaudio.bssdlbig.kugou.com/1908082111/jYgNlG5nSmsauxMyqpdYaA/1565356291/bss/extname/wsaudio/bccd9d4f224f7fc0978efa29213370ff.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
-                    musicBinder.play(this.getExternalFilesDir(null).getPath()+"/new.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
+                    musicBinder.play(this.getExternalFilesDir(null).getPath() + "/new.mp3");
                 }
                 break;
             case R.id.main_music_playing_icon:
@@ -145,17 +154,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initPopupWindow() {
         musicQueueView = LayoutInflater.from(this).inflate(R.layout.popupwindow_main_music_queue, null);
-        popChangePlayMode = musicQueueView.findViewById(R.id.main_pop_change_playMode);
-        popDownload = musicQueueView.findViewById(R.id.main_pop_download);
-        popAdd = musicQueueView.findViewById(R.id.main_pop_add);
-        popDelete = musicQueueView.findViewById(R.id.main_pop_delete);
-        popPlayMode = musicQueueView.findViewById(R.id.main_pop_playMode);
-        popBack = musicQueueView.findViewById(R.id.main_pop_back);
-        popMusicQueue = musicQueueView.findViewById(R.id.main_pop_musicQueue_rv);
+        musicQueuePopChangePlayMode = musicQueueView.findViewById(R.id.main_pop_change_playMode);
+        musicQueuePopDownload = musicQueueView.findViewById(R.id.main_pop_download);
+        musicQueuePopAdd = musicQueueView.findViewById(R.id.main_pop_add);
+        musicQueuePopDelete = musicQueueView.findViewById(R.id.main_pop_delete);
+        musicQueuePopPlayMode = musicQueueView.findViewById(R.id.main_pop_playMode);
+        musicQueuePopBack = musicQueueView.findViewById(R.id.main_pop_back);
+        musicQueuePopMusicQueue = musicQueueView.findViewById(R.id.main_pop_musicQueue_rv);
         musicQueuePopupWindow = new PopupWindow(musicQueueView, MATCH_PARENT, WRAP_CONTENT, false);
 
         musicDetailsView = LayoutInflater.from(this).inflate(R.layout.popupwindow_music_details, null);
         musicDetailsPopupWindow = new PopupWindow(musicDetailsView, MATCH_PARENT, MATCH_PARENT, true);
+        musicDetailsPopPlayMode = musicDetailsView.findViewById(R.id.music_details_pop_playMode);
+        musicDetailsPopOn = musicDetailsView.findViewById(R.id.music_details_pop_on);
+        musicDetailsPopUnder = musicDetailsView.findViewById(R.id.music_details_pop_under);
+        musicDetailsPopPlayController = musicDetailsView.findViewById(R.id.music_details_pop_playController);
+        musicDetailsPopMusicQueue = musicDetailsView.findViewById(R.id.music_details_pop_musicQueue);
+        musicDetailsPopLike = musicDetailsView.findViewById(R.id.music_details_pop_like);
+        musicDetailsPopDownload = musicDetailsView.findViewById(R.id.music_details_pop_download);
+        musicDetailsPopShare = musicDetailsView.findViewById(R.id.music_details_pop_share);
+        musicDetailsPopDiscuss = musicDetailsView.findViewById(R.id.music_details_pop_discuss);
+        musicDetailsPopToolbar = musicDetailsView.findViewById(R.id.music_details_pop_toolbar);
+        musicDetailsPopCurrentTime = musicDetailsView.findViewById(R.id.music_details_pop_currentTime);
+        musicDetailsPopTotalTime = musicDetailsView.findViewById(R.id.music_details_pop_totalTime);
+        musicDetailsPopProgress = musicDetailsView.findViewById(R.id.music_details_pop_progress);
+        musicDetailsPopupWindow.setClippingEnabled(false);
     }
 
 

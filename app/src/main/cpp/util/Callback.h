@@ -20,10 +20,12 @@ public:
 
     Callback(JNIEnv *env, _jobject *jobj);
 
-    void callPrepare(CALL_THREAD thread,bool success);
+    void callPrepare(CALL_THREAD thread, bool success, int totalTime);
+    void callPlay(CALL_THREAD thread, int currentTime);
 
 private:
     jmethodID callPrepareId;
+    jmethodID callPlayingId;
 };
 
 

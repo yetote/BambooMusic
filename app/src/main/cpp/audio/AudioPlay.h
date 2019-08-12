@@ -11,6 +11,7 @@
 #include <queue>
 #include <unistd.h>
 #include <string>
+#include "../util/Callback.h"
 
 extern "C" {
 #include <libswresample/swresample.h>
@@ -22,7 +23,9 @@ extern "C" {
 class AudioPlay : oboe::AudioStreamCallback {
 public:
 
-    AudioPlay(std::string wpath);
+    AudioPlay(Callback &callBack);
+
+    AudioPlay(const Callback &callback);
 
     ~AudioPlay();
 
@@ -34,7 +37,9 @@ public:
 
     SwrContext *swrCtx;
     int outChannelNum;
-    FILE *file;
+    AVRational timeBase;
+    int totalTime;
+    double currentTime;
 private:
     std::queue<AVPacket *> audioQueue;
 
@@ -62,6 +67,8 @@ private:
     bool canPlay = false;
     AVPacket *packet;
     AVFrame *pFrame;
+    Callback callback;
+    int lastTime = 0;
 };
 
 

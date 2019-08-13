@@ -72,7 +72,10 @@ void Decode::play() {
         return;
     }
     rst = avcodec_open2(audioPlay->pCodecCtx, pCodec, nullptr);
-
+    if (callback.callHardwareSupport(callback.CHILD_THREAD, pCodec->name)) {
+        LOGE(Decode_TAG, "%s:支持", __func__);
+        return;
+    }
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
@@ -116,9 +119,17 @@ void Decode::resume() {
     audioPlay->resume();
 }
 
+
+void Decode::seek(int progress) {
+    auto rel = progress * AV_TIME_BASE;
+    avformat_seek_file(pFmtCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
+    if (audioPlay != nullptr) {
+        audioPlay->clear();
+        avcodec_flush_buffers(audioPlay->pCodecCtx);
+    }
+}
+
 Decode::~Decode() {
 
 }
-
-
 

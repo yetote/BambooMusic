@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -113,6 +114,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicProgressButton.setOnClickListener(this);
         musicIcon.setOnClickListener(this);
 
+        musicDetailsPopProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                musicBinder.pause();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                musicBinder.seek(seekBar.getProgress());
+                musicBinder.resume();
+            }
+        });
+
         Intent musicService = new Intent(this, MusicService.class);
         bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
 
@@ -184,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         case PAUSING:
                             musicBinder.resume();
                             state = PLAY_STATE.PLAYING;
-//                            musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
                             break;
                         case STOP:
                             break;

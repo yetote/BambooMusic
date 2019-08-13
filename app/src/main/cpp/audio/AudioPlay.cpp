@@ -234,13 +234,24 @@ void AudioPlay::initSwr() {
 
 void AudioPlay::pause() {
     audioStream->requestPause();
+    LOGE(AudioPlay_TAG, "%s:暂停", __func__);
 }
 
 void AudioPlay::resume() {
     audioStream->requestStart();
+    LOGE(AudioPlay_TAG, "%s:恢复", __func__);
 }
 
 
 AudioPlay::~AudioPlay() {
 
+}
+
+void AudioPlay::clear() {
+    while (!audioQueue.empty()) {
+        audioQueue.pop();
+    }
+    dataSize = 0;
+    readPos = 0;
+    writtenPos = 0;
 }

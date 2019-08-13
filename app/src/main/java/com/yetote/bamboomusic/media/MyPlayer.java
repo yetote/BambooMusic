@@ -31,6 +31,8 @@ public class MyPlayer {
 
     public native void resume();
 
+    public native void seek(int progress);
+
     public void setPrepareCallback(OnPrepareCallback prepareCallback) {
         this.prepareCallback = prepareCallback;
     }
@@ -49,5 +51,9 @@ public class MyPlayer {
         if (prepareCallback != null) {
             playCallback.onPlaying(currentTime);
         }
+    }
+
+    public boolean callHardwareSupport(String name) {
+        return MediaUtil.hardwareSupport(name);
     }
 }

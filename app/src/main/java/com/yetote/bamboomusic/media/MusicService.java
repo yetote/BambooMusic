@@ -97,5 +97,9 @@ public class MusicService extends Service {
         public void pause() {
             if (player != null) player.pause();
         }
+
+        public void seek(int progress) {
+            if (player!=null) player.seek(progress);
+        }
     }
 }

@@ -37,6 +37,8 @@ public:
 
     ~Decode();
 
+    void seek(int progress);
+
 private:
     AVFormatContext *pFmtCtx = nullptr;
     AVCodec *pCodec = nullptr;

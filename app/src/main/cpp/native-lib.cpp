@@ -37,8 +37,14 @@ JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_resume(JNIEnv *env, jobject thiz) {
     decode->resume();
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_yetote_bamboomusic_media_MyPlayer_seek(JNIEnv *env, jobject thiz, jint progress) {
+    decode->seek(progress);
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
 }
-

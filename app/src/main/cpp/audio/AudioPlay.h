@@ -39,6 +39,8 @@ public:
 
     ~AudioPlay();
 
+    void clear();
+
 private:
     SwrContext *swrCtx;
     double currentTime;

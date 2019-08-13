@@ -6,6 +6,7 @@
 #define BAMBOOMUSIC_CALLBACK_H
 
 #include <jni.h>
+#include <string>
 
 class Callback {
 public:
@@ -21,11 +22,16 @@ public:
     Callback(JNIEnv *env, _jobject *jobj);
 
     void callPrepare(CALL_THREAD thread, bool success, int totalTime);
+
     void callPlay(CALL_THREAD thread, int currentTime);
+
+    bool callHardwareSupport(CALL_THREAD thread, std::string mutexName);
 
 private:
     jmethodID callPrepareId;
     jmethodID callPlayingId;
+    jmethodID callHardwareSupportId;
+
 };
 
 

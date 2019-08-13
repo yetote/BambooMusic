@@ -9,6 +9,7 @@
 #include <android/log.h>
 #include "../util/Callback.h"
 #include "../audio/AudioPlay.h"
+#include "../util/PlayStates.h"
 #include <thread>
 
 extern "C" {
@@ -22,13 +23,17 @@ extern "C" {
 class Decode {
 public:
     Callback callback;
+    PlayStates &playStates;
 
+    Decode(const Callback &callback, PlayStates &playStates);
 
     void prepare(const std::string path);
 
     void play();
 
-    Decode(const Callback &callback);
+    void pause();
+
+    void resume();
 
     ~Decode();
 
@@ -43,11 +48,12 @@ private:
     AVCodecContext *pCodecCtx;
     SwrContext *swrContext;
 
-    void initSwr();
 
     int outChannelNum;
     FILE *file;
     std::string wpath;
+
+    void free();
 };
 
 

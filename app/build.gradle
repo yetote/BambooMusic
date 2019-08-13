@@ -1,3 +1,4 @@
+//noinspection GradleDynamicVersion
 apply plugin: 'com.android.application'
 //apply plugin: 'bugly'
 //bugly {
@@ -63,5 +64,20 @@ dependencies {
 
     //ui
     implementation 'de.hdodenhof:circleimageview:3.0.0'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
 
+    //magic
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.9'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    //network
+    implementation 'com.squareup.retrofit2:retrofit:2.6.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.5.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+
+    //数据库
+    implementation "androidx.room:room-runtime:2.2.0-alpha02"
+    implementation 'androidx.room:room-rxjava2:2.2.0-alpha02'
+    annotationProcessor "androidx.room:room-compiler:2.2.0-alpha02"
 }

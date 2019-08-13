@@ -93,6 +93,7 @@ add_library( # Sets the name of the library.
 
         decode/Decode.cpp
         util/Callback.cpp
+        util/PlayStates.cpp
         audio/AudioPlay.cpp
         )
 

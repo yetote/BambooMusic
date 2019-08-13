@@ -58,6 +58,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList<String> title;
     private MusicService.MusicBinder musicBinder;
     private View musicDetailsView;
+    private boolean isPlaying;
+    private boolean isPause;
+
+    /**
+     * 播放状态
+     */
+    enum PLAY_STATE {
+        /**
+         * 准备中
+         */
+        PREPARING,
+        /**
+         * 播放
+         */
+        PLAYING,
+        /**
+         * 暂停
+         */
+        PAUSING,
+        /**
+         * 停止
+         */
+        STOP
+    }
+
+    private PLAY_STATE state = PLAY_STATE.PREPARING;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -101,10 +127,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "打开" + totalTime, Toast.LENGTH_SHORT).show();
             musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
             musicDetailsPopProgress.setMax(totalTime);
+            musicProgressButton.setTotalTime(totalTime);
+            state = PLAY_STATE.PLAYING;
         });
 
         musicBinder.setPlayCallback(currentTime -> {
             musicDetailsPopProgress.setProgress(currentTime);
+            if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
+                musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
+            }
+            musicProgressButton.showPlayingAnimation(currentTime);
             musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
         });
     }
@@ -139,8 +171,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-//                    musicBinder.play("http://wsaudio.bssdlbig.kugou.com/1908082111/jYgNlG5nSmsauxMyqpdYaA/1565356291/bss/extname/wsaudio/bccd9d4f224f7fc0978efa29213370ff.mp3",this.getExternalFilesDir(null).getPath()+"/test.pcm");
-                    musicBinder.play(this.getExternalFilesDir(null).getPath() + "/new.mp3");
+                    switch (state) {
+                        case PREPARING:
+                            musicBinder.play(this.getExternalFilesDir(null).getPath() + "/new.mp3");
+                            musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
+                            break;
+                        case PLAYING:
+                            musicBinder.pause();
+                            state = PLAY_STATE.PAUSING;
+                            musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+                            break;
+                        case PAUSING:
+                            musicBinder.resume();
+                            state = PLAY_STATE.PLAYING;
+//                            musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+                            break;
+                        case STOP:
+                            break;
+                        default:
+                            break;
+                    }
                 }
                 break;
             case R.id.main_music_playing_icon:

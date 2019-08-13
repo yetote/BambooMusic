@@ -5,13 +5,12 @@
 #include <unistd.h>
 #include "Decode.h"
 
-
-Decode::~Decode() {
-
+Decode::Decode(const Callback &callback, PlayStates &playStates) : callback(callback),
+                                                                   playStates(playStates) {
+    audioPlay = new AudioPlay(callback, playStates);
 }
 
 void Decode::prepare(const std::string path) {
-    file = fopen(wpath.c_str(), "wb+");
     av_register_all();
     avformat_network_init();
     int rst;
@@ -20,13 +19,13 @@ void Decode::prepare(const std::string path) {
     LOGE(Decode_TAG, "%s:path:%s", __func__, path.c_str());
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开文件失败%s", __func__, av_err2str(rst));
-        callback.callPrepare(callback.MAIN_THREAD, false,0);
+        callback.callPrepare(callback.MAIN_THREAD, false, 0);
         return;
     }
     rst = avformat_find_stream_info(pFmtCtx, nullptr);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:寻找流信息失败%d", __func__, rst);
-        callback.callPrepare(callback.MAIN_THREAD, false,0);
+        callback.callPrepare(callback.MAIN_THREAD, false, 0);
         return;
     }
     for (int i = 0; i < pFmtCtx->nb_streams; ++i) {
@@ -44,11 +43,9 @@ void Decode::prepare(const std::string path) {
     pStream = pFmtCtx->streams[audioIndex];
     LOGE(Decode_TAG, "%s:ffmpeg准备成功", __func__);
     audioPlay->totalTime = pFmtCtx->duration / AV_TIME_BASE;
-    LOGE(Decode_TAG,"%s:总时长%d",__func__,audioPlay->totalTime);
+    LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlay->totalTime);
     audioPlay->timeBase = pStream->time_base;
     callback.callPrepare(callback.MAIN_THREAD, true, audioPlay->totalTime);
-
-
 }
 
 void Decode::play() {
@@ -82,13 +79,22 @@ void Decode::play() {
     }
     audioPlay->initSwr();
     int frameCount = 0;
-    AVFrame *pFrame = av_frame_alloc();
     AVPacket *packet = av_packet_alloc();
     while (true) {
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
-            LOGE(Decode_TAG, "%s:解码失败%s", __func__, av_err2str(rst));
-            break;
+            switch (rst) {
+                case AVERROR_EOF:
+                    LOGE(Decode_TAG, "%s:文件读取完毕", __func__);
+                    playStates.setEOF(true);
+//                    LOGE(Decode_TAG, "%s:eof写入%d", __func__, playStates.isEOF);
+                    av_packet_free(&packet);
+                    av_free(packet);
+                    return;
+                default:
+                    LOGE(Decode_TAG, "%s:未知错误%s", __func__, av_err2str(rst));
+                    continue;
+            }
         }
         if (packet->stream_index != audioIndex) {
             LOGE(Decode_TAG, "%s:不是对应的轨道索引", __func__);
@@ -98,36 +104,21 @@ void Decode::play() {
     }
 }
 
-Decode::Decode(const Callback &callback) : callback(callback) {
-    audioPlay = new AudioPlay(callback);
-    this->wpath = wpath;
+
+void Decode::pause() {
+    audioPlay->pause();
 }
 
-void Decode::initSwr() {
-    swrContext = swr_alloc();
-    //采样格式
-    auto inSampleFmt = pCodecCtx->sample_fmt;
-    auto outSampleFmt = AV_SAMPLE_FMT_S16;
-    //采样率
-    auto inSampleRate = pCodecCtx->sample_rate;
-    auto outSampleRate = 44100;
-    //声道类别
-    auto inSampleChannel = pCodecCtx->channel_layout;
-    auto outSampleChannel = AV_CH_LAYOUT_STEREO;
-    //添加配置
-    swr_alloc_set_opts(swrContext,
-                       outSampleChannel,
-                       outSampleFmt,
-                       outSampleRate,
-                       inSampleChannel,
-                       inSampleFmt,
-                       inSampleRate,
-                       0,
-                       NULL);
-    swr_init(swrContext);
-    outChannelNum = av_get_channel_layout_nb_channels(outSampleChannel);
+void Decode::free() {
 }
 
+void Decode::resume() {
+    audioPlay->resume();
+}
+
+Decode::~Decode() {
+
+}
 
 
 

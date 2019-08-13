@@ -29,6 +29,7 @@ public class MyPlayer {
 
     public native void stop();
 
+    public native void resume();
 
     public void setPrepareCallback(OnPrepareCallback prepareCallback) {
         this.prepareCallback = prepareCallback;
@@ -43,7 +44,6 @@ public class MyPlayer {
             prepareCallback.onPrepare(isPrepare, totalTime);
         }
     }
-
 
     public void callPlay(int currentTime) {
         if (prepareCallback != null) {

@@ -88,5 +88,14 @@ public class MusicService extends Service {
             }
         }
 
+        public void resume() {
+            if (player != null) {
+                player.resume();
+            }
+        }
+
+        public void pause() {
+            if (player != null) player.pause();
+        }
     }
 }

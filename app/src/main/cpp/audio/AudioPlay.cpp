@@ -85,7 +85,8 @@ void printAudioStreamInfo(AudioStream *stream) {
 }
 
 
-AudioPlay::AudioPlay(const Callback &callback) : callback(callback) {
+AudioPlay::AudioPlay(const Callback &callback, PlayStates &playStates) : callback(callback),
+                                                                         playStates(playStates) {
     packet = av_packet_alloc();
     pFrame = av_frame_alloc();
     builder = new AudioStreamBuilder();
@@ -105,7 +106,7 @@ AudioPlay::AudioPlay(const Callback &callback) : callback(callback) {
 
     latencyTuner = new LatencyTuner(*audioStream);
     printAudioStreamInfo(audioStream);
-    data = new uint8_t[48000 * 2 * 2];
+    data = new uint8_t[MAX_AUDIO_FRAME_SIZE];
     outBuffer = static_cast<uint8_t *>(av_malloc(MAX_AUDIO_FRAME_SIZE));
     audioStream->requestStart();
 
@@ -121,22 +122,29 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
     if (dataSize <= betterSize) {
-//        LOGE(AudioPlay_TAG, "%s:数据不足，准备解码", __func__);
         popData();
     }
-    if (dataSize >= betterSize) {
-        for (int i = 0; i < betterSize; ++i) {
-            buffer[i] = data[readPos];
-            readPos++;
-            if (readPos >= MAX_AUDIO_FRAME_SIZE) {
-                readPos = 0;
-            }
+//    if (dataSize >= betterSize) {
+    for (int i = 0; i < betterSize; ++i) {
+        buffer[i] = data[readPos];
+        ++readPos;
+        --dataSize;
+        if (readPos >= MAX_AUDIO_FRAME_SIZE) {
+            readPos = 0;
         }
-        dataSize -= betterSize;
+        if (dataSize <= 0) {
+            break;
+        }
     }
+
+//    }
     if ((currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
         lastTime = static_cast<int>(currentTime);
+    }
+    if (dataSize < 0 && eof) {
+        LOGE(AudioPlay_TAG, "%s:数据全部播放完毕%d", __func__, dataSize);
+        return DataCallbackResult::Stop;
     }
     return DataCallbackResult::Continue;
 }
@@ -150,6 +158,12 @@ void AudioPlay::pushData(AVPacket *packet) {
 }
 
 void AudioPlay::popData() {
+//    LOGE(AudioPlay_TAG, "%sisEOF%d:", __func__, playStates.getEOF());
+    if (audioQueue.empty() && playStates.getEOF()) {
+        LOGE(AudioPlay_TAG, "%s:数据全部读取", __func__);
+        eof = true;
+        return;
+    }
     if (audioQueue.empty()) {
         LOGE(AudioPlay_TAG, "%s:对列为null", __func__);
         return;
@@ -218,8 +232,15 @@ void AudioPlay::initSwr() {
 }
 
 
-AudioPlay::~AudioPlay() {
+void AudioPlay::pause() {
+    audioStream->requestPause();
+}
 
+void AudioPlay::resume() {
+    audioStream->requestStart();
 }
 
 
+AudioPlay::~AudioPlay() {
+
+}

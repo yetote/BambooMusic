@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <string>
 #include "../util/Callback.h"
+#include "../util/PlayStates.h"
 
 extern "C" {
 #include <libswresample/swresample.h>
@@ -22,40 +23,31 @@ extern "C" {
 
 class AudioPlay : oboe::AudioStreamCallback {
 public:
-
-    AudioPlay(Callback &callBack);
-
-    AudioPlay(const Callback &callback);
-
-    ~AudioPlay();
-
-    AVCodecContext *pCodecCtx = nullptr;
-
-    void pushData(AVPacket *packet);
-
-    void initSwr();
-
-    SwrContext *swrCtx;
     int outChannelNum;
     AVRational timeBase;
     int totalTime;
-    double currentTime;
+    AVCodecContext *pCodecCtx = nullptr;
+
+    AudioPlay(const Callback &callback, PlayStates &playStates);
+
+    void pushData(AVPacket *packet);
+
+    void pause();
+
+    void resume();
+    void initSwr();
+
+    ~AudioPlay();
+
 private:
+    SwrContext *swrCtx;
+    double currentTime;
     std::queue<AVPacket *> audioQueue;
-
-    oboe::DataCallbackResult
-    onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
-
-
     oboe::AudioStream *audioStream;
     oboe::AudioStreamBuilder *builder;
     oboe::LatencyTuner *latencyTuner;
-
+    PlayStates &playStates;
     uint8_t *data;
-
-
-    void popData();
-
     uint8_t *outBuffer;
     int betterSize = 0;
     //当前索引开始位置
@@ -69,6 +61,13 @@ private:
     AVFrame *pFrame;
     Callback callback;
     int lastTime = 0;
+    bool eof;
+
+    oboe::DataCallbackResult
+    onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
+
+
+    void popData();
 };
 
 

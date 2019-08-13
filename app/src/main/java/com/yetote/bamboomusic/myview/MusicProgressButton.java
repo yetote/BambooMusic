@@ -3,6 +3,7 @@ package com.yetote.bamboomusic.myview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -17,6 +18,12 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.yetote.bamboomusic.R;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
 
 /**
  * @author yetote QQ:503779938
@@ -43,6 +50,7 @@ public class MusicProgressButton extends View {
     private Path pausePath;
     int sweepAngle = 0;
     int playAngle = 0;
+    private ObjectAnimator preparingAnimation;
 
     public void setTotalTime(int totalProgress) {
         this.totalProgress = totalProgress;
@@ -50,7 +58,6 @@ public class MusicProgressButton extends View {
 
     public void setPlayAngle(int playAngle) {
         this.playAngle = playAngle;
-        Log.e(TAG, "setPlayAngle: " + playAngle);
         invalidate();
     }
 
@@ -84,7 +91,6 @@ public class MusicProgressButton extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.e(TAG, "onDraw: ");
         canvas.drawCircle(width / 2, height / 2, width / 2 - 5, circlePaint);
         switch (playState) {
             case STATE_PROGRESS:
@@ -135,24 +141,13 @@ public class MusicProgressButton extends View {
     }
 
     private void showPreparingAnimation() {
-        ObjectAnimator preparingAnimation = ObjectAnimator.ofInt(this, "sweepAngle", 0, 360);
-        preparingAnimation.setDuration(3000);
-        preparingAnimation.setRepeatCount(3);
+        preparingAnimation = ObjectAnimator.ofInt(this, "sweepAngle", 0, 360);
+        preparingAnimation.setDuration(2000);
+        preparingAnimation.setRepeatCount(ObjectAnimator.INFINITE);
         preparingAnimation.start();
-
-        preparingAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                changeState(STATE_PLAYING);
-
-            }
-        });
-
     }
 
-    private void showPlayingAnimation(int currentTime) throws Exception {
-        if (totalProgress == 0) throw new Exception("总时长为0，请先调用setTotalTime方法设置总时长");
+    public void showPlayingAnimation(int currentTime) {
         float progress = (float) currentTime / (float) totalProgress;
         setPlayAngle((int) (progress * 360));
         if (currentTime >= totalProgress) {
@@ -167,20 +162,10 @@ public class MusicProgressButton extends View {
                 showPreparingAnimation();
                 break;
             case STATE_PLAYING:
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        for (int i = 0; i < 200; i++) {
-                            try {
-                                showPlayingAnimation(i);
-                                Thread.sleep(1000);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }).start();
+                Observable.create(emitter -> preparingAnimation.end())
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .subscribe(o -> {
+                        });
                 break;
             case STATE_STOP:
                 break;

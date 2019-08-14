@@ -255,3 +255,14 @@ void AudioPlay::clear() {
     readPos = 0;
     writtenPos = 0;
 }
+
+void AudioPlay::stop() {
+    while (!audioQueue.empty()) {
+        audioQueue.pop();
+    }
+    if (audioStream != nullptr) {
+        audioStream->requestStop();
+        audioStream->close();
+    }
+
+}

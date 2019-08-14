@@ -11,6 +11,7 @@ Callback::Callback(JNIEnv *env, _jobject *jobject) : env(env) {
     callPrepareId = env->GetMethodID(jlz, "callPrepare", "(ZI)V");
     callPlayingId = env->GetMethodID(jlz, "callPlay", "(I)V");
     callHardwareSupportId = env->GetMethodID(jlz, "callHardwareSupport", "(Ljava/lang/String;)Z");
+    callHardwareCodecId = env->GetMethodID(jlz, "callHardwareCodec", "(Ljava/lang/String;)V");
 }
 
 void Callback::callPrepare(Callback::CALL_THREAD thread, bool success, int totalTime) {
@@ -54,4 +55,19 @@ bool Callback::callHardwareSupport(Callback::CALL_THREAD thread, std::string mut
         jvm->DetachCurrentThread();
     }
     return rst;
+}
+
+void Callback::callHardwareCodec(Callback::CALL_THREAD thread, std::string path) {
+    if (thread == MAIN_THREAD) {
+        env->CallVoidMethod(jobj, callHardwareCodecId, path.c_str());
+    } else {
+        JNIEnv *jniEnv;
+        if ((jvm->AttachCurrentThread(&jniEnv, nullptr)) != JNI_OK) {
+            //todo 此处应该有log
+        }
+        jstring name = jniEnv->NewStringUTF(path.c_str());
+        jniEnv->CallVoidMethod(jobj, callHardwareCodecId, name);
+        jniEnv->DeleteLocalRef(name);
+        jvm->DetachCurrentThread();
+    }
 }

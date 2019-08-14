@@ -11,6 +11,7 @@ Decode::Decode(const Callback &callback, PlayStates &playStates) : callback(call
 }
 
 void Decode::prepare(const std::string path) {
+    wpath = path;
     av_register_all();
     avformat_network_init();
     int rst;
@@ -72,12 +73,16 @@ void Decode::play() {
         return;
     }
     rst = avcodec_open2(audioPlay->pCodecCtx, pCodec, nullptr);
-    if (callback.callHardwareSupport(callback.CHILD_THREAD, pCodec->name)) {
-        LOGE(Decode_TAG, "%s:支持", __func__);
-        return;
-    }
+
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
+        return;
+    }
+    rst = callback.callHardwareSupport(callback.CHILD_THREAD, pCodec->name);
+    if (rst != 0) {
+        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
+        audioPlay->stop();
+        LOGE(Decode_TAG, "%s:支持硬解码", __func__);
         return;
     }
     audioPlay->initSwr();

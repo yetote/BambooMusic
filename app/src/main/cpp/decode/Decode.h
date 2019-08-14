@@ -50,9 +50,7 @@ private:
     AVCodecContext *pCodecCtx;
     SwrContext *swrContext;
 
-
     int outChannelNum;
-    FILE *file;
     std::string wpath;
 
     void free();

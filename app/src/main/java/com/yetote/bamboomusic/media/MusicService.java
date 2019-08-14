@@ -35,7 +35,7 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.e(TAG, "onCreate: service create");
-        player = new MyPlayer();
+        player = new MyPlayer(this);
         player.setPrepareCallback((prepare, totalTime) -> {
             musicBinder.callPrepare(prepare, totalTime);
             if (prepare) {

@@ -27,10 +27,14 @@ public:
 
     bool callHardwareSupport(CALL_THREAD thread, std::string mutexName);
 
+
+    void callHardwareCodec(CALL_THREAD thread, std::string path);
+
 private:
     jmethodID callPrepareId;
     jmethodID callPlayingId;
     jmethodID callHardwareSupportId;
+    jmethodID callHardwareCodecId;
 
 };
 

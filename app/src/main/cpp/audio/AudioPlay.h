@@ -36,7 +36,7 @@ public:
 
     void resume();
     void initSwr();
-
+    void stop();
     ~AudioPlay();
 
     void clear();

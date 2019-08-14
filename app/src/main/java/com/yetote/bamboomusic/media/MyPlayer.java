@@ -1,5 +1,8 @@
 package com.yetote.bamboomusic.media;
 
+import android.content.Context;
+import android.util.Log;
+
 /**
  * @author yetote QQ:503779938
  * @name BambooMusic
@@ -15,7 +18,11 @@ public class MyPlayer {
         System.loadLibrary("native-lib");
     }
 
-    public MyPlayer() {
+    private static final String TAG = "MyPlayer";
+    private Context context;
+
+    public MyPlayer(Context context) {
+        this.context = context;
     }
 
     private OnPrepareCallback prepareCallback;
@@ -55,5 +62,11 @@ public class MyPlayer {
 
     public boolean callHardwareSupport(String name) {
         return MediaUtil.hardwareSupport(name);
+    }
+
+    public void callHardwareCodec(String path) {
+        Log.e(TAG, "callHardwareCodec: " + path);
+        MediaUtil mediaUtil = new MediaUtil(context);
+        mediaUtil.codec(path);
     }
 }

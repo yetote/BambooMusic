@@ -40,6 +40,7 @@ public class MediaUtil {
     private WriteFile writeFile;
     private String pcmPath;
     private HandlerThread handlerThread;
+    private HardwarePlayer hardwarePlayer;
 
     static {
         map.put("audio/mp4a-latm", "aac");
@@ -76,6 +77,7 @@ public class MediaUtil {
                     int dataSize = mediaExtractor.readSampleData(inputBuffer, 0);
                     Log.e(TAG, "onInputBufferAvailable: 读取了" + dataSize + "字节");
                     if (dataSize < 0) {
+                        codec.queueInputBuffer(index, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                         Log.e(TAG, "onInputBufferAvailable: 数据全部读取完毕");
                     } else {
                         codec.queueInputBuffer(index, 0, dataSize, 0, 0);
@@ -93,7 +95,8 @@ public class MediaUtil {
                     outBuffer.position(info.offset);
                     outBuffer.get(data, 0, info.size);
                     outBuffer.clear();
-                    writeFile.write(data);
+//                    writeFile.write(data);
+                    hardwarePlayer.pushData(data);
                     mediaCodec.releaseOutputBuffer(index, false);
                 }
             }
@@ -106,6 +109,7 @@ public class MediaUtil {
             @Override
             public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
                 Log.e(TAG, "onOutputFormatChanged: fmt格式改变");
+                hardwarePlayer.init(format);
             }
         }, new Handler(handlerThread.getLooper()));
         mediaCodec.start();
@@ -136,5 +140,6 @@ public class MediaUtil {
         writeFile.open(pcmPath);
         handlerThread = new HandlerThread("decodeThread");
         handlerThread.start();
+        hardwarePlayer = new HardwarePlayer();
     }
 }

@@ -10,7 +10,9 @@
 #include "../util/Callback.h"
 #include "../audio/AudioPlay.h"
 #include "../util/PlayStates.h"
+#include "../video/VideoPlayer.h"
 #include <thread>
+#include <android/native_window.h>
 
 extern "C" {
 #include "../includes/libavformat/avformat.h"
@@ -39,18 +41,18 @@ public:
 
     void seek(int progress);
 
+    void stop();
+
+    void prepare(const std::string path, ANativeWindow *pWindow, int w, int h);
+
 private:
     AVFormatContext *pFmtCtx = nullptr;
     AVCodec *pCodec = nullptr;
     AVStream *pStream = nullptr;
     int audioIndex = -1;
     int videoIndex = -1;
-    AudioPlay *audioPlay;
-
-    AVCodecContext *pCodecCtx;
-    SwrContext *swrContext;
-
-    int outChannelNum;
+    AudioPlay *audioPlayer;
+    VideoPlayer *videoPlayer;
     std::string wpath;
 
     void free();

@@ -2,6 +2,8 @@
 #include <string>
 #include "decode/Decode.h"
 #include "util/PlayStates.h"
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
 
 #define NATIVE_TAG "NATIVE"
 
@@ -10,16 +12,23 @@ Callback *callback;
 PlayStates *playStates;
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path_) {
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2(JNIEnv *env, jobject thiz,
+                                                                        jstring path_) {
     const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
-    LOGE(NATIVE_TAG, "%s:main thread id%ull", __func__, std::this_thread::get_id());
-    callback = new Callback{env, thiz};
-    playStates = new PlayStates{};
-    decode = new Decode{*callback, *playStates};
+//    LOGE(NATIVE_TAG, "%s:main thread id%ull", __func__, std::this_thread::get_id());
+    LOGE(NATIVE_TAG, "%s:调用音频", __func__);
+    if (callback == nullptr) {
+        callback = new Callback{env, thiz};
+    }
+    if (playStates == nullptr) {
+        playStates = new PlayStates{};
+    }
+    if (decode == nullptr) {
+        decode = new Decode{*callback, *playStates};
+    }
     decode->prepare(path);
     env->ReleaseStringUTFChars(path_, path);
 }
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_play(JNIEnv *env, jobject thiz) {
@@ -47,4 +56,24 @@ Java_com_yetote_bamboomusic_media_MyPlayer_seek(JNIEnv *env, jobject thiz, jint 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
+    decode->stop();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2Landroid_view_Surface_2II(
+        JNIEnv *env, jobject thiz, jstring path_, jobject surface, jint w, jint h) {
+    const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
+
+    if (callback == nullptr) {
+        callback = new Callback{env, thiz};
+    }
+    if (playStates == nullptr) {
+        playStates = new PlayStates{};
+    }
+    if (decode == nullptr) {
+        decode = new Decode{*callback, *playStates};
+    }
+    ANativeWindow *aNativeWindow = ANativeWindow_fromSurface(env, surface);
+    decode->prepare(path, aNativeWindow, w, h);
+    env->ReleaseStringUTFChars(path_, path);
 }

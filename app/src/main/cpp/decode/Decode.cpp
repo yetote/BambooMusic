@@ -7,7 +7,12 @@
 
 Decode::Decode(const Callback &callback, PlayStates &playStates) : callback(callback),
                                                                    playStates(playStates) {
-    audioPlay = new AudioPlay(callback, playStates);
+    audioPlayer = new AudioPlay(callback, playStates);
+}
+
+void Decode::prepare(const std::string path, ANativeWindow *pWindow, int w, int h) {
+    videoPlayer = new VideoPlayer{pWindow};
+//    prepare(path);
 }
 
 void Decode::prepare(const std::string path) {
@@ -43,10 +48,10 @@ void Decode::prepare(const std::string path) {
     }
     pStream = pFmtCtx->streams[audioIndex];
     LOGE(Decode_TAG, "%s:ffmpeg准备成功", __func__);
-    audioPlay->totalTime = pFmtCtx->duration / AV_TIME_BASE;
-    LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlay->totalTime);
-    audioPlay->timeBase = pStream->time_base;
-    callback.callPrepare(callback.MAIN_THREAD, true, audioPlay->totalTime);
+    audioPlayer->totalTime = pFmtCtx->duration / AV_TIME_BASE;
+    LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlayer->totalTime);
+    audioPlayer->timeBase = pStream->time_base;
+    callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
 }
 
 void Decode::play() {
@@ -62,30 +67,30 @@ void Decode::play() {
         LOGE(Decode_TAG, "%s:无法打开解码器", __func__);
         return;
     }
-    audioPlay->pCodecCtx = avcodec_alloc_context3(pCodec);
-    if (audioPlay->pCodecCtx == nullptr) {
+    audioPlayer->pCodecCtx = avcodec_alloc_context3(pCodec);
+    if (audioPlayer->pCodecCtx == nullptr) {
         LOGE(Decode_TAG, "%s:无法分配解码器上下文", __func__);
         return;
     }
-    rst = avcodec_parameters_to_context(audioPlay->pCodecCtx, pStream->codecpar);
+    rst = avcodec_parameters_to_context(audioPlayer->pCodecCtx, pStream->codecpar);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:复制解码器上下文失败%s", __func__, av_err2str(rst));
         return;
     }
-    rst = avcodec_open2(audioPlay->pCodecCtx, pCodec, nullptr);
+    rst = avcodec_open2(audioPlayer->pCodecCtx, pCodec, nullptr);
 
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
     }
-    rst = callback.callHardwareSupport(callback.CHILD_THREAD, pCodec->name);
-    if (rst != 0) {
-        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
-        audioPlay->stop();
-        LOGE(Decode_TAG, "%s:支持硬解码", __func__);
-        return;
-    }
-    audioPlay->initSwr();
+//    rst = callback.callHardwareSupport(callback.CHILD_THREAD, pCodec->name);
+//    if (rst != 0) {
+//        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
+//        audioPlayer->stop();
+//        LOGE(Decode_TAG, "%s:支持硬解码", __func__);
+//        return;
+//    }
+    audioPlayer->initSwr();
     int frameCount = 0;
     AVPacket *packet = av_packet_alloc();
     while (true) {
@@ -95,7 +100,6 @@ void Decode::play() {
                 case AVERROR_EOF:
                     LOGE(Decode_TAG, "%s:文件读取完毕", __func__);
                     playStates.setEOF(true);
-//                    LOGE(Decode_TAG, "%s:eof写入%d", __func__, playStates.isEOF);
                     av_packet_free(&packet);
                     av_free(packet);
                     return;
@@ -108,33 +112,45 @@ void Decode::play() {
             LOGE(Decode_TAG, "%s:不是对应的轨道索引", __func__);
             continue;
         }
-        audioPlay->pushData(packet);
+        audioPlayer->pushData(packet);
     }
 }
 
 
 void Decode::pause() {
-    audioPlay->pause();
+    audioPlayer->pause();
 }
 
 void Decode::free() {
 }
 
 void Decode::resume() {
-    audioPlay->resume();
+    audioPlayer->resume();
 }
 
 
 void Decode::seek(int progress) {
     auto rel = progress * AV_TIME_BASE;
     avformat_seek_file(pFmtCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
-    if (audioPlay != nullptr) {
-        audioPlay->clear();
-        avcodec_flush_buffers(audioPlay->pCodecCtx);
+    if (audioPlayer != nullptr) {
+        audioPlayer->clear();
+        avcodec_flush_buffers(audioPlayer->pCodecCtx);
     }
 }
+
+
+void Decode::stop() {
+    if (pFmtCtx != nullptr) {
+        avformat_free_context(pFmtCtx);
+        pFmtCtx = nullptr;
+        LOGE(Decode_TAG, "%s:释放fmtctx", __func__);
+    }
+    if (audioPlayer != nullptr) {
+        audioPlayer->stop();
+    }
+}
+
 
 Decode::~Decode() {
 
 }
-

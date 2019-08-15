@@ -260,9 +260,31 @@ void AudioPlay::stop() {
     while (!audioQueue.empty()) {
         audioQueue.pop();
     }
+    LOGE(AudioPlay_TAG, "%s:队列释放完毕", __func__);
     if (audioStream != nullptr) {
         audioStream->requestStop();
         audioStream->close();
+        audioStream = nullptr;
+        LOGE(AudioPlay_TAG, "%s:音频流停止", __func__);
     }
-
+    if (pCodecCtx != nullptr) {
+        avcodec_free_context(&pCodecCtx);
+        pCodecCtx = nullptr;
+        LOGE(AudioPlay_TAG, "%s:释放codecCtx", __func__);
+    }
+    if (packet != nullptr) {
+        av_packet_free(&packet);
+        packet = nullptr;
+        LOGE(AudioPlay_TAG, "%s:释放packet", __func__);
+    }
+    if (pFrame != nullptr) {
+        av_frame_free(&pFrame);
+        pFrame = nullptr;
+        LOGE(AudioPlay_TAG, "%s:释放frame", __func__);
+    }
+    if (swrCtx != nullptr) {
+        swr_free(&swrCtx);
+        swrCtx = nullptr;
+        LOGE(AudioPlay_TAG, "%s:释放swrctx", __func__);
+    }
 }

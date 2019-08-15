@@ -1,11 +1,10 @@
 //noinspection GradleDynamicVersion
 apply plugin: 'com.android.application'
-//apply plugin: 'bugly'
-//bugly {
-//    appId = '622edf22cb' // 注册时分配的App ID
-//    appKey = 'ed8a9402-98ce-427a-9657-0bf7e3fae18f' // 注册时分配的App Key
-//    debug = true //调试模式
-//}
+apply plugin: 'bugly'
+bugly {
+    appId = '622edf22cb' // 注册时分配的App ID
+    appKey = 'ed8a9402-98ce-427a-9657-0bf7e3fae18f' // 注册时分配的App Key
+}
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -59,8 +58,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     //bugly
-//    implementation 'com.tencent.bugly:crashreport:3.0.0'
-//    implementation 'com.tencent.bugly:nativecrashreport:3.7.1'
+    implementation 'com.tencent.bugly:crashreport:3.0.0'
+    implementation 'com.tencent.bugly:nativecrashreport:3.7.1'
 
     //ui
     implementation 'de.hdodenhof:circleimageview:3.0.0'

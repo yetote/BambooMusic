@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="music_found_tag" type="id" />
+    <item name="music_found_width" type="id" />
+    <item name="music_found_height" type="id" />
+    <item name="music_found_surface" type="id" />
+</resources>

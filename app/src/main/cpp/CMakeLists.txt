@@ -95,6 +95,9 @@ add_library( # Sets the name of the library.
         util/Callback.cpp
         util/PlayStates.cpp
         audio/AudioPlay.cpp
+        video/EGLUtil.cpp
+        video/GLUtil.cpp
+        video/VideoPlayer.cpp
         )
 
 
@@ -109,6 +112,8 @@ target_link_libraries(
         # Specifies the target library.
         native-lib
         android
+        EGL
+        GLESv2
         oboe
         avutil
         swresample

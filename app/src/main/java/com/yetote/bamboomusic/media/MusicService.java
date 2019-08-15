@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Surface;
 
 import androidx.annotation.Nullable;
 
@@ -22,7 +23,11 @@ public class MusicService extends Service {
     private static final String TAG = "MusicService";
     private MusicBinder musicBinder = new MusicBinder();
     private MyPlayer player;
-
+    public static final int STATE_PREPARE = 1;
+    public static final int STATE_PLAYING = 2;
+    public static final int STATE_PAUSE = 3;
+    public static final int STATE_STOP = 4;
+    private int state=STATE_STOP;
 
     @Nullable
     @Override
@@ -40,6 +45,7 @@ public class MusicService extends Service {
             musicBinder.callPrepare(prepare, totalTime);
             if (prepare) {
                 player.play();
+                state = STATE_PLAYING;
             }
         });
 
@@ -62,6 +68,10 @@ public class MusicService extends Service {
     }
 
     public class MusicBinder extends Binder {
+        public int getState() {
+            return state;
+        }
+
         private OnPrepareCallback onPrepareCallback;
 
         public void setOnPrepareCallback(OnPrepareCallback onPrepareCallback) {
@@ -85,21 +95,43 @@ public class MusicService extends Service {
         public void play(String path) {
             if (player != null) {
                 player.prepare(path);
+                state = STATE_PREPARE;
+            }
+        }
+
+        public void play(String path, Surface surface, int w, int h) {
+            if (player != null) {
+                player.prepare(path, surface, w, h);
+                state = STATE_PREPARE;
             }
         }
 
         public void resume() {
             if (player != null) {
                 player.resume();
+                state = STATE_PLAYING;
             }
         }
 
         public void pause() {
-            if (player != null) player.pause();
+            if (player != null) {
+                player.pause();
+                state = STATE_PAUSE;
+            }
         }
 
         public void seek(int progress) {
-            if (player!=null) player.seek(progress);
+            if (player != null) {
+                player.seek(progress);
+            }
+        }
+
+        public void stop() {
+            if (player != null) {
+                player.stop();
+                state = STATE_PLAYING;
+            }
         }
     }
+
 }

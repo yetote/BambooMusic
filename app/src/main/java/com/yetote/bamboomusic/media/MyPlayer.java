@@ -2,6 +2,7 @@ package com.yetote.bamboomusic.media;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.Surface;
 
 /**
  * @author yetote QQ:503779938
@@ -29,6 +30,8 @@ public class MyPlayer {
     private OnPlayCallback playCallback;
 
     public native void prepare(String path);
+
+    public native void prepare(String path, Surface surface, int w, int h);
 
     public native void play();
 

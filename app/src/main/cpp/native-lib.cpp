@@ -60,9 +60,12 @@ Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2Landroid_view_Surface_2II(
-        JNIEnv *env, jobject thiz, jstring path_, jobject surface, jint w, jint h) {
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2Landroid_view_Surface_2IILjava_lang_String_2Ljava_lang_String_2(
+        JNIEnv *env, jobject thiz, jstring path_, jobject surface, jint w, jint h,
+        jstring vertex_, jstring frag_) {
     const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
+    const char *vertex = env->GetStringUTFChars(vertex_, JNI_FALSE);
+    const char *frag = env->GetStringUTFChars(frag_, JNI_FALSE);
 
     if (callback == nullptr) {
         callback = new Callback{env, thiz};
@@ -74,6 +77,8 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2Landroid_
         decode = new Decode{*callback, *playStates};
     }
     ANativeWindow *aNativeWindow = ANativeWindow_fromSurface(env, surface);
-    decode->prepare(path, aNativeWindow, w, h);
+    decode->prepare(path, aNativeWindow, w, h,vertex,frag);
     env->ReleaseStringUTFChars(path_, path);
+    env->ReleaseStringUTFChars(frag_, frag);
+    env->ReleaseStringUTFChars(vertex_, vertex);
 }

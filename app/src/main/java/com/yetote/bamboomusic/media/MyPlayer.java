@@ -31,7 +31,7 @@ public class MyPlayer {
 
     public native void prepare(String path);
 
-    public native void prepare(String path, Surface surface, int w, int h);
+    public native void prepare(String path, Surface surface, int w, int h,String vertexCodec,String fragCode);
 
     public native void play();
 

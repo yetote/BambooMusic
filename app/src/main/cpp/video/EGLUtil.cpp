@@ -5,19 +5,13 @@
 #include "EGLUtil.h"
 
 EGLUtil::EGLUtil(ANativeWindow *aNativeWindow) {
-    bool rst;
-    if (!initEGL(aNativeWindow)) {
-        LOGE(EGLUtil_TAG, "%s:初始化egl失败", __func__);
-//        return;
-    }
+    initEGL(aNativeWindow);
 }
 
 bool EGLUtil::initEGL(ANativeWindow *window) {
-    EGLint rst;
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (eglDisplay == nullptr) {
-        rst = eglGetError();
-        LOGE(EGLUtil_TAG, "%s:获取display失败,错误码%d", __func__, rst);
+        LOGE(EGLUtil_TAG, "%s:获取display失败,错误码%d", __func__, eglGetError());
         return false;
     }
     if (!eglInitialize(eglDisplay, nullptr, nullptr)) {
@@ -65,10 +59,12 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
         delete[] surfaceAttr;
         return false;
     }
-    LOGE(EGLUtil_TAG,"window%p", window);
-    LOGE(EGLUtil_TAG,"egldisplay%p", &eglDisplay);
-    LOGE(EGLUtil_TAG,"eglConfig%p", &eglConfig);
-    LOGE(EGLUtil_TAG,"eglSurface%p", &eglSurface);
     delete[] surfaceAttr;
+    auto rst = eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+    if (rst == EGL_FALSE) {
+        LOGE(EGLUtil_TAG, "%s:关联egl失败,错误码%d", __func__, eglGetError());
+        return false;
+    }
+    LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError());
     return true;
 }

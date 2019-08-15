@@ -43,7 +43,7 @@ public:
 
     void stop();
 
-    void prepare(const std::string path, ANativeWindow *pWindow, int w, int h);
+    void prepare(const std::string path, ANativeWindow *pWindow, int w, int h, const std::string, const std::string);
 
 private:
     AVFormatContext *pFmtCtx = nullptr;

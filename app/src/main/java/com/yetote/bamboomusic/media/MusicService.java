@@ -9,6 +9,9 @@ import android.view.Surface;
 
 import androidx.annotation.Nullable;
 
+import com.yetote.bamboomusic.R;
+import com.yetote.bamboomusic.util.TextRecourseReader;
+
 /**
  * @author yetote QQ:503779938
  * @name BambooMusic
@@ -27,7 +30,7 @@ public class MusicService extends Service {
     public static final int STATE_PLAYING = 2;
     public static final int STATE_PAUSE = 3;
     public static final int STATE_STOP = 4;
-    private int state=STATE_STOP;
+    private int state = STATE_STOP;
 
     @Nullable
     @Override
@@ -101,7 +104,7 @@ public class MusicService extends Service {
 
         public void play(String path, Surface surface, int w, int h) {
             if (player != null) {
-                player.prepare(path, surface, w, h);
+                player.prepare(path, surface, w, h, TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_vertex_shader), TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_frag_shader));
                 state = STATE_PREPARE;
             }
         }

@@ -10,8 +10,9 @@ Decode::Decode(const Callback &callback, PlayStates &playStates) : callback(call
     audioPlayer = new AudioPlay(callback, playStates);
 }
 
-void Decode::prepare(const std::string path, ANativeWindow *pWindow, int w, int h) {
-    videoPlayer = new VideoPlayer{pWindow};
+void Decode::prepare(const std::string path, ANativeWindow *pWindow, int w, int h,
+                     std::string vertexCode, std::string fragCode) {
+    videoPlayer = new VideoPlayer{pWindow, vertexCode, fragCode, w, h};
 //    prepare(path);
 }
 

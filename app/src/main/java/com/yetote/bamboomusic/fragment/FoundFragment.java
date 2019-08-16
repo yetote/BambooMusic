@@ -81,48 +81,48 @@ public class FoundFragment extends Fragment {
         getContext().bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
         initView(v);
 
-//        adapter.setItemClickListener(new RecyclerViewItemClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (musicBinder.getState() != STATE_STOP) {
-//                    musicBinder.stop();
-//                }
-//                if (height == 0 || width == 0) {
-//                    height = (int) v.getTag(R.id.music_found_height);
-//                    width = (int) v.getTag(R.id.music_found_width);
-//                }
-//                Log.e(TAG, "onClick: " + width + height);
-//                Surface surface = (Surface) v.getTag(R.id.music_found_surface);
-//                musicBinder.play((String) v.getTag(R.id.music_found_tag), surface, width, height);
-//            }
-//        });
-
-        surfaceView = v.findViewById(R.id.fragment_found_surface);
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-                surfaceHolder = holder;
-                width = w;
-                height = h;
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-
-            }
-        });
-
-        surfaceView.setOnClickListener(new View.OnClickListener() {
+        adapter.setItemClickListener(new RecyclerViewItemClickListener() {
             @Override
             public void onClick(View v) {
-                musicBinder.play(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", surfaceHolder.getSurface(), width, height);
+                if (musicBinder.getState() != STATE_STOP) {
+                    musicBinder.stop();
+                }
+                if (height == 0 || width == 0) {
+                    height = (int) v.getTag(R.id.music_found_height);
+                    width = (int) v.getTag(R.id.music_found_width);
+                }
+                Log.e(TAG, "onClick: " + width + height);
+                Surface surface = (Surface) v.getTag(R.id.music_found_surface);
+                musicBinder.play((String) v.getTag(R.id.music_found_tag), surface, width, height);
             }
         });
+
+//        surfaceView = v.findViewById(R.id.fragment_found_surface);
+//        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+//            @Override
+//            public void surfaceCreated(SurfaceHolder holder) {
+//
+//            }
+//
+//            @Override
+//            public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+//                surfaceHolder = holder;
+//                width = w;
+//                height = h;
+//            }
+//
+//            @Override
+//            public void surfaceDestroyed(SurfaceHolder holder) {
+//
+//            }
+//        });
+//
+//        surfaceView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                musicBinder.play(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", surfaceHolder.getSurface(), width, height);
+//            }
+//        });
 
         return v;
     }

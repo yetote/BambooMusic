@@ -3,6 +3,7 @@ package com.yetote.bamboomusic.adapter;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,9 +80,9 @@ public class FoundAdapter extends RecyclerView.Adapter {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                v.setTag(R.id.music_found_width, v.findViewById(R.id.rv_music_found_item_surface).getWidth());
-                v.setTag(R.id.music_found_height, v.findViewById(R.id.rv_music_found_item_surface).getHeight());
-                v.setTag(R.id.music_found_surface, ((SurfaceView)v.findViewById(R.id.rv_music_found_item_surface)).getHolder().getSurface());
+//                v.setTag(R.id.music_found_width, v.findViewById(R.id.rv_music_found_item_surface).getWidth());
+//                v.setTag(R.id.music_found_height, v.findViewById(R.id.rv_music_found_item_surface).getHeight());
+//                v.setTag(R.id.music_found_surface, ((SurfaceView)v.findViewById(R.id.rv_music_found_item_surface)).getHolder().getSurface());
                 itemClickListener.onClick(v);
 
             }
@@ -95,7 +96,25 @@ public class FoundAdapter extends RecyclerView.Adapter {
         vh.itemView.setTag(R.id.music_found_tag, list.get(position).getPath());
         vh.getTag().setText(list.get(position).getTag());
         vh.getPraise().setText(list.get(position).getPraiseNum() + "");
+        vh.getSurfaceView().getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                Log.e(TAG, "surfaceCreated: 创建");
+            }
 
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                vh.itemView.setTag(R.id.music_found_width, width);
+                vh.itemView.setTag(R.id.music_found_height, height);
+                vh.itemView.setTag(R.id.music_found_surface, holder.getSurface());
+                Log.e(TAG, "surfaceChanged: ");
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                Log.e(TAG, "surfaceDestroyed: 销毁");
+            }
+        });
     }
 
     @Override

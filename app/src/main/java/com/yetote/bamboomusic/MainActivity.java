@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             musicDetailsPopProgress.setMax(totalTime);
             musicProgressButton.setTotalTime(totalTime);
             state = PLAY_STATE.PLAYING;
+            musicBinder.play();
         });
 
         musicBinder.setPlayCallback(currentTime -> {
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (musicBinder != null) {
                     switch (state) {
                         case PREPARING:
-                            musicBinder.play(this.getExternalFilesDir(null).getPath() + "/new.mp3");
+                            musicBinder.play();
                             musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
                             break;
                         case PLAYING:

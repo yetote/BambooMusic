@@ -26,11 +26,16 @@ public class MusicService extends Service {
     private static final String TAG = "MusicService";
     private MusicBinder musicBinder = new MusicBinder();
     private MyPlayer player;
-    public static final int STATE_PREPARE = 1;
-    public static final int STATE_PLAYING = 2;
-    public static final int STATE_PAUSE = 3;
-    public static final int STATE_STOP = 4;
+    public static final int STATE_PREPARE = 0x0001;
+    public static final int STATE_PLAYING = 0x0002;
+    public static final int STATE_PAUSE = 0x0003;
+    public static final int STATE_STOP = 0x0004;
     private int state = STATE_STOP;
+    public static final int TYPE_AUDIO = 0x0005;
+    public static final int TYPE_VIDEO = 0x0006;
+    private Surface surface;
+    private int w, h;
+    private int type;
 
     @Nullable
     @Override
@@ -46,10 +51,11 @@ public class MusicService extends Service {
         player = new MyPlayer(this);
         player.setPrepareCallback((prepare, totalTime) -> {
             musicBinder.callPrepare(prepare, totalTime);
-            if (prepare) {
-                player.play();
-                state = STATE_PLAYING;
-            }
+            Log.e(TAG, "onCreate: 准备好了，开始播放");
+//            if (prepare) {
+//                player.play();
+//                state = STATE_PLAYING;
+//            }
         });
 
         player.setPlayCallback(currentTime -> {
@@ -71,6 +77,7 @@ public class MusicService extends Service {
     }
 
     public class MusicBinder extends Binder {
+
         public int getState() {
             return state;
         }
@@ -95,17 +102,29 @@ public class MusicService extends Service {
             onPlayCallback.onPlaying(currentTime);
         }
 
-        public void play(String path) {
+        public void prepare(String path) {
             if (player != null) {
                 player.prepare(path);
                 state = STATE_PREPARE;
             }
         }
 
-        public void play(String path, Surface surface, int w, int h) {
+        public void play() {
             if (player != null) {
-                player.prepare(path, surface, w, h, TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_vertex_shader), TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_frag_shader));
+                player.play();
                 state = STATE_PREPARE;
+                type = TYPE_AUDIO;
+            }
+        }
+
+        public void play(Surface surface, int w, int h) {
+            if (player != null) {
+                player.play(surface, w, h,
+                        TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_vertex_shader)
+                        , TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_frag_shader)
+                );
+                state = STATE_PREPARE;
+                type = TYPE_VIDEO;
             }
         }
 

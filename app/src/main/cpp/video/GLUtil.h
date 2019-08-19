@@ -1,16 +1,15 @@
 //
-// Created by ether on 2019/8/15.
+// Created by ether on 2018/10/24.
 //
 
-#ifndef BAMBOOMUSIC_GLUTIL_H
-#define BAMBOOMUSIC_GLUTIL_H
+#ifndef BAMBOO_GLUTIL_H
+#define BAMBOO_GLUTIL_H
 
 #include <GLES2/gl2.h>
-#include "../util/LogUtil.h"
+#include <android/log.h>
 #include <string>
-
+#include "../util/LogUtil.h"
 #define GLUtil_TAG "GLUtil"
-
 class GLUtil {
 public:
     GLUtil(const std::string& vertexCode, const std::string& fragCode);
@@ -29,4 +28,4 @@ private:
 };
 
 
-#endif //BAMBOOMUSIC_GLUTIL_H
+#endif //BAMBOO_GLUTIL_H

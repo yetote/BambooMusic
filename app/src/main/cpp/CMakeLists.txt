@@ -5,9 +5,9 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(PATH_PROJECT D:/AndroidStudioProjects/BambooMusic)
+set(PATH_PROJECT D:/AndroidStudioWorkSpace/BambooMusic)
 set(LIBS_PATH ${PATH_PROJECT}/app/libs)
-set(OBOE_PATH D:/audiotest/oboe-1.1.1)
+set(OBOE_PATH D:/otherlib/oboe-1.2.0)
 
 file(GLOB util_lib "util/*.cpp")
 
@@ -94,6 +94,7 @@ add_library( # Sets the name of the library.
         decode/Decode.cpp
         util/Callback.cpp
         util/PlayStates.cpp
+        util/BlockQueue.cpp
         audio/AudioPlay.cpp
         video/EGLUtil.cpp
         video/GLUtil.cpp
@@ -113,7 +114,7 @@ target_link_libraries(
         native-lib
         android
         EGL
-        GLESv2
+            GLESv2
         oboe
         avutil
         swresample

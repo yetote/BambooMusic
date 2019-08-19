@@ -85,8 +85,8 @@ void printAudioStreamInfo(AudioStream *stream) {
 }
 
 
-AudioPlay::AudioPlay(const Callback &callback, PlayStates &playStates) : callback(callback),
-                                                                         playStates(playStates) {
+AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
+                                                                           playStates(playStates1) {
     packet = av_packet_alloc();
     pFrame = av_frame_alloc();
     builder = new AudioStreamBuilder();
@@ -154,11 +154,11 @@ void AudioPlay::pushData(AVPacket *packet) {
     AVPacket *temp = av_packet_alloc();
     av_packet_ref(temp, packet);
     audioQueue.push(temp);
-
 }
 
 void AudioPlay::popData() {
 //    LOGE(AudioPlay_TAG, "%sisEOF%d:", __func__, playStates.getEOF());
+    LOGE(AudioPlay_TAG, "%s:音频线程id%ld", __func__, std::this_thread::get_id());
     if (audioQueue.empty() && playStates.getEOF()) {
         LOGE(AudioPlay_TAG, "%s:数据全部读取", __func__);
         eof = true;
@@ -173,6 +173,7 @@ void AudioPlay::popData() {
     if (rst != 0) {
         LOGE(AudioPlay_TAG, "%s:拷贝packet失败%s", __func__, av_err2str(rst));
     }
+    std::lock_guard<std::mutex> guard(codecMutex);
     rst = avcodec_send_packet(pCodecCtx, packet);
     if (rst != 0) {
         LOGE(AudioPlay_TAG, "%s:发送数据出错%s", __func__, av_err2str(rst));

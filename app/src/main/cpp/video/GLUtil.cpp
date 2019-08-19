@@ -4,7 +4,7 @@
 
 #include "GLUtil.h"
 
-GLUtil::GLUtil(const std::string& vertexCode, const std::string& fragCode) {
+GLUtil::GLUtil(const std::string &vertexCode, const std::string &fragCode) {
     createProgram(vertexCode, fragCode);
 }
 
@@ -12,7 +12,7 @@ GLUtil::~GLUtil() {
 
 }
 
-void GLUtil::createProgram(const std::string& vertexCode, const std::string& fragCode) {
+void GLUtil::createProgram(const std::string &vertexCode, const std::string &fragCode) {
     program = glCreateProgram();
     if (program == 0) {
         char szLog[1024] = {0};
@@ -41,7 +41,7 @@ void GLUtil::createProgram(const std::string& vertexCode, const std::string& fra
 }
 
 GLuint *GLUtil::createTexture() {
-    auto *textureArr = new GLuint[3];
+    GLuint *textureArr = new GLuint[3];
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glGenTextures(3, textureArr);
     if (textureArr[0] == 0) {
@@ -77,6 +77,8 @@ GLuint GLUtil::loadShader(GLenum type, const char *code) {
         glDeleteShader(shader);
         return 0;
     }
+    LOGE(GLUtil_TAG, "加载着色器代码成功: ,shader code:%s", code);
+
     return shader;
 }
 

@@ -25,8 +25,11 @@ import com.yetote.bamboomusic.R;
 import com.yetote.bamboomusic.adapter.FoundAdapter;
 import com.yetote.bamboomusic.adapter.RecyclerViewItemClickListener;
 import com.yetote.bamboomusic.media.MusicService;
+import com.yetote.bamboomusic.media.MyPlayer;
+import com.yetote.bamboomusic.media.OnPrepareCallback;
 import com.yetote.bamboomusic.model.FoundModel;
 import com.yetote.bamboomusic.myview.MusicProgressButton;
+import com.yetote.bamboomusic.util.TextRecourseReader;
 import com.yetote.bamboomusic.util.TextUtil;
 
 import java.util.ArrayList;
@@ -52,7 +55,8 @@ public class FoundFragment extends Fragment {
     private MusicService.MusicBinder musicBinder;
     private SurfaceView surfaceView;
     int width, height;
-    private SurfaceHolder surfaceHolder;
+    MyPlayer myPlayer;
+    private Surface surface;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -60,6 +64,7 @@ public class FoundFragment extends Fragment {
             Log.e(TAG, "onServiceConnected: service connect");
             musicBinder = (MusicService.MusicBinder) service;
             musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
+                musicBinder.play(surface, width, height);
             });
 
             musicBinder.setPlayCallback(currentTime -> {
@@ -80,49 +85,53 @@ public class FoundFragment extends Fragment {
         Intent musicService = new Intent(getActivity(), MusicService.class);
         getContext().bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
         initView(v);
+//        myPlayer = new MyPlayer(getActivity());
+//        adapter.setItemClickListener(new RecyclerViewItemClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (musicBinder.getState() != STATE_STOP) {
+//                    musicBinder.stop();
+//                }
+//                if (height == 0 || width == 0) {
+//                    height = (int) v.getTag(R.id.music_found_height);
+//                    width = (int) v.getTag(R.id.music_found_width);
+//                }
+//                Log.e(TAG, "onClick: " + width + height);
+//                Surface surface = (Surface) v.getTag(R.id.music_found_surface);
+//                musicBinder.play((String) v.getTag(R.id.music_found_tag), surface, width, height);
+//            }
+//        });
 
-        adapter.setItemClickListener(new RecyclerViewItemClickListener() {
+        surfaceView = v.findViewById(R.id.fragment_found_surface);
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void onClick(View v) {
-                if (musicBinder.getState() != STATE_STOP) {
-                    musicBinder.stop();
-                }
-                if (height == 0 || width == 0) {
-                    height = (int) v.getTag(R.id.music_found_height);
-                    width = (int) v.getTag(R.id.music_found_width);
-                }
-                Log.e(TAG, "onClick: " + width + height);
-                Surface surface = (Surface) v.getTag(R.id.music_found_surface);
-                musicBinder.play((String) v.getTag(R.id.music_found_tag), surface, width, height);
+            public void surfaceCreated(SurfaceHolder holder) {
+
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+                surface = holder.getSurface();
+                width = w;
+                height = h;
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+
             }
         });
 
-//        surfaceView = v.findViewById(R.id.fragment_found_surface);
-//        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-//            @Override
-//            public void surfaceCreated(SurfaceHolder holder) {
-//
-//            }
-//
-//            @Override
-//            public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-//                surfaceHolder = holder;
-//                width = w;
-//                height = h;
-//            }
-//
-//            @Override
-//            public void surfaceDestroyed(SurfaceHolder holder) {
-//
-//            }
-//        });
-//
-//        surfaceView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                musicBinder.play(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", surfaceHolder.getSurface(), width, height);
-//            }
-//        });
+        surfaceView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String path = getContext().getExternalFilesDir(null).getPath() + "/test.mp4";
+//                String vertexCode = TextRecourseReader.readTextFileFromResource(getContext(), R.raw.yuv_vertex_shader);
+//                String fragCode = TextRecourseReader.readTextFileFromResource(getContext(), R.raw.yuv_frag_shader);
+//                myPlayer.prepare(path);
+                musicBinder.prepare(path);
+            }
+        });
 
         return v;
     }

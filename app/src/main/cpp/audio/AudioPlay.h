@@ -13,6 +13,7 @@
 #include <string>
 #include "../util/Callback.h"
 #include "../util/PlayStates.h"
+#include <thread>
 
 extern "C" {
 #include <libswresample/swresample.h>
@@ -27,6 +28,7 @@ public:
     AVRational timeBase;
     int totalTime;
     AVCodecContext *pCodecCtx = nullptr;
+    double currentTime;
 
     AudioPlay(const Callback &callback, PlayStates &playStates);
 
@@ -35,15 +37,17 @@ public:
     void pause();
 
     void resume();
+
     void initSwr();
+
     void stop();
+
     ~AudioPlay();
 
     void clear();
 
 private:
     SwrContext *swrCtx;
-    double currentTime;
     std::queue<AVPacket *> audioQueue;
     oboe::AudioStream *audioStream;
     oboe::AudioStreamBuilder *builder;
@@ -64,6 +68,7 @@ private:
     Callback callback;
     int lastTime = 0;
     bool eof;
+    std::mutex codecMutex;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;

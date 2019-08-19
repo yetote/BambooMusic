@@ -30,8 +30,8 @@ public:
     Decode(const Callback &callback, PlayStates &playStates);
 
     void prepare(const std::string path);
-
-    void play();
+    void playAudio();
+    void playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode, std::string fragCode);
 
     void pause();
 
@@ -43,19 +43,25 @@ public:
 
     void stop();
 
-    void prepare(const std::string path, ANativeWindow *pWindow, int w, int h, const std::string, const std::string);
 
 private:
     AVFormatContext *pFmtCtx = nullptr;
-    AVCodec *pCodec = nullptr;
-    AVStream *pStream = nullptr;
+    AVCodec *pAudioCodec = nullptr;
+    AVCodec *pVideoCodec = nullptr;
+    AVStream *pAudioStream = nullptr;
+    AVStream *pVideoStream = nullptr;
     int audioIndex = -1;
     int videoIndex = -1;
-    AudioPlay *audioPlayer;
-    VideoPlayer *videoPlayer;
+    AudioPlay *audioPlayer = nullptr;
+    VideoPlayer *videoPlayer = nullptr;
     std::string wpath;
 
     void free();
+
+    void findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec *pCodec);
+
+    void decode();
+
 };
 
 

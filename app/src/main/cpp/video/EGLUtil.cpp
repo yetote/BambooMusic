@@ -10,7 +10,7 @@ EGLUtil::EGLUtil(ANativeWindow *aNativeWindow) {
 
 bool EGLUtil::initEGL(ANativeWindow *window) {
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (eglDisplay == nullptr) {
+    if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:获取display失败,错误码%d", __func__, eglGetError());
         return false;
     }
@@ -48,20 +48,20 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
             EGL_NONE
     };
     eglContext = eglCreateContext(eglDisplay, eglConfig, nullptr, eglContextAttr);
-    if (eglContext == nullptr) {
+    if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:创建eglContext失败,错误码%d", __func__, eglGetError());
         return false;
     }
     int *surfaceAttr = new int[1]{EGL_NONE};
     eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, window, surfaceAttr);
-    if (eglSurface == nullptr) {
+    if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:创建eglSurface失败,错误码%d", __func__, eglGetError());
         delete[] surfaceAttr;
         return false;
     }
     delete[] surfaceAttr;
     auto rst = eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
-    if (rst == EGL_FALSE) {
+    if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:关联egl失败,错误码%d", __func__, eglGetError());
         return false;
     }

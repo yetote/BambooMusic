@@ -6,41 +6,76 @@
 #define BAMBOOMUSIC_VIDEOPLAYER_H
 
 
-#include <libavutil/frame.h>
 #include "EGLUtil.h"
 #include "GLUtil.h"
+#include "../util/BlockQueue.h"
+#include "../util/Callback.h"
+#include "../audio/AudioPlay.h"
+#include <queue>
+#include <utility>
+#include <string>
 
+extern "C" {
+#include <libavutil/frame.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+#include <libavutil/time.h>
+};
 #define VideoPlayer_TAG "VideoPlayer"
 
 class VideoPlayer {
 public:
-    VideoPlayer(ANativeWindow *aNativeWindow, const std::string &vertexCode,
-                const std::string &fragCode, int w, int h);
+    GLfloat *vertex;
+    GLfloat *vertexArray;
+    GLfloat *textureArray;
+
+    GLuint program;
+    GLuint *textureArr;
+    GLint aPosition, aColor;
+    GLint aTextureCoordinates;
+    GLint uTexY, uTexU, uTexV;
+    AudioPlay *audioPlay = nullptr;
+    double currentTime = 0;
+    AVRational timeBase;
+
+    VideoPlayer(const Callback &callback, PlayStates &playStates);
+
+    AVCodecContext *pCodecCtx;
+
+    void pushData(AVPacket *packet);
+
+    void initEGL(std::string vertexCode, std::string fragCode, ANativeWindow *window, int w, int h);
+
+
+    double defaultSyncTime = 0;
+
+    void play();
 
 private:
-    EGLUtil *eglUtil = nullptr;
-    GLUtil *glUtil = nullptr;
-    int width;
-    int height;
 
-    void init();
+    void initVertex();
 
-    GLfloat *vertexArr;
-    GLfloat *textureArr;
-    GLuint *textureIds;
+    void initLocation(const char *vertexCode, const char *fragCode);
 
-    void getLocation();
+    void draw(AVFrame *frame);
 
-    GLint aPosition;
-    GLint aTextureCoordinates;
-    GLint uTextureY;
-    GLint uTextureU;
-    GLint uTextureV;
-    GLint *uTextureArr;
+    PlayStates &playStates;
+    Callback callback;
+    std::queue<AVPacket *> videoData;
 
-    void bindTexture(AVFrame *frame);
+    double getVideoDiffTime(AVFrame *pFrame);
 
-    void drawFrame(AVFrame *frame);
+    double syncAV(double diff);
+
+    std::string vertexCode;
+    std::string fragCode;
+    ANativeWindow *window;
+    int w;
+    int h;
+    double syncTime = 0;
+
+    void decode();
 };
 
 

@@ -1,18 +1,17 @@
 //
-// Created by ether on 2019/8/15.
+// Created by ether on 2018/10/20.
 //
 
-#ifndef BAMBOOMUSIC_EGLUTIL_H
-#define BAMBOOMUSIC_EGLUTIL_H
+#ifndef BAMBOO_EGLUTIL_H
+#define BAMBOO_EGLUTIL_H
 
-#include <EGL/egl.h>
-#include "../util/LogUtil.h"
-
+#include <egl/egl.h>
+#include <egl/eglext.h>
+#include <android/log.h>
+#include <../util/LogUtil.h>
 #define EGLUtil_TAG "EGLUtil"
-
 class EGLUtil {
 public:
-
     EGLContext eglContext= nullptr;
     EGLDisplay eglDisplay= nullptr;
     EGLSurface eglSurface= nullptr;
@@ -25,4 +24,4 @@ private:
 };
 
 
-#endif //BAMBOOMUSIC_EGLUTIL_H
+#endif //BAMBOO_EGLUTIL_H

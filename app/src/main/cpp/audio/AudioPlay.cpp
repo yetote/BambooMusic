@@ -150,6 +150,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
 }
 
 void AudioPlay::pushData(AVPacket *packet) {
+    std::lock_guard<std::mutex> guard(codecMutex);
     canPlay = true;
     AVPacket *temp = av_packet_alloc();
     av_packet_ref(temp, packet);
@@ -158,7 +159,7 @@ void AudioPlay::pushData(AVPacket *packet) {
 
 void AudioPlay::popData() {
 //    LOGE(AudioPlay_TAG, "%sisEOF%d:", __func__, playStates.getEOF());
-    LOGE(AudioPlay_TAG, "%s:音频线程id%ld", __func__, std::this_thread::get_id());
+    std::lock_guard<std::mutex> guard(codecMutex);
     if (audioQueue.empty() && playStates.getEOF()) {
         LOGE(AudioPlay_TAG, "%s:数据全部读取", __func__);
         eof = true;
@@ -173,7 +174,7 @@ void AudioPlay::popData() {
     if (rst != 0) {
         LOGE(AudioPlay_TAG, "%s:拷贝packet失败%s", __func__, av_err2str(rst));
     }
-    std::lock_guard<std::mutex> guard(codecMutex);
+
     rst = avcodec_send_packet(pCodecCtx, packet);
     if (rst != 0) {
         LOGE(AudioPlay_TAG, "%s:发送数据出错%s", __func__, av_err2str(rst));
@@ -249,6 +250,7 @@ AudioPlay::~AudioPlay() {
 }
 
 void AudioPlay::clear() {
+    std::lock_guard<std::mutex> guard(codecMutex);
     while (!audioQueue.empty()) {
         audioQueue.pop();
     }
@@ -258,6 +260,7 @@ void AudioPlay::clear() {
 }
 
 void AudioPlay::stop() {
+    std::lock_guard<std::mutex> guard(codecMutex);
     while (!audioQueue.empty()) {
         audioQueue.pop();
     }
@@ -288,4 +291,10 @@ void AudioPlay::stop() {
         swrCtx = nullptr;
         LOGE(AudioPlay_TAG, "%s:释放swrctx", __func__);
     }
+}
+
+int AudioPlay::getSize() {
+    std::lock_guard<std::mutex> guard(codecMutex);
+    int size = audioQueue.size();
+    return size;
 }

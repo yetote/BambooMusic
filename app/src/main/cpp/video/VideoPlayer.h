@@ -51,7 +51,7 @@ public:
     double defaultSyncTime = 0;
 
     void play();
-
+    int getSize();
 private:
 
     void initVertex();
@@ -76,6 +76,8 @@ private:
     double syncTime = 0;
 
     void decode();
+
+    std::mutex mutex;
 };
 
 

@@ -55,11 +55,8 @@ void VideoPlayer::initVertex() {
 
 void VideoPlayer::initLocation(const char *vertexCode, const char *fragCode) {
     glUtil = new GLUtil(vertexCode, fragCode);
-//    glUtil.(vertexCode, fragCode);
     textureArr = glUtil->createTexture();
-//    LOGE("%d", textureArr[0]);
     aPosition = glGetAttribLocation(glUtil->program, "a_Position");
-//    aColor = glGetAttribLocation(glUtil->program, "a_Color");
     aTextureCoordinates = glGetAttribLocation(glUtil->program, "a_TextureCoordinates");
     uTexY = glGetUniformLocation(glUtil->program, "u_TexY");
     uTexU = glGetUniformLocation(glUtil->program, "u_TexU");
@@ -130,19 +127,18 @@ void VideoPlayer::draw(AVFrame *frame) {
     glEnableVertexAttribArray(aTextureCoordinates);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     eglSwapBuffers(eglUtil->eglDisplay, eglUtil->eglSurface);
-//    av_usleep(25000);
 }
 
 void VideoPlayer::pushData(AVPacket *packet) {
-    AVPacket *temp = av_packet_alloc();
 
+    AVPacket *temp = av_packet_alloc();
     int rst = av_packet_ref(temp, packet);
+    std::lock_guard<std::mutex> guard(mutex);
     videoData.push(temp);
 }
 
 
 void VideoPlayer::play() {
-
     std::thread playThread(&VideoPlayer::decode, this);
     playThread.detach();
 }
@@ -158,7 +154,6 @@ double VideoPlayer::getVideoDiffTime(AVFrame *pFrame) {
     if (pts == AV_NOPTS_VALUE) {
         pts = 0;
     }
-    //todo 有疑问确定是*=？？？
     pts *= av_q2d(timeBase);
     if (pts > 0) {
         currentTime = pts;
@@ -209,8 +204,6 @@ double VideoPlayer::syncAV(double diff) {
 
 void VideoPlayer::decode() {
     eglUtil = new EGLUtil(window);
-//    eglMakeCurrent(eglUtil->eglDisplay, eglUtil->eglSurface, eglUtil->eglSurface,
-//                   eglUtil->eglContext);
     initVertex();
     float changeH =
             (float) pCodecCtx->height / pCodecCtx->width *
@@ -228,29 +221,27 @@ void VideoPlayer::decode() {
             av_usleep(1000);
             continue;
         }
+        mutex.lock();
         dataPacket = videoData.front();
+        videoData.pop();
+        mutex.unlock();
         rst = avcodec_send_packet(pCodecCtx, dataPacket);
         if (rst >= 0) {
             rst = avcodec_receive_frame(pCodecCtx, pFrame);
             if (rst == AVERROR(EAGAIN)) {
                 LOGE(VideoPlayer_TAG, "%s:读取解码数据失败%s", __func__, av_err2str(rst));
-                videoData.pop();
                 continue;
             } else if (rst == AVERROR_EOF) {
                 LOGE(VideoPlayer_TAG, "%s", "EOF解码完成");
-                videoData.pop();
                 break;
             } else if (rst < 0) {
                 LOGE(VideoPlayer_TAG, "%s", "解码出错");
-                videoData.pop();
                 continue;
             } else {
                 if (pFrame->format == AV_PIX_FMT_YUV420P) {
                     LOGE(VideoPlayer_TAG, "line in 109:解码成功");
                     double diff = getVideoDiffTime(pFrame);
-                    LOGE(VideoPlayer_TAG, "%s:音频与视频的时间差%f", __func__, diff);
                     av_usleep(syncAV(diff) * 1000000);
-                    LOGE(AudioPlay_TAG, "%s:视频线程id%ld", __func__, std::this_thread::get_id());
                     draw(pFrame);
                 } else {
                     AVFrame *pFrame420P = av_frame_alloc();
@@ -292,10 +283,16 @@ void VideoPlayer::decode() {
         } else {
             LOGE(VideoPlayer_TAG, "%s:send失败%s,%d", __func__, av_err2str(rst), rst);
         }
-        videoData.pop();
+
     }
     av_frame_free(&pFrame);
     av_packet_free(&dataPacket);
+}
+
+int VideoPlayer::getSize() {
+    std::lock_guard<std::mutex> guard(mutex);
+    int size = videoData.size();
+    return size;
 }
 
 

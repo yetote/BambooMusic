@@ -159,6 +159,10 @@ void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
     while (true) {
+        if (audioPlayer->getSize() >= 100 && videoPlayer->getSize() >= 100) {
+            usleep(500);
+            continue;
+        }
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             switch (rst) {

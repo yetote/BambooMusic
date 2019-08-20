@@ -249,6 +249,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicDetailsPopProgress = musicDetailsView.findViewById(R.id.music_details_pop_progress);
         musicDetailsPopupWindow.setClippingEnabled(false);
     }
-
-
 }

@@ -52,10 +52,6 @@ public class MusicService extends Service {
         player.setPrepareCallback((prepare, totalTime) -> {
             musicBinder.callPrepare(prepare, totalTime);
             Log.e(TAG, "onCreate: 准备好了，开始播放");
-//            if (prepare) {
-//                player.play();
-//                state = STATE_PLAYING;
-//            }
         });
 
         player.setPlayCallback(currentTime -> {

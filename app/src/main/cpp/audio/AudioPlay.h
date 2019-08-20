@@ -42,9 +42,12 @@ public:
 
     void stop();
 
-    ~AudioPlay();
 
     void clear();
+
+    int getSize();
+
+    ~AudioPlay();
 
 private:
     SwrContext *swrCtx;
@@ -72,7 +75,6 @@ private:
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
-
 
     void popData();
 };

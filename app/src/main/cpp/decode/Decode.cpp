@@ -11,11 +11,6 @@ Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(ca
     videoPlayer = new VideoPlayer(callback, playStates);
 }
 
-//void Decode::prepare(const std::string path, , PlayStates &playStates) {
-//    videoPlayer = new VideoPlayer(vertexCode.c_str(), fragCode.c_str(), pWindow, w, h);
-//    prepare(path);
-//}
-
 void Decode::prepare(const std::string path) {
     wpath = path;
     av_register_all();
@@ -137,16 +132,25 @@ void Decode::resume() {
 
 
 void Decode::seek(int progress) {
+    std::lock_guard<std::mutex> guard(mutex);
     auto rel = progress * AV_TIME_BASE;
-    avformat_seek_file(pFmtCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
     if (audioPlayer != nullptr) {
         audioPlayer->clear();
         avcodec_flush_buffers(audioPlayer->pCodecCtx);
     }
+    if (videoPlayer != nullptr) {
+        videoPlayer->clear();
+        avcodec_flush_buffers(videoPlayer->pCodecCtx);
 
-//    if(videoPlayer!= nullptr){
-//        videoPlayer
-//    }
+    }
+    LOGE(Decode_TAG, "%s:当前播放time=%d", __func__, pFmtCtx->start_time);
+    avformat_seek_file(pFmtCtx, audioIndex, INT64_MIN, rel, INT64_MAX, 0);
+
+//    auto seekTime = pFmtCtx->start_time +
+//                    av_rescale(progress, pAudioStream->time_base.den, pAudioStream->time_base.num);
+//    LOGE(Decode_TAG, "%s:seekTime=%d", __func__, seekTime);
+//    int rst = av_seek_frame(pFmtCtx, audioIndex, seekTime, AVSEEK_FLAG_BACKWARD);
+//    LOGE(Decode_TAG, "%s:seek出错%s,code =%d", __func__, av_err2str(rst), rst);
 }
 
 
@@ -169,11 +173,12 @@ Decode::~Decode() {
 void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
-    while (true) {
+    while (!playStates.isEof()) {
         if (audioPlayer->getSize() >= 100 && videoPlayer->getSize() >= 100) {
-            usleep(500);
+            usleep(300);
             continue;
         }
+        mutex.lock();
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             switch (rst) {
@@ -188,6 +193,7 @@ void Decode::decode() {
                     continue;
             }
         }
+        mutex.unlock();
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);

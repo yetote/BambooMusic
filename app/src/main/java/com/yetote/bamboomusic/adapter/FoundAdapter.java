@@ -118,33 +118,53 @@ public class FoundAdapter extends RecyclerView.Adapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context).inflate(R.layout.rv_music_found_layout, parent, false);
-        v.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isPlaying) {
-                    if (musicBinder.getState() != STATE_STOP) {
-                        musicBinder.stop();
-                    }
-                    seekBar = v.findViewById(R.id.rv_music_found_item_seek);
-                    if (surface != null) {
-                        surface.release();
-                    }
-                    if (width == 0 || height == 0) {
-                        height = (int) v.getTag(R.id.music_found_tag_height);
-                        width = (int) v.getTag(R.id.music_found_tag_width);
-                    }
-                    surface = (Surface) v.getTag(R.id.music_found_tag_surface);
-                    musicBinder.prepare((String) v.getTag(R.id.music_found_tag_path));
+        v.setOnClickListener(v1 -> {
+            if (!isPlaying) {
+                if (musicBinder.getState() != STATE_STOP) {
+                    musicBinder.stop();
+                }
+                seekBar = v1.findViewById(R.id.rv_music_found_item_seek);
+                if (surface != null) {
+                    surface.release();
+                }
+                if (width == 0 || height == 0) {
+                    height = (int) v1.getTag(R.id.music_found_tag_height);
+                    width = (int) v1.getTag(R.id.music_found_tag_width);
+                }
+                surface = (Surface) v1.getTag(R.id.music_found_tag_surface);
+                musicBinder.prepare((String) v1.getTag(R.id.music_found_tag_path));
+            } else {
+                if (isPausing) {
+                    musicBinder.resume();
+                    isPausing = false;
                 } else {
-                    if (isPausing) {
-                        musicBinder.resume();
-                        isPausing = false;
-                    } else {
-                        isPausing = true;
+                    isPausing = true;
+                    musicBinder.pause();
+                }
+            }
+
+
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    if (isPlaying) {
                         musicBinder.pause();
                     }
                 }
-            }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    if (isPlaying) {
+                        musicBinder.seek(seekBar.getProgress());
+                        musicBinder.resume();
+                    }
+                }
+            });
         });
         return new MyViewHolder(v);
     }

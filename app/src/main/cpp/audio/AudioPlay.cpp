@@ -167,6 +167,7 @@ void AudioPlay::popData() {
     }
     if (audioQueue.empty()) {
         LOGE(AudioPlay_TAG, "%s:对列为null", __func__);
+        usleep(300);
         return;
     }
     int rst;

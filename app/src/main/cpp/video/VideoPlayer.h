@@ -56,6 +56,7 @@ public:
 
     void resume();
 
+    void clear();
 private:
 
     void initVertex();

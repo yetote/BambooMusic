@@ -307,5 +307,11 @@ void VideoPlayer::resume() {
     playStates.setPause(false);
 }
 
+void VideoPlayer::clear() {
+    std::lock_guard<std::mutex> guard(mutex);
+    std::queue<AVPacket *> temp;
+    swap(temp, videoData);
+}
+
 
 

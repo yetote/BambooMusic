@@ -30,8 +30,11 @@ public:
     Decode(const Callback &callback, PlayStates &playStates);
 
     void prepare(const std::string path);
+
     void playAudio();
-    void playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode, std::string fragCode);
+
+    void
+    playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode, std::string fragCode);
 
     void pause();
 
@@ -55,6 +58,7 @@ private:
     AudioPlay *audioPlayer = nullptr;
     VideoPlayer *videoPlayer = nullptr;
     std::string wpath;
+    std::mutex mutex;
 
     void free();
 

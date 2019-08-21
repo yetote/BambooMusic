@@ -70,9 +70,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:tabSelectedTextColor="@color/lightgreen"
+        app:layout_constraintStart_toStartOf="parent"
         app:tabIndicatorColor="@color/lightgreen"
-        app:layout_constraintStart_toStartOf="parent">
+        app:tabSelectedTextColor="@color/lightgreen">
 
         <com.google.android.material.tabs.TabItem
             android:id="@+id/main_music_lib_tabItem"

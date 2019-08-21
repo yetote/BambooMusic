@@ -84,7 +84,6 @@ public class MediaUtil {
                         mediaExtractor.advance();
                     }
                 }
-
             }
 
             @Override
@@ -95,7 +94,6 @@ public class MediaUtil {
                     outBuffer.position(info.offset);
                     outBuffer.get(data, 0, info.size);
                     outBuffer.clear();
-//                    writeFile.write(data);
                     hardwarePlayer.pushData(data);
                     mediaCodec.releaseOutputBuffer(index, false);
                 }

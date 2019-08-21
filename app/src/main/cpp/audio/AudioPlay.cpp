@@ -160,7 +160,7 @@ void AudioPlay::pushData(AVPacket *packet) {
 void AudioPlay::popData() {
 //    LOGE(AudioPlay_TAG, "%sisEOF%d:", __func__, playStates.getEOF());
     std::lock_guard<std::mutex> guard(codecMutex);
-    if (audioQueue.empty() && playStates.getEOF()) {
+    if (audioQueue.empty() && playStates.isEof()) {
         LOGE(AudioPlay_TAG, "%s:数据全部读取", __func__);
         eof = true;
         return;

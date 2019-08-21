@@ -118,7 +118,13 @@ void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCod
 }
 
 void Decode::pause() {
-    audioPlayer->pause();
+    if (audioPlayer != nullptr) {
+        audioPlayer->pause();
+    }
+    if (videoPlayer != nullptr) {
+        videoPlayer->pause();
+    }
+
 }
 
 void Decode::free() {
@@ -126,6 +132,7 @@ void Decode::free() {
 
 void Decode::resume() {
     audioPlayer->resume();
+    videoPlayer->resume();
 }
 
 
@@ -136,6 +143,10 @@ void Decode::seek(int progress) {
         audioPlayer->clear();
         avcodec_flush_buffers(audioPlayer->pCodecCtx);
     }
+
+//    if(videoPlayer!= nullptr){
+//        videoPlayer
+//    }
 }
 
 
@@ -168,7 +179,7 @@ void Decode::decode() {
             switch (rst) {
                 case AVERROR_EOF:
                     LOGE(Decode_TAG, "%s:文件读取完毕", __func__);
-                    playStates.setEOF(true);
+                    playStates.setEof(true);
                     av_packet_free(&packet);
                     av_free(packet);
                     return;
@@ -180,13 +191,11 @@ void Decode::decode() {
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
         } else if (packet->stream_index == videoIndex) {
             if (videoPlayer != nullptr) {
                 videoPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:视频入队", __func__);
                 continue;
             }
         }

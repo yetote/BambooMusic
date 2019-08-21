@@ -7,11 +7,13 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +26,7 @@ import com.yetote.bamboomusic.model.FoundModel;
 import java.util.ArrayList;
 
 import static android.content.Context.BIND_AUTO_CREATE;
+import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 
 /**
  * @author yetote QQ:503779938
@@ -41,6 +44,35 @@ public class FoundAdapter extends RecyclerView.Adapter {
     public static final int PATH_TAG = 1;
     RecyclerViewItemClickListener itemClickListener;
     private static final String TAG = "FoundAdapter";
+    private MusicService.MusicBinder musicBinder;
+    private SeekBar seekBar;
+    private Surface surface;
+    private int width, height;
+    private boolean isPlaying;
+    private boolean isPausing;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+
+            musicBinder = (MusicService.MusicBinder) service;
+            musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
+                if (totalTime != 0) {
+                    seekBar.setMax(totalTime);
+                }
+                musicBinder.play(surface, width, height);
+                isPlaying = true;
+            });
+
+            musicBinder.setPlayCallback(currentTime -> {
+                seekBar.setProgress(currentTime);
+            });
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     public void setItemClickListener(RecyclerViewItemClickListener itemClickListener) {
         this.itemClickListener = itemClickListener;
@@ -49,7 +81,8 @@ public class FoundAdapter extends RecyclerView.Adapter {
     public FoundAdapter(ArrayList<FoundModel> list, Context context) {
         this.list = list;
         this.context = context;
-
+        Intent musicService = new Intent(context, MusicService.class);
+        context.bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -88,7 +121,29 @@ public class FoundAdapter extends RecyclerView.Adapter {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemClickListener.onClick(v);
+                if (!isPlaying) {
+                    if (musicBinder.getState() != STATE_STOP) {
+                        musicBinder.stop();
+                    }
+                    seekBar = v.findViewById(R.id.rv_music_found_item_seek);
+                    if (surface != null) {
+                        surface.release();
+                    }
+                    if (width == 0 || height == 0) {
+                        height = (int) v.getTag(R.id.music_found_tag_height);
+                        width = (int) v.getTag(R.id.music_found_tag_width);
+                    }
+                    surface = (Surface) v.getTag(R.id.music_found_tag_surface);
+                    musicBinder.prepare((String) v.getTag(R.id.music_found_tag_path));
+                } else {
+                    if (isPausing) {
+                        musicBinder.resume();
+                        isPausing = false;
+                    } else {
+                        isPausing = true;
+                        musicBinder.pause();
+                    }
+                }
             }
         });
         return new MyViewHolder(v);

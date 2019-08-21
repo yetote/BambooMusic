@@ -216,9 +216,13 @@ void VideoPlayer::decode() {
     int rst;
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
-    while (true) {
+    while (!playStates.isEof()) {
+        if (playStates.isPause()) {
+            usleep(300);
+            continue;
+        }
         if (videoData.empty()) {
-            av_usleep(1000);
+            av_usleep(300);
             continue;
         }
         mutex.lock();
@@ -239,7 +243,7 @@ void VideoPlayer::decode() {
                 continue;
             } else {
                 if (pFrame->format == AV_PIX_FMT_YUV420P) {
-                    LOGE(VideoPlayer_TAG, "line in 109:解码成功");
+//                    LOGE(VideoPlayer_TAG, "line in 109:解码成功");
                     double diff = getVideoDiffTime(pFrame);
                     av_usleep(syncAV(diff) * 1000000);
                     draw(pFrame);
@@ -293,6 +297,14 @@ int VideoPlayer::getSize() {
     std::lock_guard<std::mutex> guard(mutex);
     int size = videoData.size();
     return size;
+}
+
+void VideoPlayer::pause() {
+    playStates.setPause(true);
+}
+
+void VideoPlayer::resume() {
+    playStates.setPause(false);
 }
 
 

@@ -8,7 +8,6 @@
 
 #include "EGLUtil.h"
 #include "GLUtil.h"
-#include "../util/BlockQueue.h"
 #include "../util/Callback.h"
 #include "../audio/AudioPlay.h"
 #include <queue>
@@ -52,6 +51,11 @@ public:
 
     void play();
     int getSize();
+
+    void pause();
+
+    void resume();
+
 private:
 
     void initVertex();

@@ -6,6 +6,7 @@
 #define BAMBOOMUSIC_PLAYSTATES_H
 
 #include <android/log.h>
+
 #define LOGE(LOG_TAG, ...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 #define PlayStates_TAG "PlayStates"
@@ -15,19 +16,24 @@ class PlayStates {
 public:
     PlayStates();
 
-    bool getEOF() {
-        return isEOF;
-    }
 
-    void setEOF(bool eof) {
-        isEOF = eof;
-    }
+    bool isEof() const;
+
+    void setEof(bool eof);
+
+    bool isPause() const;
+
+    void setPause(bool pause);
+
+    bool isStop() const;
+
+    void setStop(bool stop);
 
 private:
 
-    bool isEOF = false;
-    bool isPause = false;
-    bool isStop = false;
+    bool eof = false;
+    bool pause = false;
+    bool stop = false;
 };
 
 

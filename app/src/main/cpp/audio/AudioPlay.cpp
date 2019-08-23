@@ -116,8 +116,8 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
 DataCallbackResult
 AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     int betterSize = numFrames * 4;
-    if (!canPlay) {
-        return DataCallbackResult::Continue;
+    if (playStates.isStop()) {
+        return DataCallbackResult::Stop;
     }
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
@@ -263,34 +263,31 @@ void AudioPlay::clear() {
 void AudioPlay::stop() {
     std::lock_guard<std::mutex> guard(codecMutex);
     while (!audioQueue.empty()) {
+        AVPacket *packet = audioQueue.front();
+        av_packet_free(&packet);
+        av_free(packet);
         audioQueue.pop();
     }
-    LOGE(AudioPlay_TAG, "%s:队列释放完毕", __func__);
     if (audioStream != nullptr) {
         audioStream->requestStop();
         audioStream->close();
         audioStream = nullptr;
-        LOGE(AudioPlay_TAG, "%s:音频流停止", __func__);
     }
     if (pCodecCtx != nullptr) {
         avcodec_free_context(&pCodecCtx);
         pCodecCtx = nullptr;
-        LOGE(AudioPlay_TAG, "%s:释放codecCtx", __func__);
     }
     if (packet != nullptr) {
         av_packet_free(&packet);
         packet = nullptr;
-        LOGE(AudioPlay_TAG, "%s:释放packet", __func__);
     }
     if (pFrame != nullptr) {
         av_frame_free(&pFrame);
         pFrame = nullptr;
-        LOGE(AudioPlay_TAG, "%s:释放frame", __func__);
     }
     if (swrCtx != nullptr) {
         swr_free(&swrCtx);
         swrCtx = nullptr;
-        LOGE(AudioPlay_TAG, "%s:释放swrctx", __func__);
     }
 }
 

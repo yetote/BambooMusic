@@ -143,25 +143,48 @@ void Decode::seek(int progress) {
         avcodec_flush_buffers(videoPlayer->pCodecCtx);
 
     }
-    LOGE(Decode_TAG, "%s:当前播放time=%d", __func__, pFmtCtx->start_time);
-    avformat_seek_file(pFmtCtx, audioIndex, INT64_MIN, rel, INT64_MAX, 0);
-
-//    auto seekTime = pFmtCtx->start_time +
-//                    av_rescale(progress, pAudioStream->time_base.den, pAudioStream->time_base.num);
-//    LOGE(Decode_TAG, "%s:seekTime=%d", __func__, seekTime);
-//    int rst = av_seek_frame(pFmtCtx, audioIndex, seekTime, AVSEEK_FLAG_BACKWARD);
-//    LOGE(Decode_TAG, "%s:seek出错%s,code =%d", __func__, av_err2str(rst), rst);
+    avformat_seek_file(pFmtCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
 }
 
 
 void Decode::stop() {
+    std::lock_guard<std::mutex> guard(mutex);
+    playStates.setStop(true);
+
+    if (audioPlayer != nullptr) {
+        audioPlayer->stop();
+        audioPlayer = nullptr;
+        LOGE(Decode_TAG, "%s:audioPlayer释放完成", __func__);
+    }
+    if (videoPlayer != nullptr) {
+        videoPlayer->stop();
+        videoPlayer = nullptr;
+        LOGE(Decode_TAG, "%s:videoPlayer释放完成", __func__);
+    }
+    if (pVideoStream != nullptr) {
+        av_free(pVideoStream);
+        pVideoStream = nullptr;
+        LOGE(Decode_TAG, "%s:videoStream释放完成", __func__);
+    }
+    if (pAudioStream != nullptr) {
+        av_free(pAudioStream);
+        pAudioStream = nullptr;
+        LOGE(Decode_TAG, "%s:audioStream释放完成", __func__);
+    }
+    if (pAudioCodec != nullptr) {
+        av_free(pAudioCodec);
+        pAudioCodec = nullptr;
+        LOGE(Decode_TAG, "%s:audioCodec释放完成", __func__);
+    }
+    if (pVideoCodec != nullptr) {
+        av_free(pVideoCodec);
+        pVideoCodec = nullptr;
+        LOGE(Decode_TAG, "%s:videoCodec释放完成", __func__);
+    }
     if (pFmtCtx != nullptr) {
         avformat_free_context(pFmtCtx);
         pFmtCtx = nullptr;
-        LOGE(Decode_TAG, "%s:释放fmtctx", __func__);
-    }
-    if (audioPlayer != nullptr) {
-        audioPlayer->stop();
+        LOGE(Decode_TAG, "%s:fmt释放完成", __func__);
     }
 }
 
@@ -173,12 +196,14 @@ Decode::~Decode() {
 void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
-    while (!playStates.isEof()) {
-        if (audioPlayer->getSize() >= 100 && videoPlayer->getSize() >= 100) {
+    while (!playStates.isEof() && !playStates.isStop()) {
+        mutex.lock();
+        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
             usleep(300);
+            LOGE(Decode_TAG, "%s:休眠", __func__);
+            mutex.unlock();
             continue;
         }
-        mutex.lock();
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             switch (rst) {
@@ -187,9 +212,11 @@ void Decode::decode() {
                     playStates.setEof(true);
                     av_packet_free(&packet);
                     av_free(packet);
+                    mutex.unlock();
                     return;
                 default:
                     LOGE(Decode_TAG, "%s:未知错误%s", __func__, av_err2str(rst));
+                    mutex.unlock();
                     continue;
             }
         }
@@ -197,11 +224,13 @@ void Decode::decode() {
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
+                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
         } else if (packet->stream_index == videoIndex) {
             if (videoPlayer != nullptr) {
                 videoPlayer->pushData(packet);
+                LOGE(Decode_TAG, "%s:视频入队", __func__);
                 continue;
             }
         }

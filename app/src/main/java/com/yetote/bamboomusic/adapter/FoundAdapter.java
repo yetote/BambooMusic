@@ -193,6 +193,7 @@ public class FoundAdapter extends RecyclerView.Adapter {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.e(TAG, "surfaceDestroyed: 销毁");
+                musicBinder.stop();
             }
         });
     }
@@ -200,5 +201,11 @@ public class FoundAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
+//        musicBinder.stop();
     }
 }

@@ -216,7 +216,8 @@ void VideoPlayer::decode() {
     int rst;
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
-    while (!playStates.isEof()) {
+    while (!playStates.isEof() && !playStates.isStop()) {
+        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
         if (playStates.isPause()) {
             usleep(300);
             continue;
@@ -228,22 +229,23 @@ void VideoPlayer::decode() {
         mutex.lock();
         dataPacket = videoData.front();
         videoData.pop();
-        mutex.unlock();
         rst = avcodec_send_packet(pCodecCtx, dataPacket);
         if (rst >= 0) {
             rst = avcodec_receive_frame(pCodecCtx, pFrame);
             if (rst == AVERROR(EAGAIN)) {
                 LOGE(VideoPlayer_TAG, "%s:读取解码数据失败%s", __func__, av_err2str(rst));
+                mutex.unlock();
                 continue;
             } else if (rst == AVERROR_EOF) {
                 LOGE(VideoPlayer_TAG, "%s", "EOF解码完成");
+                mutex.unlock();
                 break;
             } else if (rst < 0) {
                 LOGE(VideoPlayer_TAG, "%s", "解码出错");
+                mutex.unlock();
                 continue;
             } else {
                 if (pFrame->format == AV_PIX_FMT_YUV420P) {
-//                    LOGE(VideoPlayer_TAG, "line in 109:解码成功");
                     double diff = getVideoDiffTime(pFrame);
                     av_usleep(syncAV(diff) * 1000000);
                     draw(pFrame);
@@ -253,21 +255,9 @@ void VideoPlayer::decode() {
                                                        pCodecCtx->width,
                                                        pCodecCtx->height, 1);
                     uint8_t *buffer = static_cast<uint8_t *>(av_malloc(num * sizeof(uint8_t)));
-                    av_image_fill_arrays(pFrame420P->data,
-                                         pFrame420P->linesize,
-                                         buffer,
-                                         AV_PIX_FMT_YUV420P,
-                                         pCodecCtx->width,
-                                         pCodecCtx->height,
-                                         1);
-                    SwsContext *swsContext = sws_getContext(pCodecCtx->width,
-                                                            pCodecCtx->height,
-                                                            pCodecCtx->pix_fmt,
-                                                            pCodecCtx->width,
-                                                            pCodecCtx->height,
-                                                            AV_PIX_FMT_YUV420P,
-                                                            SWS_BICUBIC, nullptr, nullptr, nullptr
-                    );
+                    if (swsContext == nullptr) {
+                        initSwrCtx();
+                    }
                     sws_scale(swsContext,
                               pFrame->data,
                               pFrame->linesize,
@@ -280,14 +270,14 @@ void VideoPlayer::decode() {
                     av_free(pFrame420P);
                     av_free(buffer);
                     pFrame420P = nullptr;
-                    sws_freeContext(swsContext);
+
                     LOGE(VideoPlayer_TAG, "line in 144:解码成功");
                 }
             }
         } else {
             LOGE(VideoPlayer_TAG, "%s:send失败%s,%d", __func__, av_err2str(rst), rst);
         }
-
+        mutex.unlock();
     }
     av_frame_free(&pFrame);
     av_packet_free(&dataPacket);
@@ -309,8 +299,58 @@ void VideoPlayer::resume() {
 
 void VideoPlayer::clear() {
     std::lock_guard<std::mutex> guard(mutex);
-    std::queue<AVPacket *> temp;
-    swap(temp, videoData);
+    while (!videoData.empty()) {
+        AVPacket *packet = videoData.front();
+        av_packet_free(&packet);
+        av_free(packet);
+        videoData.pop();
+    }
+}
+
+void VideoPlayer::stop() {
+    std::lock_guard<std::mutex> guard(mutex);
+    while (!videoData.empty()) {
+        AVPacket *packet = videoData.front();
+        av_packet_free(&packet);
+        av_free(packet);
+        videoData.pop();
+    }
+    LOGE(VideoPlayer_TAG, "%s:videoqueue释放完成", __func__);
+    if (swsContext != nullptr) {
+        sws_freeContext(swsContext);
+        swsContext = nullptr;
+        LOGE(VideoPlayer_TAG, "%s:swsctx释放完成", __func__);
+    }
+    if (pCodecCtx != nullptr) {
+        avcodec_free_context(&pCodecCtx);
+        pCodecCtx = nullptr;
+        LOGE(VideoPlayer_TAG, "%s:pcodecCtx释放完成", __func__);
+    }
+    if (glUtil != nullptr) {
+        glUtil = nullptr;
+        LOGE(VideoPlayer_TAG, "%s:glutil释放完成", __func__);
+    }
+    if (eglUtil != nullptr) {
+        eglUtil->release();
+        eglUtil = nullptr;
+        LOGE(VideoPlayer_TAG, "%s:eglutil释放完成", __func__);
+    }
+    LOGE(VideoPlayer_TAG, "%s:videoPlayer释放完成", __func__);
+}
+
+void VideoPlayer::initSwrCtx() {
+    if (pCodecCtx == nullptr) {
+        LOGE(VideoPlayer_TAG, "%s:初始化swrctx出错", __func__);
+        return;
+    }
+    swsContext = sws_getContext(pCodecCtx->width,
+                                pCodecCtx->height,
+                                pCodecCtx->pix_fmt,
+                                pCodecCtx->width,
+                                pCodecCtx->height,
+                                AV_PIX_FMT_YUV420P,
+                                SWS_BICUBIC, nullptr, nullptr, nullptr
+    );
 }
 
 

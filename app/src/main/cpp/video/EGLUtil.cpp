@@ -68,3 +68,21 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
     LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError());
     return true;
 }
+
+void EGLUtil::release() {
+    if (eglSurface != nullptr) {
+        eglDestroySurface(eglDisplay, eglSurface);
+        eglSurface = nullptr;
+    }
+    if (eglContext != nullptr) {
+        eglDestroyContext(eglDisplay, eglContext);
+        eglContext = nullptr;
+    }
+    if (eglConfig != nullptr) {
+        eglConfig = nullptr;
+    }
+    if (eglDisplay != nullptr) {
+        eglDisplay = nullptr;
+    }
+    LOGE(EGLUtil_TAG, "%s:egl释放完成", __func__);
+}

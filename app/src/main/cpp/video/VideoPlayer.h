@@ -40,7 +40,7 @@ public:
 
     VideoPlayer(const Callback &callback, PlayStates &playStates);
 
-    AVCodecContext *pCodecCtx;
+    AVCodecContext *pCodecCtx= nullptr;
 
     void pushData(AVPacket *packet);
 
@@ -50,6 +50,7 @@ public:
     double defaultSyncTime = 0;
 
     void play();
+
     int getSize();
 
     void pause();
@@ -57,7 +58,27 @@ public:
     void resume();
 
     void clear();
+
+    void stop();
+
 private:
+    PlayStates &playStates;
+    Callback callback;
+    std::queue<AVPacket *> videoData;
+    SwsContext *swsContext= nullptr;
+    std::string vertexCode;
+    std::string fragCode;
+    ANativeWindow *window;
+    int w;
+    int h;
+    double syncTime = 0;
+    std::mutex mutex;
+
+    void decode();
+
+    double getVideoDiffTime(AVFrame *pFrame);
+
+    double syncAV(double diff);
 
     void initVertex();
 
@@ -65,24 +86,7 @@ private:
 
     void draw(AVFrame *frame);
 
-    PlayStates &playStates;
-    Callback callback;
-    std::queue<AVPacket *> videoData;
-
-    double getVideoDiffTime(AVFrame *pFrame);
-
-    double syncAV(double diff);
-
-    std::string vertexCode;
-    std::string fragCode;
-    ANativeWindow *window;
-    int w;
-    int h;
-    double syncTime = 0;
-
-    void decode();
-
-    std::mutex mutex;
+    void initSwrCtx();
 };
 
 

@@ -50,7 +50,22 @@ Java_com_yetote_bamboomusic_media_MyPlayer_seek(JNIEnv *env, jobject thiz, jint 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
-    decode->stop();
+    if (decode != nullptr) {
+        decode->stop();
+        delete decode;
+        decode = nullptr;
+        LOGE(NATIVE_TAG, "%s:decode释放完毕", __func__);
+    }
+    if (playStates != nullptr) {
+        delete playStates;
+        playStates = nullptr;
+        LOGE(NATIVE_TAG, "%s:playstates释放完毕", __func__);
+    }
+    if (callback != nullptr) {
+        delete callback;
+        callback = nullptr;
+        LOGE(NATIVE_TAG, "%s:callback释放完毕", __func__);
+    }
 }
 
 extern "C"

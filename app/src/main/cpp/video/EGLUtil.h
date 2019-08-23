@@ -18,7 +18,7 @@ public:
     EGLConfig eglConfig= nullptr;
 
     EGLUtil(ANativeWindow *aNativeWindow);
-
+    void release();
 private:
     bool initEGL(ANativeWindow *window);
 };

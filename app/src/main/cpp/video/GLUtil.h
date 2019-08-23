@@ -20,7 +20,7 @@ public:
 
 
     GLuint *createTexture();
-
+    void release();
 private:
     void createProgram(const std::string& vertexCode, const std::string& fragCode);
 

@@ -53,78 +53,12 @@ public class FoundFragment extends Fragment {
     private FoundAdapter adapter;
     private ArrayList<FoundModel> list;
     private static final String TAG = "FoundFragment";
-    private MusicService.MusicBinder musicBinder;
-    private SeekBar seekBar;
-    int width, height;
-    MyPlayer myPlayer;
-    private Surface surface;
-    private boolean isPlaying;
-//    private ServiceConnection serviceConnection = new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//
-//            musicBinder = (MusicService.MusicBinder) service;
-//            musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
-//                if (totalTime != 0) {
-//                    seekBar.setMax(totalTime);
-//                }
-//                musicBinder.play(surface, width, height);
-//                isPlaying = true;
-//            });
-//
-//            musicBinder.setPlayCallback(currentTime -> {
-//                seekBar.setProgress(currentTime);
-//            });
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//
-//        }
-//    };
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_found, null);
-//        Intent musicService = new Intent(getActivity(), MusicService.class);
-//        getContext().bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
         initView(v);
-//        adapter.setItemClickListener(v1 -> {
-//            if (!isPlaying) {
-//                if (musicBinder.getState() != STATE_STOP) {
-//                    musicBinder.stop();
-//                }
-//                if (height == 0 || width == 0) {
-//                    height = (int) v1.getTag(R.id.music_found_tag_height);
-//                    width = (int) v1.getTag(R.id.music_found_tag_width);
-//                }
-//                seekBar = v.findViewById(R.id.rv_music_found_item_seek);
-//                surface = (Surface) v1.getTag(R.id.music_found_tag_surface);
-//                musicBinder.prepare((String) v1.getTag(R.id.music_found_tag_path));
-//            } else {
-//                if (musicBinder != null) {
-//                    musicBinder.pause();
-//                }
-//            }
-//        });
-
-//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//                musicBinder.pause();
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//        });
         return v;
     }
 

@@ -14,7 +14,6 @@
 #include "../util/Callback.h"
 #include "../util/PlayStates.h"
 #include <thread>
-
 extern "C" {
 #include <libswresample/swresample.h>
 #include <libavcodec/avcodec.h>
@@ -49,8 +48,8 @@ public:
 
     ~AudioPlay();
 
-private:
     SwrContext *swrCtx;
+private:
     std::queue<AVPacket *> audioQueue;
     oboe::AudioStream *audioStream;
     oboe::AudioStreamBuilder *builder;
@@ -72,6 +71,7 @@ private:
     int lastTime = 0;
     bool eof;
     std::mutex codecMutex;
+    FILE *file = nullptr;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;

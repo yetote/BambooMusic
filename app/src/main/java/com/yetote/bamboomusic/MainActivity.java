@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private View musicDetailsView;
     private boolean isPlaying;
     private boolean isPause;
+    private String path;
 
     /**
      * 播放状态
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicProgressButton = findViewById(R.id.main_musicProgress_btn);
         toolbar = findViewById(R.id.main_toolbar);
         myMusicQueueIv = findViewById(R.id.main_musicQueue_ImageView);
-
+        path = getExternalFilesDir(null).getPath() + "/test.avi";
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
         fragments = new ArrayList<>();
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (musicBinder != null) {
                     switch (state) {
                         case PREPARING:
-                            musicBinder.play();
+                            musicBinder.prepare(path);
                             musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
                             break;
                         case PLAYING:

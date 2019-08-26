@@ -8,7 +8,7 @@
 Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                      playStates(playStates1) {
     audioPlayer = new AudioPlay(callback, playStates);
-    videoPlayer = new VideoPlayer(callback, playStates);
+//    videoPlayer = new VideoPlayer(callback, playStates);
 }
 
 void Decode::prepare(const std::string path) {
@@ -33,9 +33,10 @@ void Decode::prepare(const std::string path) {
     for (int i = 0; i < pFmtCtx->nb_streams; ++i) {
         if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             audioIndex = i;
-        } else if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            videoIndex = i;
         }
+//        else if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+//            videoIndex = i;
+//        }
     }
     if (audioIndex == -1 && videoIndex == -1) {
         LOGE(Decode_TAG, "%s:未找到相应的流索引，请检查", __func__);
@@ -44,16 +45,17 @@ void Decode::prepare(const std::string path) {
     }
     if (audioIndex != -1) {
         pAudioStream = pFmtCtx->streams[audioIndex];
+        LOGE(Decode_TAG, "%s:找到音频流", __func__);
     }
     if (videoIndex != -1) {
         pVideoStream = pFmtCtx->streams[videoIndex];
+        LOGE(Decode_TAG, "%s:找到视频流", __func__);
     }
     LOGE(Decode_TAG, "%s:ffmpeg准备成功", __func__);
     audioPlayer->totalTime = pFmtCtx->duration / AV_TIME_BASE;
     LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlayer->totalTime);
     audioPlayer->timeBase = pAudioStream->time_base;
     callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
-//    play();
 }
 
 void Decode::playAudio() {
@@ -110,6 +112,7 @@ void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCod
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
     }
+    LOGE(Decode_TAG, "%s:解码器准备完成", __func__);
 }
 
 void Decode::pause() {
@@ -196,14 +199,18 @@ Decode::~Decode() {
 void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
+//    AVFrame *pFrame = av_frame_alloc();
+//    uint8_t *outBuffer = reinterpret_cast<uint8_t *>(static_cast<int *>(av_malloc(
+//            44100 * 4)));
+//    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+//    FILE *file = fopen(path.c_str(), "wb+");
     while (!playStates.isEof() && !playStates.isStop()) {
+//        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
+//            usleep(300);
+//            LOGE(Decode_TAG, "%s:休眠", __func__);
+//            continue;
+//        }
         mutex.lock();
-        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
-            usleep(300);
-            LOGE(Decode_TAG, "%s:休眠", __func__);
-            mutex.unlock();
-            continue;
-        }
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             switch (rst) {
@@ -227,13 +234,44 @@ void Decode::decode() {
                 LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
-        } else if (packet->stream_index == videoIndex) {
-            if (videoPlayer != nullptr) {
-                videoPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:视频入队", __func__);
-                continue;
-            }
+
+//            rst = avcodec_send_packet(audioPlayer->pCodecCtx, packet);
+//            while (rst >= 0) {
+//                rst = avcodec_receive_frame(audioPlayer->pCodecCtx, pFrame);
+//                if (rst == AVERROR(EAGAIN)) {
+//                    LOGE(Decode_TAG, "%s:读取解码数据失败%d:", __func__, rst);
+//                    break;
+//                } else if (rst == AVERROR_EOF) {
+//                    LOGE("%s", "解码完成");
+////                    fclose(outFile);
+//                    break;
+//                } else if (rst < 0) {
+//                    LOGE(Decode_TAG, "%s:解码出错%s:", __func__, av_err2str(rst));
+//                    break;
+//                }
+////                int outBufferSize = av_samples_get_buffer_size(NULL, outChannelNum, rst,
+////                                                               outSampleFmt, 1);
+//                auto frameCount = swr_convert(audioPlayer->swrCtx,
+//                                              &outBuffer,
+//                                              44100 * 2,
+//                                              (const uint8_t **) (pFrame->data),
+//                                              pFrame->nb_samples);
+//                auto bufferSize = av_samples_get_buffer_size(nullptr, audioPlayer->outChannelNum,
+//                                                             frameCount,
+//                                                             AV_SAMPLE_FMT_S16, 1);
+//                fwrite(outBuffer, 1, bufferSize, file);
+//                LOGE(Decode_TAG, "%s:解码成功", __func__);
+////                audioData = {outBuffer, outBufferSize};
+//                blockQueue.push(audioData);
+//            }
         }
+//        else if (packet->stream_index == videoIndex) {
+//            if (videoPlayer != nullptr) {
+//                videoPlayer->pushData(packet);
+//                LOGE(Decode_TAG, "%s:视频入队", __func__);
+//                continue;
+//            }
+//        }
     }
 }
 

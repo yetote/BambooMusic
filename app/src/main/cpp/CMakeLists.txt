@@ -94,6 +94,7 @@ add_library( # Sets the name of the library.
         decode/Decode.cpp
         util/Callback.cpp
         util/PlayStates.cpp
+        util/RingArray.cpp
         audio/AudioPlay.cpp
         video/EGLUtil.cpp
         video/GLUtil.cpp

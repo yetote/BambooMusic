@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include "LogUtil.h"
 #define RingArray_TAG "RingArray"
 
 class RingArray {

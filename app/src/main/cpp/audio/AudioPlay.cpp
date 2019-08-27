@@ -88,6 +88,9 @@ void printAudioStreamInfo(AudioStream *stream) {
 AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                            playStates(playStates1) {
     packet = av_packet_alloc();
+    if (ringArray == nullptr) {
+        ringArray = new RingArray(44100, 2);
+    }
     pFrame = av_frame_alloc();
     builder = new AudioStreamBuilder();
     builder->setChannelCount(ChannelCount::Stereo);
@@ -122,20 +125,10 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     }
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
-    if (dataSize <= betterSize) {
+    if (ringArray->getDataSize() < betterSize) {
         popData();
     }
-    for (int i = 0; i < betterSize; ++i) {
-        buffer[i] = data[readPos];
-        ++readPos;
-        --dataSize;
-        if (readPos >= MAX_AUDIO_FRAME_SIZE) {
-            readPos = 0;
-        }
-        if (dataSize <= 0) {
-            break;
-        }
-    }
+    ringArray->read(buffer, betterSize);
     fwrite(buffer, betterSize, 1, file);
     if ((currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
@@ -190,17 +183,9 @@ void AudioPlay::popData() {
                                                      AV_SAMPLE_FMT_S16, 1);
 
         currentTime = pFrame->pts * av_q2d(timeBase);
-        if ((MAX_AUDIO_FRAME_SIZE - writtenPos) >= bufferSize) {
-            memcpy(data + writtenPos, outBuffer, bufferSize);
-            writtenPos += bufferSize;
-        } else {
-            auto remainingSize = MAX_AUDIO_FRAME_SIZE - writtenPos;
-            memcpy(data + writtenPos, outBuffer, remainingSize);
-            writtenPos = 0;
-            memcpy(data + writtenPos, outBuffer + remainingSize, bufferSize - remainingSize);
-            writtenPos += bufferSize - remainingSize;
+        if (ringArray != nullptr) {
+            ringArray->write(outBuffer, bufferSize);
         }
-        dataSize += bufferSize;
     } else {
         LOGE(AudioPlay_TAG, "%s:解码出错%s", __func__, av_err2str(rst));
     }

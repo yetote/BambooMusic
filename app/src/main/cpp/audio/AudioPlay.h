@@ -13,7 +13,9 @@
 #include <string>
 #include "../util/Callback.h"
 #include "../util/PlayStates.h"
+#include "../util/RingArray.h"
 #include <thread>
+
 extern "C" {
 #include <libswresample/swresample.h>
 #include <libavcodec/avcodec.h>
@@ -72,6 +74,7 @@ private:
     bool eof;
     std::mutex codecMutex;
     FILE *file = nullptr;
+    RingArray *ringArray = nullptr;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;

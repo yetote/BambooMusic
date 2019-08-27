@@ -50,6 +50,7 @@ public class FoundAdapter extends RecyclerView.Adapter {
     private int width, height;
     private boolean isPlaying;
     private boolean isPausing;
+    private int playingPos;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -119,10 +120,17 @@ public class FoundAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context).inflate(R.layout.rv_music_found_layout, parent, false);
         v.setOnClickListener(v1 -> {
-            if (!isPlaying) {
+            int pos = (int) v.getTag(R.id.music_found_tag_position);
+            if (pos != playingPos) {
                 if (musicBinder.getState() != STATE_STOP) {
+                    Log.e(TAG, "onCreateViewHolder: 切换");
                     musicBinder.stop();
                 }
+                playingPos = pos;
+                isPlaying = false;
+                return;
+            }
+            if (!isPlaying) {
                 seekBar = v1.findViewById(R.id.rv_music_found_item_seek);
                 if (surface != null) {
                     surface.release();

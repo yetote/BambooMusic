@@ -66,6 +66,7 @@ public class FoundFragment extends Fragment {
         recyclerView = v.findViewById(R.id.fragment_found_rv);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
+        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
         list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());
         recyclerView.setAdapter(adapter);

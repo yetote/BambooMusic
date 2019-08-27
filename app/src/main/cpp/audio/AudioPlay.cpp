@@ -7,7 +7,7 @@
 #include "AudioPlay.h"
 
 using namespace oboe;
-const size_t MAX_AUDIO_FRAME_SIZE = 44100 * 4;
+//const size_t MAX_AUDIO_FRAME_SIZE = 44100 * 4;
 static const char *audioFormatStr[] = {
         "Invalid   非法格式", // = -1,
         "Unspecified  自动格式", // = 0,
@@ -88,20 +88,15 @@ void printAudioStreamInfo(AudioStream *stream) {
 AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                            playStates(playStates1) {
     packet = av_packet_alloc();
-    if (ringArray == nullptr) {
-        ringArray = new RingArray(44100, 2);
-    }
+
     pFrame = av_frame_alloc();
     builder = new AudioStreamBuilder();
-    builder->setChannelCount(ChannelCount::Stereo);
-    builder->setSampleRate(44100);
     builder->setPerformanceMode(PerformanceMode::LowLatency);
     builder->setSharingMode(SharingMode::Exclusive);
     builder->setDirection(Direction::Output);
     builder->setFormat(AudioFormat::I16);
     builder->setCallback(this);
     std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
-    file = fopen(path.c_str(), "wb+");
     Result result;
     builder->setCallback(this);
     result = builder->openStream(&audioStream);
@@ -111,8 +106,13 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
 
     latencyTuner = new LatencyTuner(*audioStream);
     printAudioStreamInfo(audioStream);
-    data = new uint8_t[MAX_AUDIO_FRAME_SIZE];
-    outBuffer = static_cast<uint8_t *>(av_malloc(MAX_AUDIO_FRAME_SIZE));
+    outSampleRate = audioStream->getSampleRate();
+    outChannelCount = audioStream->getChannelCount();
+    if (ringArray == nullptr) {
+        ringArray = new RingArray(outSampleRate, outChannelCount);
+    }
+    data = new uint8_t[outSampleRate * outChannelCount * 2];
+    outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));
     audioStream->requestStart();
 }
 
@@ -120,6 +120,10 @@ DataCallbackResult
 AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
 
     int betterSize = numFrames * 4;
+    if (!canPlay) {
+        LOGE(AudioPlay_TAG,"%s:准备未完成",__func__);
+        return DataCallbackResult::Continue;
+    }
     if (playStates.isStop()) {
         return DataCallbackResult::Stop;
     }
@@ -129,7 +133,6 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         popData();
     }
     ringArray->read(buffer, betterSize);
-    fwrite(buffer, betterSize, 1, file);
     if ((currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
         lastTime = static_cast<int>(currentTime);
@@ -176,7 +179,7 @@ void AudioPlay::popData() {
     if ((rst = avcodec_receive_frame(pCodecCtx, pFrame)) == 0) {
         auto frameCount = swr_convert(swrCtx,
                                       &outBuffer,
-                                      44100 * 2,
+                                      outSampleRate * outChannelCount,
                                       (const uint8_t **) (pFrame->data),
                                       pFrame->nb_samples);
         auto bufferSize = av_samples_get_buffer_size(nullptr, outChannelNum, frameCount,
@@ -200,10 +203,17 @@ void AudioPlay::initSwr() {
     enum AVSampleFormat outSampleFmt = AV_SAMPLE_FMT_S16;
     //采样率
     int inSampleRate = pCodecCtx->sample_rate;
-    int outSampleRate = 44100;
+//    int outSampleRate = 44100;
     //声道类别
     uint64_t inSampleChannel = pCodecCtx->channel_layout;
-    uint64_t outSampleChannel = AV_CH_LAYOUT_STEREO;
+    uint64_t outSampleChannel;
+    if (outChannelCount == 1) {
+        outSampleChannel = AV_CH_LAYOUT_MONO;
+    } else if (outChannelCount == 2) {
+        outSampleChannel = AV_CH_LAYOUT_STEREO;
+    } else {
+        outSampleChannel = AV_CH_LAYOUT_MONO;
+    }
     //添加配置
     swr_alloc_set_opts(swrCtx,
                        outSampleChannel,
@@ -272,6 +282,9 @@ void AudioPlay::stop() {
     if (swrCtx != nullptr) {
         swr_free(&swrCtx);
         swrCtx = nullptr;
+    }
+    if (ringArray != nullptr) {
+        delete ringArray;
     }
 }
 

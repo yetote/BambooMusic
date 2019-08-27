@@ -8,7 +8,7 @@
 Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                      playStates(playStates1) {
     audioPlayer = new AudioPlay(callback, playStates);
-//    videoPlayer = new VideoPlayer(callback, playStates);
+    videoPlayer = new VideoPlayer(callback, playStates);
 }
 
 void Decode::prepare(const std::string path) {
@@ -16,27 +16,28 @@ void Decode::prepare(const std::string path) {
     av_register_all();
     avformat_network_init();
     int rst;
+    std::lock_guard<std::mutex> guard(mutex);
     pFmtCtx = avformat_alloc_context();
     rst = avformat_open_input(&pFmtCtx, path.c_str(), nullptr, nullptr);
-    LOGE(Decode_TAG, "%s:path:%s", __func__, path.c_str());
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开文件失败%s", __func__, av_err2str(rst));
         callback.callPrepare(callback.MAIN_THREAD, false, 0);
         return;
     }
+    LOGE(Decode_TAG, "%s:准备寻找流信息", __func__);
     rst = avformat_find_stream_info(pFmtCtx, nullptr);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:寻找流信息失败%d", __func__, rst);
         callback.callPrepare(callback.MAIN_THREAD, false, 0);
         return;
     }
+    LOGE(Decode_TAG, "%s:流信息寻找完成", __func__);
     for (int i = 0; i < pFmtCtx->nb_streams; ++i) {
         if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             audioIndex = i;
+        } else if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoIndex = i;
         }
-//        else if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-//            videoIndex = i;
-//        }
     }
     if (audioIndex == -1 && videoIndex == -1) {
         LOGE(Decode_TAG, "%s:未找到相应的流索引，请检查", __func__);
@@ -122,7 +123,6 @@ void Decode::pause() {
     if (videoPlayer != nullptr) {
         videoPlayer->pause();
     }
-
 }
 
 void Decode::free() {
@@ -132,7 +132,6 @@ void Decode::resume() {
     audioPlayer->resume();
     videoPlayer->resume();
 }
-
 
 void Decode::seek(int progress) {
     std::lock_guard<std::mutex> guard(mutex);
@@ -144,11 +143,9 @@ void Decode::seek(int progress) {
     if (videoPlayer != nullptr) {
         videoPlayer->clear();
         avcodec_flush_buffers(videoPlayer->pCodecCtx);
-
     }
     avformat_seek_file(pFmtCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
 }
-
 
 void Decode::stop() {
     std::lock_guard<std::mutex> guard(mutex);
@@ -191,7 +188,6 @@ void Decode::stop() {
     }
 }
 
-
 Decode::~Decode() {
 
 }
@@ -199,18 +195,14 @@ Decode::~Decode() {
 void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
-//    AVFrame *pFrame = av_frame_alloc();
-//    uint8_t *outBuffer = reinterpret_cast<uint8_t *>(static_cast<int *>(av_malloc(
-//            44100 * 4)));
-//    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
-//    FILE *file = fopen(path.c_str(), "wb+");
     while (!playStates.isEof() && !playStates.isStop()) {
-//        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
-//            usleep(300);
-//            LOGE(Decode_TAG, "%s:休眠", __func__);
-//            continue;
-//        }
+        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
+            usleep(300);
+            LOGE(Decode_TAG, "%s:休眠", __func__);
+            continue;
+        }
         mutex.lock();
+        LOGE(Decode_TAG, "%s:开始解码", __func__);
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {
             switch (rst) {
@@ -231,48 +223,18 @@ void Decode::decode() {
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:音频入队", __func__);
+//                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
-
-//            rst = avcodec_send_packet(audioPlayer->pCodecCtx, packet);
-//            while (rst >= 0) {
-//                rst = avcodec_receive_frame(audioPlayer->pCodecCtx, pFrame);
-//                if (rst == AVERROR(EAGAIN)) {
-//                    LOGE(Decode_TAG, "%s:读取解码数据失败%d:", __func__, rst);
-//                    break;
-//                } else if (rst == AVERROR_EOF) {
-//                    LOGE("%s", "解码完成");
-////                    fclose(outFile);
-//                    break;
-//                } else if (rst < 0) {
-//                    LOGE(Decode_TAG, "%s:解码出错%s:", __func__, av_err2str(rst));
-//                    break;
-//                }
-////                int outBufferSize = av_samples_get_buffer_size(NULL, outChannelNum, rst,
-////                                                               outSampleFmt, 1);
-//                auto frameCount = swr_convert(audioPlayer->swrCtx,
-//                                              &outBuffer,
-//                                              44100 * 2,
-//                                              (const uint8_t **) (pFrame->data),
-//                                              pFrame->nb_samples);
-//                auto bufferSize = av_samples_get_buffer_size(nullptr, audioPlayer->outChannelNum,
-//                                                             frameCount,
-//                                                             AV_SAMPLE_FMT_S16, 1);
-//                fwrite(outBuffer, 1, bufferSize, file);
-//                LOGE(Decode_TAG, "%s:解码成功", __func__);
-////                audioData = {outBuffer, outBufferSize};
-//                blockQueue.push(audioData);
-//            }
-        }
-//        else if (packet->stream_index == videoIndex) {
-//            if (videoPlayer != nullptr) {
-//                videoPlayer->pushData(packet);
+        } else if (packet->stream_index == videoIndex) {
+            if (videoPlayer != nullptr) {
+                videoPlayer->pushData(packet);
 //                LOGE(Decode_TAG, "%s:视频入队", __func__);
-//                continue;
-//            }
-//        }
+                continue;
+            }
+        }
     }
+    LOGE(Decode_TAG, "%s:退出解码", __func__);
 }
 
 

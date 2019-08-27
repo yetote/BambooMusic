@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         initView();
 
-
         toolbar.inflateMenu(R.menu.main_toolbar_menu);
         toolbar.setTitle("音乐馆");
 
@@ -138,8 +137,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
-
-
     }
 
     private void callBack() {

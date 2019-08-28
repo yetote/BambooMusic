@@ -56,7 +56,7 @@ void Decode::prepare(const std::string path) {
     audioPlayer->totalTime = pFmtCtx->duration / AV_TIME_BASE;
     LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlayer->totalTime);
     audioPlayer->timeBase = pAudioStream->time_base;
-    callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
+    callback.callPrepare(callback.CHILD_THREAD, true, audioPlayer->totalTime);
 }
 
 void Decode::playAudio() {
@@ -196,12 +196,13 @@ void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
+        mutex.lock();
         if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
             usleep(300);
             LOGE(Decode_TAG, "%s:休眠", __func__);
+            mutex.unlock();
             continue;
         }
-        mutex.lock();
         LOGE(Decode_TAG, "%s:开始解码", __func__);
         rst = av_read_frame(pFmtCtx, packet);
         if (rst < 0) {

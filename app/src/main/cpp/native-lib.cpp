@@ -26,7 +26,9 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2(JNIEnv *
     if (decode == nullptr) {
         decode = new Decode{*callback, *playStates};
     }
-    decode->prepare(path);
+    std::thread preparedThread(&Decode::prepare, decode, path);
+    preparedThread.detach();
+//    decode->prepare(path);
     env->ReleaseStringUTFChars(path_, path);
 }
 
@@ -51,7 +53,9 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
     if (decode != nullptr) {
-        decode->stop();
+        std::thread stopThread(&Decode::stop, decode);
+        stopThread.join();
+//        decode->stop();
         delete decode;
         decode = nullptr;
         LOGE(NATIVE_TAG, "%s:decode释放完毕", __func__);

@@ -90,6 +90,7 @@
 
     <ImageView
         android:id="@+id/music_details_pop_on"
+        android:src="@drawable/play_before_music"
         android:layout_width="50dp"
         android:layout_height="50dp"
         app:layout_constraintBottom_toBottomOf="@+id/music_details_pop_playController"
@@ -106,6 +107,7 @@
 
     <ImageView
         android:id="@+id/music_details_pop_under"
+        android:src="@drawable/play_next_music"
         android:layout_width="50dp"
         android:layout_height="50dp"
         app:layout_constraintBottom_toBottomOf="@+id/music_details_pop_musicQueue"

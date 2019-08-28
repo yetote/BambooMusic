@@ -25,6 +25,7 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2(JNIEnv *
     }
     if (decode == nullptr) {
         decode = new Decode{*callback, *playStates};
+        LOGE(NATIVE_TAG,"%s:初始化decode",__func__);
     }
     std::thread preparedThread(&Decode::prepare, decode, path);
     preparedThread.detach();

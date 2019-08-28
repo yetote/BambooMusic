@@ -36,6 +36,7 @@ import java.util.ArrayList;
 
 import static android.widget.ListPopupWindow.MATCH_PARENT;
 import static android.widget.ListPopupWindow.WRAP_CONTENT;
+import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isPlaying;
     private boolean isPause;
     private String path;
+    private ArrayList<String> musicList;
+    private static int playingPos = 0;
 
     /**
      * 播放状态
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void callBack() {
         musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
-            Toast.makeText(MainActivity.this, "打开" + totalTime, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainActivity.this, "打开" + totalTime, Toast.LENGTH_SHORT).show();
             musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
             musicDetailsPopProgress.setMax(totalTime);
             musicProgressButton.setTotalTime(totalTime);
@@ -160,14 +163,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
+        path = getExternalFilesDir(null).getPath() + "/test.avi";
+        musicIcon = findViewById(R.id.main_music_playing_icon);
+
         musicProgressButton = findViewById(R.id.main_musicProgress_btn);
         toolbar = findViewById(R.id.main_toolbar);
         myMusicQueueIv = findViewById(R.id.main_musicQueue_ImageView);
-        path = getExternalFilesDir(null).getPath() + "/test.avi";
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
+        initPopupWindow();
+
         fragments = new ArrayList<>();
         title = new ArrayList<>();
+        musicList = new ArrayList<>();
+
         fragments.add(new MusicLibFragment());
         fragments.add(new RecommendFragment());
         fragments.add(new FoundFragment());
@@ -176,9 +185,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("推荐");
         title.add("发现");
         title.add("我的");
+
+        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/7.mp3");
+
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
-        musicIcon = findViewById(R.id.main_music_playing_icon);
-        initPopupWindow();
+
     }
 
     @Override
@@ -191,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (musicBinder != null) {
                     switch (state) {
                         case PREPARING:
-                            musicBinder.prepare(path);
+                            musicBinder.prepare(musicList.get(playingPos));
                             musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
                             break;
                         case PLAYING:
@@ -214,7 +231,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG, "onClick: ");
                 musicDetailsPopupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
                 break;
+            case R.id.music_details_pop_on:
+                if (musicBinder != null) {
+                    if (musicBinder.getState() != STATE_STOP) {
+                        musicBinder.stop();
+                    }
+                    playingPos--;
+                    if (playingPos < 0) {
+                        playingPos = musicList.size() - 1;
+                    }
+                    musicBinder.prepare(musicList.get(playingPos));
+                }
+                break;
+            case R.id.music_details_pop_under:
+                Log.e(TAG, "onClick: under");
+                if (musicBinder != null) {
+                    if (musicBinder.getState() != STATE_STOP) {
+                        musicBinder.stop();
+                    }
+                    playingPos++;
+                    if (playingPos >= musicList.size()) {
+                        playingPos = 0;
+                    }
+                    musicBinder.prepare(musicList.get(playingPos));
+                }
+                break;
             default:
+                Log.e(TAG, "onClick: 点击id" + v.getId());
                 break;
         }
     }
@@ -246,5 +289,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicDetailsPopTotalTime = musicDetailsView.findViewById(R.id.music_details_pop_totalTime);
         musicDetailsPopProgress = musicDetailsView.findViewById(R.id.music_details_pop_progress);
         musicDetailsPopupWindow.setClippingEnabled(false);
+
+        musicDetailsPopUnder.setOnClickListener(v->{
+            Log.e(TAG, "onClick: under");
+            if (musicBinder != null) {
+                if (musicBinder.getState() != STATE_STOP) {
+                    musicBinder.stop();
+                }
+                playingPos++;
+                if (playingPos >= musicList.size()) {
+                    playingPos = 0;
+                }
+                musicBinder.prepare(musicList.get(playingPos));
+            }
+        });
+
+
     }
 }

@@ -217,7 +217,7 @@ void VideoPlayer::decode() {
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
+//        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
         if (playStates.isPause()) {
             usleep(300);
             continue;
@@ -226,7 +226,7 @@ void VideoPlayer::decode() {
             av_usleep(300);
             continue;
         }
-        mutex.lock();
+        std::lock_guard<std::mutex> guard(mutex);
         dataPacket = videoData.front();
         videoData.pop();
         rst = avcodec_send_packet(pCodecCtx, dataPacket);
@@ -234,15 +234,12 @@ void VideoPlayer::decode() {
             rst = avcodec_receive_frame(pCodecCtx, pFrame);
             if (rst == AVERROR(EAGAIN)) {
                 LOGE(VideoPlayer_TAG, "%s:读取解码数据失败%s", __func__, av_err2str(rst));
-                mutex.unlock();
                 continue;
             } else if (rst == AVERROR_EOF) {
                 LOGE(VideoPlayer_TAG, "%s", "EOF解码完成");
-                mutex.unlock();
                 break;
             } else if (rst < 0) {
                 LOGE(VideoPlayer_TAG, "%s", "解码出错");
-                mutex.unlock();
                 continue;
             } else {
                 if (pFrame->format == AV_PIX_FMT_YUV420P) {
@@ -277,7 +274,6 @@ void VideoPlayer::decode() {
         } else {
             LOGE(VideoPlayer_TAG, "%s:send失败%s,%d", __func__, av_err2str(rst), rst);
         }
-        mutex.unlock();
     }
     av_frame_free(&pFrame);
     av_packet_free(&dataPacket);

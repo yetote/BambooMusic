@@ -113,7 +113,7 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
     }
     data = new uint8_t[outSampleRate * outChannelCount * 2];
     outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));
-    audioStream->requestStart();
+//    audioStream->requestStart();
 }
 
 DataCallbackResult
@@ -121,7 +121,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
 
     int betterSize = numFrames * 4;
     if (!canPlay) {
-        LOGE(AudioPlay_TAG,"%s:准备未完成",__func__);
+        LOGE(AudioPlay_TAG, "%s:准备未完成", __func__);
         return DataCallbackResult::Continue;
     }
     if (playStates.isStop()) {
@@ -189,6 +189,7 @@ void AudioPlay::popData() {
         if (ringArray != nullptr) {
             ringArray->write(outBuffer, bufferSize);
         }
+        LOGE(AudioPlay_TAG,"%s:解码成功",__func__);
     } else {
         LOGE(AudioPlay_TAG, "%s:解码出错%s", __func__, av_err2str(rst));
     }
@@ -292,4 +293,10 @@ int AudioPlay::getSize() {
     std::lock_guard<std::mutex> guard(codecMutex);
     int size = audioQueue.size();
     return size;
+}
+
+void AudioPlay::play() {
+    if (audioStream != nullptr) {
+        audioStream->requestStart();
+    }
 }

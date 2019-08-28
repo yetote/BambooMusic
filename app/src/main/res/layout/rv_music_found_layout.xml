@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -32,6 +31,16 @@
                 android:id="@+id/rv_music_found_item_surface"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/rv_music_found_item_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="play"
+                app:layout_constraintBottom_toBottomOf="@+id/rv_music_found_item_seek"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/rv_music_found_item_surface"
+                app:layout_constraintTop_toTopOf="@+id/rv_music_found_item_surface" />
 
             <SeekBar
                 android:id="@+id/rv_music_found_item_seek"

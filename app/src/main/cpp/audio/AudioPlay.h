@@ -33,6 +33,8 @@ public:
 
     AudioPlay(const Callback &callback, PlayStates &playStates);
 
+    void play();
+
     void pushData(AVPacket *packet);
 
     void pause();

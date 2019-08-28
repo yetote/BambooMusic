@@ -9,6 +9,7 @@ Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(ca
                                                                      playStates(playStates1) {
     audioPlayer = new AudioPlay(callback, playStates);
     videoPlayer = new VideoPlayer(callback, playStates);
+    isFinish = false;
 }
 
 void Decode::prepare(const std::string path) {
@@ -16,7 +17,7 @@ void Decode::prepare(const std::string path) {
     av_register_all();
     avformat_network_init();
     int rst;
-    std::lock_guard<std::mutex> guard(mutex);
+    std::lock_guard<std::mutex> guard(initMutex);
     pFmtCtx = avformat_alloc_context();
     rst = avformat_open_input(&pFmtCtx, path.c_str(), nullptr, nullptr);
     if (rst != 0) {
@@ -64,6 +65,7 @@ void Decode::playAudio() {
         findCodec(pAudioStream, &audioPlayer->pCodecCtx, pAudioCodec);
     }
     audioPlayer->initSwr();
+    audioPlayer->play();
     decode();
 }
 
@@ -148,40 +150,60 @@ void Decode::seek(int progress) {
 }
 
 void Decode::stop() {
-    std::lock_guard<std::mutex> guard(mutex);
+    LOGE(Decode_TAG, "%s:申请释放%d", __func__, isFinish);
     playStates.setStop(true);
-
+    int sleepCount = 0;
+    while (!isFinish) {
+        if (sleepCount >= 1000) {
+            isFinish = true;
+        }
+        sleepCount++;
+        av_usleep(1000 * 10);
+        LOGE(Decode_TAG, "%s:准备释放%d", __func__, isFinish);
+    }
+    LOGE(Decode_TAG, "%s:开始释放", __func__);
+    std::lock_guard<std::mutex> guard(initMutex);
+    LOGE(Decode_TAG,"%s:准备释放audioPlayer",__func__);
     if (audioPlayer != nullptr) {
         audioPlayer->stop();
+        delete audioPlayer;
         audioPlayer = nullptr;
         LOGE(Decode_TAG, "%s:audioPlayer释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放videoPlayer",__func__);
     if (videoPlayer != nullptr) {
         videoPlayer->stop();
+        delete videoPlayer;
         videoPlayer = nullptr;
         LOGE(Decode_TAG, "%s:videoPlayer释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放pVideoStream",__func__);
     if (pVideoStream != nullptr) {
         av_free(pVideoStream);
         pVideoStream = nullptr;
         LOGE(Decode_TAG, "%s:videoStream释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放pAudioStream",__func__);
     if (pAudioStream != nullptr) {
         av_free(pAudioStream);
         pAudioStream = nullptr;
         LOGE(Decode_TAG, "%s:audioStream释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放pAudioCodec",__func__);
     if (pAudioCodec != nullptr) {
         av_free(pAudioCodec);
         pAudioCodec = nullptr;
         LOGE(Decode_TAG, "%s:audioCodec释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放pVideoCodec",__func__);
     if (pVideoCodec != nullptr) {
         av_free(pVideoCodec);
         pVideoCodec = nullptr;
         LOGE(Decode_TAG, "%s:videoCodec释放完成", __func__);
     }
+    LOGE(Decode_TAG,"%s:准备释放pFmtCtx",__func__);
     if (pFmtCtx != nullptr) {
+        avformat_close_input(&pFmtCtx);
         avformat_free_context(pFmtCtx);
         pFmtCtx = nullptr;
         LOGE(Decode_TAG, "%s:fmt释放完成", __func__);
@@ -196,15 +218,14 @@ void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-        mutex.lock();
         if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
             usleep(300);
-            LOGE(Decode_TAG, "%s:休眠", __func__);
-            mutex.unlock();
+//            LOGE(Decode_TAG, "%s:休眠", __func__);
             continue;
         }
-        LOGE(Decode_TAG, "%s:开始解码", __func__);
+        std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
+        LOGE(Decode_TAG, "%s:开始分包", __func__);
         if (rst < 0) {
             switch (rst) {
                 case AVERROR_EOF:
@@ -212,30 +233,29 @@ void Decode::decode() {
                     playStates.setEof(true);
                     av_packet_free(&packet);
                     av_free(packet);
-                    mutex.unlock();
+                    isFinish = true;
                     return;
                 default:
                     LOGE(Decode_TAG, "%s:未知错误%s", __func__, av_err2str(rst));
-                    mutex.unlock();
                     continue;
             }
         }
-        mutex.unlock();
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
-//                LOGE(Decode_TAG, "%s:音频入队", __func__);
+                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
         } else if (packet->stream_index == videoIndex) {
             if (videoPlayer != nullptr) {
                 videoPlayer->pushData(packet);
-//                LOGE(Decode_TAG, "%s:视频入队", __func__);
+                LOGE(Decode_TAG, "%s:视频入队", __func__);
                 continue;
             }
         }
     }
-    LOGE(Decode_TAG, "%s:退出解码", __func__);
+    LOGE(Decode_TAG, "%s:结束分包%d", __func__, isFinish);
+    isFinish = true;
 }
 
 

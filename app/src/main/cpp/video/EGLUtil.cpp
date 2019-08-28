@@ -9,6 +9,9 @@ EGLUtil::EGLUtil(ANativeWindow *aNativeWindow) {
 }
 
 bool EGLUtil::initEGL(ANativeWindow *window) {
+    if (window == nullptr) {
+        LOGE(EGLUtil_TAG, "%s:window为null", __func__);
+    }
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:获取display失败,错误码%d", __func__, eglGetError());
@@ -60,7 +63,7 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
         return false;
     }
     delete[] surfaceAttr;
-    auto rst = eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+    eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
     if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:关联egl失败,错误码%d", __func__, eglGetError());
         return false;

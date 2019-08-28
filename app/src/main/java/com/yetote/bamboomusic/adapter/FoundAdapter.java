@@ -89,13 +89,14 @@ public class FoundAdapter extends RecyclerView.Adapter {
     class MyViewHolder extends RecyclerView.ViewHolder {
         private SurfaceView surfaceView;
         private TextView tag;
-        private Button praise, discuss;
+        private Button praise, discuss, start;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             surfaceView = itemView.findViewById(R.id.rv_music_found_item_surface);
             tag = itemView.findViewById(R.id.rv_music_found_item_tag);
             praise = itemView.findViewById(R.id.rv_music_found_item_praise);
+            start = itemView.findViewById(R.id.rv_music_found_item_start);
         }
 
         public SurfaceView getSurfaceView() {
@@ -113,14 +114,103 @@ public class FoundAdapter extends RecyclerView.Adapter {
         public Button getDiscuss() {
             return discuss;
         }
+
+        public Button getStart() {
+            return start;
+        }
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context).inflate(R.layout.rv_music_found_layout, parent, false);
-        v.setOnClickListener(v1 -> {
-            int pos = (int) v.getTag(R.id.music_found_tag_position);
+//        v.setOnClickListener(v1 -> {
+//            int pos = (int) v.getTag(R.id.music_found_tag_position);
+//            if (pos != playingPos) {
+//                if (musicBinder.getState() != STATE_STOP) {
+//                    Log.e(TAG, "onCreateViewHolder: 切换");
+//                    musicBinder.stop();
+//                }
+//                playingPos = pos;
+//                isPlaying = false;
+//                return;
+//            }
+//            if (!isPlaying) {
+//                seekBar = v1.findViewById(R.id.rv_music_found_item_seek);
+////                if (surface != null) {
+////                    surface.release();
+////                }
+//                if (width == 0 || height == 0) {
+//                    height = (int) v1.getTag(R.id.music_found_tag_height);
+//                    width = (int) v1.getTag(R.id.music_found_tag_width);
+//                }
+//                surface = (Surface) v1.getTag(R.id.music_found_tag_surface);
+//                musicBinder.prepare((String) v1.getTag(R.id.music_found_tag_path));
+//            } else {
+//                if (isPausing) {
+//                    musicBinder.resume();
+//                    isPausing = false;
+//                } else {
+//                    isPausing = true;
+//                    musicBinder.pause();
+//                }
+//            }
+//
+//
+//            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//                @Override
+//                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//
+//                }
+//
+//                @Override
+//                public void onStartTrackingTouch(SeekBar seekBar) {
+//                    if (isPlaying) {
+//                        musicBinder.pause();
+//                    }
+//                }
+//
+//                @Override
+//                public void onStopTrackingTouch(SeekBar seekBar) {
+//                    if (isPlaying) {
+//                        musicBinder.seek(seekBar.getProgress());
+//                        musicBinder.resume();
+//                    }
+//                }
+//            });
+//        });
+        return new MyViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        MyViewHolder vh = (MyViewHolder) holder;
+        vh.itemView.setTag(R.id.music_found_tag_path, list.get(position).getPath());
+        vh.getTag().setText(list.get(position).getTag());
+        vh.getPraise().setText(list.get(position).getPraiseNum() + "");
+        vh.getSurfaceView().getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                Log.e(TAG, "surfaceCreated: 创建");
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+                vh.itemView.setTag(R.id.music_found_tag_width, width);
+                vh.itemView.setTag(R.id.music_found_tag_height, height);
+                vh.itemView.setTag(R.id.music_found_tag_surface, holder.getSurface());
+                vh.itemView.setTag(R.id.music_found_tag_position, position);
+                Log.e(TAG, "surfaceChanged: ");
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                Log.e(TAG, "surfaceDestroyed: 销毁");
+                musicBinder.stop();
+            }
+        });
+        vh.getStart().setOnClickListener(v -> {
+            int pos = position;
             if (pos != playingPos) {
                 if (musicBinder.getState() != STATE_STOP) {
                     Log.e(TAG, "onCreateViewHolder: 切换");
@@ -131,16 +221,13 @@ public class FoundAdapter extends RecyclerView.Adapter {
                 return;
             }
             if (!isPlaying) {
-                seekBar = v1.findViewById(R.id.rv_music_found_item_seek);
-                if (surface != null) {
-                    surface.release();
-                }
+                seekBar = vh.itemView.findViewById(R.id.rv_music_found_item_seek);
                 if (width == 0 || height == 0) {
-                    height = (int) v1.getTag(R.id.music_found_tag_height);
-                    width = (int) v1.getTag(R.id.music_found_tag_width);
+                    height = (int) vh.itemView.getTag(R.id.music_found_tag_height);
+                    width = (int) vh.itemView.getTag(R.id.music_found_tag_width);
                 }
-                surface = (Surface) v1.getTag(R.id.music_found_tag_surface);
-                musicBinder.prepare((String) v1.getTag(R.id.music_found_tag_path));
+                surface = (Surface) vh.itemView.getTag(R.id.music_found_tag_surface);
+                musicBinder.prepare((String) vh.itemView.getTag(R.id.music_found_tag_path));
             } else {
                 if (isPausing) {
                     musicBinder.resume();
@@ -173,36 +260,6 @@ public class FoundAdapter extends RecyclerView.Adapter {
                     }
                 }
             });
-        });
-        return new MyViewHolder(v);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        MyViewHolder vh = (MyViewHolder) holder;
-        vh.itemView.setTag(R.id.music_found_tag_path, list.get(position).getPath());
-        vh.getTag().setText(list.get(position).getTag());
-        vh.getPraise().setText(list.get(position).getPraiseNum() + "");
-        vh.getSurfaceView().getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Log.e(TAG, "surfaceCreated: 创建");
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                vh.itemView.setTag(R.id.music_found_tag_width, width);
-                vh.itemView.setTag(R.id.music_found_tag_height, height);
-                vh.itemView.setTag(R.id.music_found_tag_surface, holder.getSurface());
-                vh.itemView.setTag(R.id.music_found_tag_position, position);
-                Log.e(TAG, "surfaceChanged: ");
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                Log.e(TAG, "surfaceDestroyed: 销毁");
-                musicBinder.stop();
-            }
         });
     }
 

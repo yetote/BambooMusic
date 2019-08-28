@@ -58,7 +58,8 @@ private:
     AudioPlay *audioPlayer = nullptr;
     VideoPlayer *videoPlayer = nullptr;
     std::string wpath;
-    std::mutex mutex;
+    std::mutex mutex, initMutex;
+    bool isFinish;
 
     void free();
 

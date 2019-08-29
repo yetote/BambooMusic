@@ -36,6 +36,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:title="aaa"
         app:titleTextColor="@color/white" />
 
     <androidx.viewpager.widget.ViewPager
@@ -90,14 +91,15 @@
 
     <ImageView
         android:id="@+id/music_details_pop_on"
-        android:src="@drawable/play_before_music"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:src="@drawable/play_before_music"
         app:layout_constraintBottom_toBottomOf="@+id/music_details_pop_playController"
         app:layout_constraintEnd_toStartOf="@+id/music_details_pop_playController"
         app:layout_constraintStart_toEndOf="@+id/music_details_pop_playMode" />
 
     <ImageView
+        android:background="@drawable/music_state_play"
         android:id="@+id/music_details_pop_playController"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -107,9 +109,9 @@
 
     <ImageView
         android:id="@+id/music_details_pop_under"
-        android:src="@drawable/play_next_music"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:background="@drawable/play_next_music"
         app:layout_constraintBottom_toBottomOf="@+id/music_details_pop_musicQueue"
         app:layout_constraintEnd_toStartOf="@+id/music_details_pop_musicQueue"
         app:layout_constraintStart_toEndOf="@+id/music_details_pop_playController"

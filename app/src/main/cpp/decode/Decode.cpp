@@ -125,6 +125,8 @@ void Decode::pause() {
     if (videoPlayer != nullptr) {
         videoPlayer->pause();
     }
+
+    callback.callPause(callback.MAIN_THREAD);
 }
 
 void Decode::free() {
@@ -133,6 +135,7 @@ void Decode::free() {
 void Decode::resume() {
     audioPlayer->resume();
     videoPlayer->resume();
+    callback.callResume(callback.MAIN_THREAD);
 }
 
 void Decode::seek(int progress) {
@@ -184,6 +187,7 @@ void Decode::stop() {
         pFmtCtx = nullptr;
         LOGE(Decode_TAG, "%s:fmt释放完成", __func__);
     }
+    callback.callStop(callback.CHILD_THREAD);
 }
 
 Decode::~Decode() {

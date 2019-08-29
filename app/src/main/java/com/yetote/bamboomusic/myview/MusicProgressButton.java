@@ -159,7 +159,10 @@ public class MusicProgressButton extends View {
         playState = state;
         switch (playState) {
             case STATE_PROGRESS:
-                showPreparingAnimation();
+                Observable.create(emitter -> showPreparingAnimation())
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .subscribe(o -> {
+                        });
                 break;
             case STATE_PLAYING:
                 Observable.create(emitter -> preparingAnimation.end())

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
@@ -29,13 +30,18 @@ import com.yetote.bamboomusic.fragment.MineFragment;
 import com.yetote.bamboomusic.fragment.MusicLibFragment;
 import com.yetote.bamboomusic.fragment.RecommendFragment;
 import com.yetote.bamboomusic.media.MusicService;
+import com.yetote.bamboomusic.media.OnFFmpegCallback;
 import com.yetote.bamboomusic.myview.MusicProgressButton;
 import com.yetote.bamboomusic.util.TextUtil;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import static android.widget.ListPopupWindow.MATCH_PARENT;
 import static android.widget.ListPopupWindow.WRAP_CONTENT;
+import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
+import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
+import static com.yetote.bamboomusic.media.MusicService.STATE_PREPARE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -66,29 +72,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList<String> musicList;
     private static int playingPos = 0;
 
-    /**
-     * 播放状态
-     */
-    enum PLAY_STATE {
-        /**
-         * 准备中
-         */
-        PREPARING,
-        /**
-         * 播放
-         */
-        PLAYING,
-        /**
-         * 暂停
-         */
-        PAUSING,
-        /**
-         * 停止
-         */
-        STOP
-    }
-
-    private PLAY_STATE state = PLAY_STATE.PREPARING;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -143,23 +126,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void callBack() {
-        musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
-//            Toast.makeText(MainActivity.this, "打开" + totalTime, Toast.LENGTH_SHORT).show();
-            musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
-            musicDetailsPopProgress.setMax(totalTime);
-            musicProgressButton.setTotalTime(totalTime);
-            state = PLAY_STATE.PLAYING;
-            musicBinder.play();
+        musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
+            @Override
+            public void onPrepare(boolean prepare, int totalTime) {
+                musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
+                musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
+                musicDetailsPopProgress.setMax(totalTime);
+                musicProgressButton.setTotalTime(totalTime);
+                musicBinder.play();
+            }
+
+            @Override
+            public void onPlaying(int currentTime) {
+                musicDetailsPopProgress.setProgress(currentTime);
+                if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
+                    musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
+                }
+                musicProgressButton.showPlayingAnimation(currentTime);
+                musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
+                musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
+            }
+
+            @Override
+            public void onPause() {
+                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+            }
+
+            @Override
+            public void onResume() {
+
+            }
+
+            @Override
+            public void onStop() {
+                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+            }
         });
 
-        musicBinder.setPlayCallback(currentTime -> {
-            musicDetailsPopProgress.setProgress(currentTime);
-            if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
-                musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
-            }
-            musicProgressButton.showPlayingAnimation(currentTime);
-            musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
-        });
     }
 
     private void initView() {
@@ -206,21 +209,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    switch (state) {
-                        case PREPARING:
+                    switch (musicBinder.getState()) {
+                        case STATE_STOP:
                             musicBinder.prepare(musicList.get(playingPos));
-                            musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
                             break;
-                        case PLAYING:
+                        case STATE_PLAYING:
                             musicBinder.pause();
-                            state = PLAY_STATE.PAUSING;
-                            musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+                            musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_play));
                             break;
-                        case PAUSING:
+                        case STATE_PAUSE:
                             musicBinder.resume();
-                            state = PLAY_STATE.PLAYING;
                             break;
-                        case STOP:
+                        case STATE_PREPARE:
                             break;
                         default:
                             break;
@@ -230,31 +230,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.main_music_playing_icon:
                 Log.e(TAG, "onClick: ");
                 musicDetailsPopupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
-                break;
-            case R.id.music_details_pop_on:
-                if (musicBinder != null) {
-                    if (musicBinder.getState() != STATE_STOP) {
-                        musicBinder.stop();
-                    }
-                    playingPos--;
-                    if (playingPos < 0) {
-                        playingPos = musicList.size() - 1;
-                    }
-                    musicBinder.prepare(musicList.get(playingPos));
-                }
-                break;
-            case R.id.music_details_pop_under:
-                Log.e(TAG, "onClick: under");
-                if (musicBinder != null) {
-                    if (musicBinder.getState() != STATE_STOP) {
-                        musicBinder.stop();
-                    }
-                    playingPos++;
-                    if (playingPos >= musicList.size()) {
-                        playingPos = 0;
-                    }
-                    musicBinder.prepare(musicList.get(playingPos));
-                }
                 break;
             default:
                 Log.e(TAG, "onClick: 点击id" + v.getId());
@@ -273,6 +248,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicQueuePopMusicQueue = musicQueueView.findViewById(R.id.main_pop_musicQueue_rv);
         musicQueuePopupWindow = new PopupWindow(musicQueueView, MATCH_PARENT, WRAP_CONTENT, false);
 
+        int stateBarSize = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            stateBarSize = getResources().getDimensionPixelSize(resourceId);
+        }
         musicDetailsView = LayoutInflater.from(this).inflate(R.layout.popupwindow_music_details, null);
         musicDetailsPopupWindow = new PopupWindow(musicDetailsView, MATCH_PARENT, MATCH_PARENT, true);
         musicDetailsPopPlayMode = musicDetailsView.findViewById(R.id.music_details_pop_playMode);
@@ -285,13 +265,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicDetailsPopShare = musicDetailsView.findViewById(R.id.music_details_pop_share);
         musicDetailsPopDiscuss = musicDetailsView.findViewById(R.id.music_details_pop_discuss);
         musicDetailsPopToolbar = musicDetailsView.findViewById(R.id.music_details_pop_toolbar);
+        musicDetailsPopToolbar.setTitleMarginTop(stateBarSize);
         musicDetailsPopCurrentTime = musicDetailsView.findViewById(R.id.music_details_pop_currentTime);
         musicDetailsPopTotalTime = musicDetailsView.findViewById(R.id.music_details_pop_totalTime);
         musicDetailsPopProgress = musicDetailsView.findViewById(R.id.music_details_pop_progress);
-        musicDetailsPopupWindow.setClippingEnabled(false);
+        musicDetailsPopupWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        musicDetailsPopUnder.setOnClickListener(v->{
-            Log.e(TAG, "onClick: under");
+        try {
+            Field mLayoutInScreen = PopupWindow.class.getDeclaredField("mLayoutInScreen");
+            mLayoutInScreen.setAccessible(true);
+            mLayoutInScreen.set(musicDetailsPopupWindow, true);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        musicDetailsPopupWindow.setWidth(WindowManager.LayoutParams.MATCH_PARENT);
+        musicDetailsPopupWindow.setHeight(WindowManager.LayoutParams.MATCH_PARENT);
+
+        musicDetailsPopUnder.setOnClickListener(v -> {
             if (musicBinder != null) {
                 if (musicBinder.getState() != STATE_STOP) {
                     musicBinder.stop();
@@ -304,6 +294,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+        musicDetailsPopOn.setOnClickListener(v -> {
+            if (musicBinder != null) {
+                if (musicBinder.getState() != STATE_STOP) {
+                    musicBinder.stop();
+                }
+                playingPos--;
+                if (playingPos < 0) {
+                    playingPos = musicList.size() - 1;
+                }
+                musicBinder.prepare(musicList.get(playingPos));
+            }
+        });
+
+        musicDetailsPopPlayController.setOnClickListener(v -> {
+            if (musicBinder != null) {
+                if (musicBinder.getState() == STATE_PAUSE) {
+                    musicBinder.resume();
+                    musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
+                } else if (musicBinder.getState() == STATE_PLAYING) {
+                    musicBinder.pause();
+                    musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_play));
+                } else if (musicBinder.getState() == STATE_STOP) {
+                    musicBinder.prepare(musicList.get(playingPos));
+                    musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
+                }
+            }
+        });
 
     }
 }

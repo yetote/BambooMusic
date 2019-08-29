@@ -49,13 +49,33 @@ public class MusicService extends Service {
         super.onCreate();
         Log.e(TAG, "onCreate: service create");
         player = new MyPlayer(this);
-        player.setPrepareCallback((prepare, totalTime) -> {
-            musicBinder.callPrepare(prepare, totalTime);
-            Log.e(TAG, "onCreate: 准备好了，开始播放");
-        });
+        player.setffmpegCallback(new OnFFmpegCallback() {
+            @Override
+            public void onPrepare(boolean prepare, int totalTime) {
+                musicBinder.callPrepare(prepare, totalTime);
+            }
 
-        player.setPlayCallback(currentTime -> {
-            musicBinder.callPlay(currentTime);
+            @Override
+            public void onPlaying(int currentTime) {
+                musicBinder.callPlay(currentTime);
+            }
+
+            @Override
+            public void onPause() {
+                musicBinder.callPause();
+            }
+
+            @Override
+            public void onResume() {
+                musicBinder.callResume();
+            }
+
+            @Override
+            public void onStop() {
+                musicBinder.callStop();
+            }
+
+
         });
     }
 
@@ -78,24 +98,32 @@ public class MusicService extends Service {
             return state;
         }
 
-        private OnPrepareCallback onPrepareCallback;
+        private OnFFmpegCallback serviceFFmpegCallBack;
 
-        public void setOnPrepareCallback(OnPrepareCallback onPrepareCallback) {
-            this.onPrepareCallback = onPrepareCallback;
+
+        public void setServiceFFmpegCallBack(OnFFmpegCallback serviceFFmpegCallBack) {
+            this.serviceFFmpegCallBack = serviceFFmpegCallBack;
         }
 
-        private OnPlayCallback onPlayCallback;
 
-        public void setPlayCallback(OnPlayCallback playCallback) {
-            this.onPlayCallback = playCallback;
+        void callPrepare(boolean success, int totalTime) {
+            serviceFFmpegCallBack.onPrepare(success, totalTime);
         }
 
-        protected void callPrepare(boolean success, int totalTime) {
-            onPrepareCallback.onPrepare(success, totalTime);
+        void callPlay(int currentTime) {
+            serviceFFmpegCallBack.onPlaying(currentTime);
         }
 
-        protected void callPlay(int currentTime) {
-            onPlayCallback.onPlaying(currentTime);
+        private void callPause() {
+            serviceFFmpegCallBack.onPause();
+        }
+
+        void callResume() {
+            serviceFFmpegCallBack.onResume();
+        }
+
+        void callStop() {
+            serviceFFmpegCallBack.onStop();
         }
 
         public void prepare(String path) {
@@ -108,7 +136,7 @@ public class MusicService extends Service {
         public void play() {
             if (player != null) {
                 player.play();
-                state = STATE_PREPARE;
+                state = STATE_PLAYING;
                 type = TYPE_AUDIO;
             }
         }

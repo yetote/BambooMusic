@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.yetote.bamboomusic.R;
 import com.yetote.bamboomusic.media.MusicService;
+import com.yetote.bamboomusic.media.OnFFmpegCallback;
 import com.yetote.bamboomusic.model.FoundModel;
 
 import java.util.ArrayList;
@@ -56,16 +57,35 @@ public class FoundAdapter extends RecyclerView.Adapter {
         public void onServiceConnected(ComponentName name, IBinder service) {
 
             musicBinder = (MusicService.MusicBinder) service;
-            musicBinder.setOnPrepareCallback((prepare, totalTime) -> {
-                if (totalTime != 0) {
-                    seekBar.setMax(totalTime);
+            musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
+                @Override
+                public void onPrepare(boolean prepare, int totalTime) {
+                    if (totalTime != 0) {
+                        seekBar.setMax(totalTime);
+                    }
+                    musicBinder.play(surface, width, height);
+                    isPlaying = true;
                 }
-                musicBinder.play(surface, width, height);
-                isPlaying = true;
-            });
 
-            musicBinder.setPlayCallback(currentTime -> {
-                seekBar.setProgress(currentTime);
+                @Override
+                public void onPlaying(int currentTime) {
+                    seekBar.setProgress(currentTime);
+                }
+
+                @Override
+                public void onPause() {
+
+                }
+
+                @Override
+                public void onResume() {
+
+                }
+
+                @Override
+                public void onStop() {
+
+                }
             });
         }
 

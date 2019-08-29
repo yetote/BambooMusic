@@ -26,14 +26,14 @@ public class MyPlayer {
         this.context = context;
     }
 
-    private OnPrepareCallback prepareCallback;
-    private OnPlayCallback playCallback;
+    private OnFFmpegCallback ffmpegCallback;
 
     public native void prepare(String path);
 
 
     public native void play();
-    public native void play(Surface surface, int w, int h,String vertexCodec,String fragCode);
+
+    public native void play(Surface surface, int w, int h, String vertexCodec, String fragCode);
 
     public native void pause();
 
@@ -43,23 +43,37 @@ public class MyPlayer {
 
     public native void seek(int progress);
 
-    public void setPrepareCallback(OnPrepareCallback prepareCallback) {
-        this.prepareCallback = prepareCallback;
-    }
-
-    public void setPlayCallback(OnPlayCallback playCallback) {
-        this.playCallback = playCallback;
+    public void setffmpegCallback(OnFFmpegCallback ffmpegCallback) {
+        this.ffmpegCallback = ffmpegCallback;
     }
 
     public void callPrepare(boolean isPrepare, int totalTime) {
-        if (prepareCallback != null) {
-            prepareCallback.onPrepare(isPrepare, totalTime);
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onPrepare(isPrepare, totalTime);
         }
     }
 
     public void callPlay(int currentTime) {
-        if (prepareCallback != null) {
-            playCallback.onPlaying(currentTime);
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onPlaying(currentTime);
+        }
+    }
+
+    public void callPause() {
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onPause();
+        }
+    }
+
+    public void callResume() {
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onResume();
+        }
+    }
+
+    public void callStop() {
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onStop();
         }
     }
 
@@ -72,4 +86,6 @@ public class MyPlayer {
         MediaUtil mediaUtil = new MediaUtil(context);
         mediaUtil.codec(path);
     }
+
+
 }

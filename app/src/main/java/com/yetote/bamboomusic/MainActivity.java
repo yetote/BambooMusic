@@ -192,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("发现");
         title.add("我的");
 
-        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/test.avi");
+        musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
+        musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
         musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
         musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
         musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");

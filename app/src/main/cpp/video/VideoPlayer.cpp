@@ -217,7 +217,7 @@ void VideoPlayer::decode() {
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-//        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
+        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
         if (playStates.isPause()) {
             usleep(300);
             continue;
@@ -275,6 +275,7 @@ void VideoPlayer::decode() {
             LOGE(VideoPlayer_TAG, "%s:send失败%s,%d", __func__, av_err2str(rst), rst);
         }
     }
+    LOGE(VideoPlayer_TAG, "%s:退出解码", __func__);
     av_frame_free(&pFrame);
     av_packet_free(&dataPacket);
 }
@@ -295,6 +296,7 @@ void VideoPlayer::resume() {
 
 void VideoPlayer::clear() {
     std::lock_guard<std::mutex> guard(mutex);
+
     while (!videoData.empty()) {
         AVPacket *packet = videoData.front();
         av_packet_free(&packet);
@@ -305,6 +307,7 @@ void VideoPlayer::clear() {
 
 void VideoPlayer::stop() {
     std::lock_guard<std::mutex> guard(mutex);
+    LOGE(VideoPlayer_TAG,"%s:开始释放",__func__);
     while (!videoData.empty()) {
         AVPacket *packet = videoData.front();
         av_packet_free(&packet);

@@ -62,7 +62,7 @@ void Decode::prepare(const std::string path) {
 
 void Decode::playAudio() {
     if (audioIndex != -1 && audioPlayer != nullptr) {
-        findCodec(pAudioStream, &audioPlayer->pCodecCtx, pAudioCodec);
+        findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
     }
     audioPlayer->initSwr();
     audioPlayer->play();
@@ -73,7 +73,7 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h,
                        std::string vertexCode, std::string fragCode) {
     int rst = 0;
     if (videoIndex != -1 && videoPlayer != nullptr) {
-        findCodec(pVideoStream, &videoPlayer->pCodecCtx, pVideoCodec);
+        findCodec(pVideoStream, &videoPlayer->pCodecCtx, &pVideoCodec);
         LOGE(Decode_TAG, "%s:初始化视频codec", __func__);
         videoPlayer->initEGL(vertexCode, fragCode, pWindow, w, h);
         if (videoPlayer->audioPlay == nullptr) {
@@ -92,15 +92,15 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h,
     playAudio();
 }
 
-void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec *pCodec) {
+void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec) {
     int rst;
 
-    pCodec = avcodec_find_decoder((pStream)->codecpar->codec_id);
-    if (pCodec == nullptr) {
+    *pCodec = avcodec_find_decoder((pStream)->codecpar->codec_id);
+    if (*pCodec == nullptr) {
         LOGE(Decode_TAG, "%s:无法打开解码器", __func__);
         return;
     }
-    *avCodecContext = avcodec_alloc_context3(pCodec);
+    *avCodecContext = avcodec_alloc_context3(*pCodec);
     if (*avCodecContext == nullptr) {
         LOGE(Decode_TAG, "%s:无法分配解码器上下文", __func__);
         return;
@@ -110,7 +110,7 @@ void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCod
         LOGE(Decode_TAG, "%s:复制解码器上下文失败%s", __func__, av_err2str(rst));
         return;
     }
-    rst = avcodec_open2(*avCodecContext, pCodec, nullptr);
+    rst = avcodec_open2(*avCodecContext, *pCodec, nullptr);
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return;
@@ -163,45 +163,21 @@ void Decode::stop() {
     }
     LOGE(Decode_TAG, "%s:开始释放", __func__);
     std::lock_guard<std::mutex> guard(initMutex);
-    LOGE(Decode_TAG,"%s:准备释放audioPlayer",__func__);
+    LOGE(Decode_TAG, "%s:准备释放audioPlayer", __func__);
     if (audioPlayer != nullptr) {
         audioPlayer->stop();
         delete audioPlayer;
         audioPlayer = nullptr;
         LOGE(Decode_TAG, "%s:audioPlayer释放完成", __func__);
     }
-    LOGE(Decode_TAG,"%s:准备释放videoPlayer",__func__);
+    LOGE(Decode_TAG, "%s:准备释放videoPlayer", __func__);
     if (videoPlayer != nullptr) {
         videoPlayer->stop();
         delete videoPlayer;
         videoPlayer = nullptr;
         LOGE(Decode_TAG, "%s:videoPlayer释放完成", __func__);
     }
-    LOGE(Decode_TAG,"%s:准备释放pVideoStream",__func__);
-    if (pVideoStream != nullptr) {
-        av_free(pVideoStream);
-        pVideoStream = nullptr;
-        LOGE(Decode_TAG, "%s:videoStream释放完成", __func__);
-    }
-    LOGE(Decode_TAG,"%s:准备释放pAudioStream",__func__);
-    if (pAudioStream != nullptr) {
-        av_free(pAudioStream);
-        pAudioStream = nullptr;
-        LOGE(Decode_TAG, "%s:audioStream释放完成", __func__);
-    }
-    LOGE(Decode_TAG,"%s:准备释放pAudioCodec",__func__);
-    if (pAudioCodec != nullptr) {
-        av_free(pAudioCodec);
-        pAudioCodec = nullptr;
-        LOGE(Decode_TAG, "%s:audioCodec释放完成", __func__);
-    }
-    LOGE(Decode_TAG,"%s:准备释放pVideoCodec",__func__);
-    if (pVideoCodec != nullptr) {
-        av_free(pVideoCodec);
-        pVideoCodec = nullptr;
-        LOGE(Decode_TAG, "%s:videoCodec释放完成", __func__);
-    }
-    LOGE(Decode_TAG,"%s:准备释放pFmtCtx",__func__);
+    LOGE(Decode_TAG, "%s:准备释放pFmtCtx", __func__);
     if (pFmtCtx != nullptr) {
         avformat_close_input(&pFmtCtx);
         avformat_free_context(pFmtCtx);
@@ -218,9 +194,8 @@ void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-        if (audioPlayer->getSize() >= 40 && videoPlayer->getSize() >= 40) {
+        if (audioPlayer->getSize() >= 40) {
             usleep(300);
-//            LOGE(Decode_TAG, "%s:休眠", __func__);
             continue;
         }
         std::lock_guard<std::mutex> guard(mutex);

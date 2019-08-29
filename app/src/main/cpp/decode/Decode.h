@@ -63,7 +63,7 @@ private:
 
     void free();
 
-    void findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec *pCodec);
+    void findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec);
 
     void decode();
 

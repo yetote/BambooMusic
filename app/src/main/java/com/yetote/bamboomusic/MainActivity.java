@@ -76,6 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.e(TAG, "onServiceConnected: service connect");
+            if (musicBinder != null) {
+                musicBinder.stop();
+            }
             musicBinder = (MusicService.MusicBinder) service;
             callBack();
         }
@@ -190,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("我的");
 
         musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/test.avi");
         musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
         musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
         musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");

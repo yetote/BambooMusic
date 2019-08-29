@@ -175,7 +175,7 @@ public class MusicService extends Service {
         public void stop() {
             if (player != null) {
                 player.stop();
-                state = STATE_PLAYING;
+                state = STATE_STOP;
             }
         }
     }

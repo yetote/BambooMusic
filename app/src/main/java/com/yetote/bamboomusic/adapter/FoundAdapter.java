@@ -56,20 +56,24 @@ public class FoundAdapter extends RecyclerView.Adapter {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
 
+            if (musicBinder != null) {
+
+            }
+
             musicBinder = (MusicService.MusicBinder) service;
             musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
                 @Override
                 public void onPrepare(boolean prepare, int totalTime) {
-                    if (totalTime != 0) {
-                        seekBar.setMax(totalTime);
-                    }
+//                    if (totalTime != 0) {
+//                        seekBar.setMax(totalTime);
+//                    }
                     musicBinder.play(surface, width, height);
                     isPlaying = true;
                 }
 
                 @Override
                 public void onPlaying(int currentTime) {
-                    seekBar.setProgress(currentTime);
+//                    seekBar.setProgress(currentTime);
                 }
 
                 @Override
@@ -226,7 +230,12 @@ public class FoundAdapter extends RecyclerView.Adapter {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.e(TAG, "surfaceDestroyed: 销毁");
-                musicBinder.stop();
+                if (musicBinder != null) {
+
+                    musicBinder.stop();
+                    musicBinder = null;
+                }
+
             }
         });
         vh.getStart().setOnClickListener(v -> {

@@ -36,6 +36,9 @@ public class MusicService extends Service {
     private Surface surface;
     private int w, h;
     private int type;
+    public static final int SERVICE_IN_MAIN_ACTIVITY = 0x0007;
+    public static final int SERVICE_IN_FRAGMENT = 0x0008;
+    public static int serviceLocal;
 
     @Nullable
     @Override
@@ -96,6 +99,10 @@ public class MusicService extends Service {
 
         public int getState() {
             return state;
+        }
+
+        public int getLocal() {
+            return serviceLocal;
         }
 
         private OnFFmpegCallback serviceFFmpegCallBack;

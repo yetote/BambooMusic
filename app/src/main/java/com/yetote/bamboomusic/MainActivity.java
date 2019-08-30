@@ -39,6 +39,7 @@ import java.util.ArrayList;
 
 import static android.widget.ListPopupWindow.MATCH_PARENT;
 import static android.widget.ListPopupWindow.WRAP_CONTENT;
+import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_MAIN_ACTIVITY;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PREPARE;
@@ -129,42 +130,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void callBack() {
-//        musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
-//            @Override
-//            public void onPrepare(boolean prepare, int totalTime) {
-//                musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
-//                musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
-//                musicDetailsPopProgress.setMax(totalTime);
-//                musicProgressButton.setTotalTime(totalTime);
-//                musicBinder.play();
-//            }
-//
-//            @Override
-//            public void onPlaying(int currentTime) {
-//                musicDetailsPopProgress.setProgress(currentTime);
-//                if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
-//                    musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
-//                }
-//                musicProgressButton.showPlayingAnimation(currentTime);
-//                musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
-//                musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
-//            }
-//
-//            @Override
-//            public void onPause() {
-//                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
-//            }
-//
-//            @Override
-//            public void onResume() {
-//
-//            }
-//
-//            @Override
-//            public void onStop() {
-//                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
-//            }
-//        });
         musicBinder.setServiceFFmpegCallBack(this);
     }
 
@@ -212,9 +177,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
-                    if (musicBinder.getServiceFFmpegCallBack() == null) {
+
+                    if (musicBinder.getLocal() != SERVICE_IN_MAIN_ACTIVITY) {
+                        musicBinder.setServiceFFmpegCallBack(null);
                         musicBinder.setServiceFFmpegCallBack(this);
                     }
+
                     switch (musicBinder.getState()) {
                         case STATE_STOP:
                             musicBinder.prepare(musicList.get(playingPos));

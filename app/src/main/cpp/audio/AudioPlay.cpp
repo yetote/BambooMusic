@@ -121,7 +121,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
 
     int betterSize = numFrames * 4;
     if (!canPlay) {
-        LOGE(AudioPlay_TAG, "%s:准备未完成", __func__);
+//        LOGE(AudioPlay_TAG, "%s:准备未完成", __func__);
         return DataCallbackResult::Continue;
     }
     if (playStates.isStop()) {
@@ -189,7 +189,7 @@ void AudioPlay::popData() {
         if (ringArray != nullptr) {
             ringArray->write(outBuffer, bufferSize);
         }
-        LOGE(AudioPlay_TAG,"%s:解码成功",__func__);
+//        LOGE(AudioPlay_TAG,"%s:解码成功",__func__);
     } else {
         LOGE(AudioPlay_TAG, "%s:解码出错%s", __func__, av_err2str(rst));
     }

@@ -204,7 +204,7 @@ void Decode::decode() {
         }
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
-        LOGE(Decode_TAG, "%s:开始分包", __func__);
+//        LOGE(Decode_TAG, "%s:开始分包", __func__);
         if (rst < 0) {
             switch (rst) {
                 case AVERROR_EOF:
@@ -222,13 +222,13 @@ void Decode::decode() {
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:音频入队", __func__);
+//                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
         } else if (packet->stream_index == videoIndex) {
             if (videoPlayer != nullptr) {
                 videoPlayer->pushData(packet);
-                LOGE(Decode_TAG, "%s:视频入队", __func__);
+//                LOGE(Decode_TAG, "%s:视频入队", __func__);
                 continue;
             }
         }

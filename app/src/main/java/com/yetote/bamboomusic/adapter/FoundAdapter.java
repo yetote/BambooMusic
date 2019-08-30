@@ -27,6 +27,7 @@ import com.yetote.bamboomusic.model.FoundModel;
 import java.util.ArrayList;
 
 import static android.content.Context.BIND_AUTO_CREATE;
+import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 
 /**
@@ -39,7 +40,7 @@ import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
  * @chang time
  * @class describe
  */
-public class FoundAdapter extends RecyclerView.Adapter {
+public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallback {
     private ArrayList<FoundModel> list;
     private Context context;
     public static final int PATH_TAG = 1;
@@ -56,43 +57,8 @@ public class FoundAdapter extends RecyclerView.Adapter {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
 
-            if (musicBinder != null) {
-
-            }
-
             musicBinder = (MusicService.MusicBinder) service;
-            musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
-                @Override
-                public void onFFmpegPrepare(boolean prepare, int totalTime) {
-//                    if (totalTime != 0) {
-//                        seekBar.setMax(totalTime);
-//                    }
-                    if (prepare) {
-                        musicBinder.play(surface, width, height);
-                        isPlaying = true;
-                    }
-                }
-
-                @Override
-                public void onFFmpegPlaying(int currentTime) {
-//                    seekBar.setProgress(currentTime);
-                }
-
-                @Override
-                public void onFFmpegPause() {
-
-                }
-
-                @Override
-                public void onFFmpegResume() {
-
-                }
-
-                @Override
-                public void onFFmpegStop() {
-
-                }
-            });
+            callBack();
         }
 
         @Override
@@ -100,6 +66,10 @@ public class FoundAdapter extends RecyclerView.Adapter {
             Log.e(TAG, "onServiceDisconnected: 销毁service");
         }
     };
+
+    private void callBack() {
+        musicBinder.setServiceFFmpegCallBack(this);
+    }
 
     public void setItemClickListener(RecyclerViewItemClickListener itemClickListener) {
         this.itemClickListener = itemClickListener;
@@ -110,6 +80,37 @@ public class FoundAdapter extends RecyclerView.Adapter {
         this.context = context;
         Intent musicService = new Intent(context, MusicService.class);
         context.bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onFFmpegPrepare(boolean prepare, int totalTime) {
+        if (prepare) {
+            musicBinder.play(surface, width, height);
+            isPlaying = true;
+//            if (totalTime != 0) {
+//                seekBar.setMax(totalTime);
+//            }
+        }
+    }
+
+    @Override
+    public void onFFmpegPlaying(int currentTime) {
+//        seekBar.setProgress(currentTime);
+    }
+
+    @Override
+    public void onFFmpegPause() {
+
+    }
+
+    @Override
+    public void onFFmpegResume() {
+
+    }
+
+    @Override
+    public void onFFmpegStop() {
+
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -205,6 +206,7 @@ public class FoundAdapter extends RecyclerView.Adapter {
 //                }
 //            });
 //        });
+
         return new MyViewHolder(v);
     }
 
@@ -241,6 +243,13 @@ public class FoundAdapter extends RecyclerView.Adapter {
             }
         });
         vh.getStart().setOnClickListener(v -> {
+            if (musicBinder != null) {
+                if (musicBinder.getLocal() != SERVICE_IN_FRAGMENT) {
+                    musicBinder.stop();
+                    musicBinder.setServiceFFmpegCallBack(null);
+                    musicBinder.setServiceFFmpegCallBack(this);
+                }
+            }
             int pos = position;
             if (pos != playingPos) {
                 if (musicBinder.getState() != STATE_STOP) {
@@ -297,11 +306,5 @@ public class FoundAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount() {
         return list.size();
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
-        super.onViewRecycled(holder);
-//        musicBinder.stop();
     }
 }

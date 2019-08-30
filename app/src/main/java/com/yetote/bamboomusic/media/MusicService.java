@@ -51,27 +51,27 @@ public class MusicService extends Service {
         player = new MyPlayer(this);
         player.setffmpegCallback(new OnFFmpegCallback() {
             @Override
-            public void onPrepare(boolean prepare, int totalTime) {
+            public void onFFmpegPrepare(boolean prepare, int totalTime) {
                 musicBinder.callPrepare(prepare, totalTime);
             }
 
             @Override
-            public void onPlaying(int currentTime) {
+            public void onFFmpegPlaying(int currentTime) {
                 musicBinder.callPlay(currentTime);
             }
 
             @Override
-            public void onPause() {
+            public void onFFmpegPause() {
                 musicBinder.callPause();
             }
 
             @Override
-            public void onResume() {
+            public void onFFmpegResume() {
                 musicBinder.callResume();
             }
 
             @Override
-            public void onStop() {
+            public void onFFmpegStop() {
                 musicBinder.callStop();
             }
 
@@ -100,6 +100,9 @@ public class MusicService extends Service {
 
         private OnFFmpegCallback serviceFFmpegCallBack;
 
+        public OnFFmpegCallback getServiceFFmpegCallBack() {
+            return serviceFFmpegCallBack;
+        }
 
         public void setServiceFFmpegCallBack(OnFFmpegCallback serviceFFmpegCallBack) {
             this.serviceFFmpegCallBack = serviceFFmpegCallBack;
@@ -107,23 +110,23 @@ public class MusicService extends Service {
 
 
         void callPrepare(boolean success, int totalTime) {
-            serviceFFmpegCallBack.onPrepare(success, totalTime);
+            serviceFFmpegCallBack.onFFmpegPrepare(success, totalTime);
         }
 
         void callPlay(int currentTime) {
-            serviceFFmpegCallBack.onPlaying(currentTime);
+            serviceFFmpegCallBack.onFFmpegPlaying(currentTime);
         }
 
         private void callPause() {
-            serviceFFmpegCallBack.onPause();
+            serviceFFmpegCallBack.onFFmpegPause();
         }
 
         void callResume() {
-            serviceFFmpegCallBack.onResume();
+            serviceFFmpegCallBack.onFFmpegResume();
         }
 
         void callStop() {
-            serviceFFmpegCallBack.onStop();
+            serviceFFmpegCallBack.onFFmpegStop();
         }
 
         public void prepare(String path) {

@@ -17,27 +17,27 @@ public interface OnFFmpegCallback {
      * @param prepare   ffmpeg是否准备成功
      * @param totalTime 音频总时长
      */
-    void onPrepare(boolean prepare, int totalTime);
+    void onFFmpegPrepare(boolean prepare, int totalTime);
 
     /**
      * 播放回调
      *
      * @param currentTime 当前播放时间
      */
-    void onPlaying(int currentTime);
+    void onFFmpegPlaying(int currentTime);
 
     /**
      * 暂停回调
      */
-    void onPause();
+    void onFFmpegPause();
 
     /**
      * 恢复播放回调
      */
-    void onResume();
+    void onFFmpegResume();
 
     /**
      * 销毁回调
      */
-    void onStop();
+    void onFFmpegStop();
 }

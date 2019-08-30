@@ -63,31 +63,33 @@ public class FoundAdapter extends RecyclerView.Adapter {
             musicBinder = (MusicService.MusicBinder) service;
             musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
                 @Override
-                public void onPrepare(boolean prepare, int totalTime) {
+                public void onFFmpegPrepare(boolean prepare, int totalTime) {
 //                    if (totalTime != 0) {
 //                        seekBar.setMax(totalTime);
 //                    }
-                    musicBinder.play(surface, width, height);
-                    isPlaying = true;
+                    if (prepare) {
+                        musicBinder.play(surface, width, height);
+                        isPlaying = true;
+                    }
                 }
 
                 @Override
-                public void onPlaying(int currentTime) {
+                public void onFFmpegPlaying(int currentTime) {
 //                    seekBar.setProgress(currentTime);
                 }
 
                 @Override
-                public void onPause() {
+                public void onFFmpegPause() {
 
                 }
 
                 @Override
-                public void onResume() {
+                public void onFFmpegResume() {
 
                 }
 
                 @Override
-                public void onStop() {
+                public void onFFmpegStop() {
 
                 }
             });
@@ -95,7 +97,7 @@ public class FoundAdapter extends RecyclerView.Adapter {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-
+            Log.e(TAG, "onServiceDisconnected: 销毁service");
         }
     };
 
@@ -231,8 +233,8 @@ public class FoundAdapter extends RecyclerView.Adapter {
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.e(TAG, "surfaceDestroyed: 销毁");
                 if (musicBinder != null) {
-
                     musicBinder.stop();
+                    musicBinder.setServiceFFmpegCallBack(null);
                     musicBinder = null;
                 }
 

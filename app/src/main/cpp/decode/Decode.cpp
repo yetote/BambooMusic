@@ -22,14 +22,14 @@ void Decode::prepare(const std::string path) {
     rst = avformat_open_input(&pFmtCtx, path.c_str(), nullptr, nullptr);
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开文件失败%s", __func__, av_err2str(rst));
-        callback.callPrepare(callback.MAIN_THREAD, false, 0);
+        callback.callPrepare(callback.CHILD_THREAD, false, 0);
         return;
     }
     LOGE(Decode_TAG, "%s:准备寻找流信息", __func__);
     rst = avformat_find_stream_info(pFmtCtx, nullptr);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:寻找流信息失败%d", __func__, rst);
-        callback.callPrepare(callback.MAIN_THREAD, false, 0);
+        callback.callPrepare(callback.CHILD_THREAD, false, 0);
         return;
     }
     LOGE(Decode_TAG, "%s:流信息寻找完成", __func__);
@@ -42,7 +42,7 @@ void Decode::prepare(const std::string path) {
     }
     if (audioIndex == -1 && videoIndex == -1) {
         LOGE(Decode_TAG, "%s:未找到相应的流索引，请检查", __func__);
-        callback.callPrepare(callback.MAIN_THREAD, false, 0);
+        callback.callPrepare(callback.CHILD_THREAD, false, 0);
         return;
     }
     if (audioIndex != -1) {

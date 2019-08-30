@@ -90,7 +90,7 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         native-lib.cpp
-
+        Test.cpp
         decode/Decode.cpp
         util/Callback.cpp
         util/PlayStates.cpp

@@ -44,7 +44,7 @@ import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PREPARE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, OnFFmpegCallback {
     private static final String TAG = "MainActivity";
     private MusicProgressButton musicProgressButton;
     private ImageView musicIcon;
@@ -129,43 +129,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void callBack() {
-        musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
-            @Override
-            public void onPrepare(boolean prepare, int totalTime) {
-                musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
-                musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
-                musicDetailsPopProgress.setMax(totalTime);
-                musicProgressButton.setTotalTime(totalTime);
-                musicBinder.play();
-            }
-
-            @Override
-            public void onPlaying(int currentTime) {
-                musicDetailsPopProgress.setProgress(currentTime);
-                if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
-                    musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
-                }
-                musicProgressButton.showPlayingAnimation(currentTime);
-                musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
-                musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
-            }
-
-            @Override
-            public void onPause() {
-                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
-            }
-
-            @Override
-            public void onResume() {
-
-            }
-
-            @Override
-            public void onStop() {
-                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
-            }
-        });
-
+//        musicBinder.setServiceFFmpegCallBack(new OnFFmpegCallback() {
+//            @Override
+//            public void onPrepare(boolean prepare, int totalTime) {
+//                musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
+//                musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
+//                musicDetailsPopProgress.setMax(totalTime);
+//                musicProgressButton.setTotalTime(totalTime);
+//                musicBinder.play();
+//            }
+//
+//            @Override
+//            public void onPlaying(int currentTime) {
+//                musicDetailsPopProgress.setProgress(currentTime);
+//                if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
+//                    musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
+//                }
+//                musicProgressButton.showPlayingAnimation(currentTime);
+//                musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
+//                musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
+//            }
+//
+//            @Override
+//            public void onPause() {
+//                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+//            }
+//
+//            @Override
+//            public void onResume() {
+//
+//            }
+//
+//            @Override
+//            public void onStop() {
+//                musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+//            }
+//        });
+        musicBinder.setServiceFFmpegCallBack(this);
     }
 
     private void initView() {
@@ -194,11 +194,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
         musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
-        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/7.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/7.mp3");
 
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
 
@@ -212,6 +212,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.main_musicProgress_btn:
                 if (musicBinder != null) {
+                    if (musicBinder.getServiceFFmpegCallBack() == null) {
+                        musicBinder.setServiceFFmpegCallBack(this);
+                    }
                     switch (musicBinder.getState()) {
                         case STATE_STOP:
                             musicBinder.prepare(musicList.get(playingPos));
@@ -325,5 +328,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+    }
+
+    @Override
+    public void onFFmpegPrepare(boolean prepare, int totalTime) {
+        musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
+        musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
+        musicDetailsPopProgress.setMax(totalTime);
+        musicProgressButton.setTotalTime(totalTime);
+        musicBinder.play();
+    }
+
+    @Override
+    public void onFFmpegPlaying(int currentTime) {
+        musicDetailsPopProgress.setProgress(currentTime);
+        if (musicProgressButton.getPlayState() != MusicProgressButton.STATE_PLAYING) {
+            musicProgressButton.changeState(MusicProgressButton.STATE_PLAYING);
+        }
+        musicProgressButton.showPlayingAnimation(currentTime);
+        musicDetailsPopCurrentTime.setText(TextUtil.time2err(currentTime));
+        musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
+    }
+
+    @Override
+    public void onFFmpegPause() {
+        musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+    }
+
+    @Override
+    public void onFFmpegResume() {
+
+    }
+
+    @Override
+    public void onFFmpegStop() {
+        musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
     }
 }

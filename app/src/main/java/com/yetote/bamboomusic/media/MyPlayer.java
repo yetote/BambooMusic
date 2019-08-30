@@ -49,31 +49,31 @@ public class MyPlayer {
 
     public void callPrepare(boolean isPrepare, int totalTime) {
         if (ffmpegCallback != null) {
-            ffmpegCallback.onPrepare(isPrepare, totalTime);
+            ffmpegCallback.onFFmpegPrepare(isPrepare, totalTime);
         }
     }
 
     public void callPlay(int currentTime) {
         if (ffmpegCallback != null) {
-            ffmpegCallback.onPlaying(currentTime);
+            ffmpegCallback.onFFmpegPlaying(currentTime);
         }
     }
 
     public void callPause() {
         if (ffmpegCallback != null) {
-            ffmpegCallback.onPause();
+            ffmpegCallback.onFFmpegPause();
         }
     }
 
     public void callResume() {
         if (ffmpegCallback != null) {
-            ffmpegCallback.onResume();
+            ffmpegCallback.onFFmpegResume();
         }
     }
 
     public void callStop() {
         if (ffmpegCallback != null) {
-            ffmpegCallback.onStop();
+            ffmpegCallback.onFFmpegStop();
         }
     }
 

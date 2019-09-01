@@ -19,6 +19,8 @@ public class MyPlayer {
         System.loadLibrary("native-lib");
     }
 
+    public static final int MEDIA_AUDIO = 0;
+    public static final int MEDIA_VIDEO = 1;
     private static final String TAG = "MyPlayer";
     private Context context;
 
@@ -28,7 +30,7 @@ public class MyPlayer {
 
     private OnFFmpegCallback ffmpegCallback;
 
-    public native void prepare(String path);
+    public native void prepare(String path, int type);
 
 
     public native void play();

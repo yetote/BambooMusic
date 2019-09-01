@@ -12,6 +12,9 @@ import androidx.annotation.Nullable;
 import com.yetote.bamboomusic.R;
 import com.yetote.bamboomusic.util.TextRecourseReader;
 
+import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_AUDIO;
+import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_VIDEO;
+
 /**
  * @author yetote QQ:503779938
  * @name BambooMusic
@@ -136,9 +139,13 @@ public class MusicService extends Service {
             serviceFFmpegCallBack.onFFmpegStop();
         }
 
-        public void prepare(String path) {
+        public void prepare(String path, int mediaType) {
             if (player != null) {
-                player.prepare(path);
+                if (mediaType != MEDIA_AUDIO && mediaType != MEDIA_VIDEO) {
+                    Log.e(TAG, "prepare: 多媒体类别不正确");
+                    return;
+                }
+                player.prepare(path, mediaType);
                 state = STATE_PREPARE;
             }
         }

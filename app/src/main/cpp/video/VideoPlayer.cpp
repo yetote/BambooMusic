@@ -131,9 +131,9 @@ void VideoPlayer::draw(AVFrame *frame) {
 
 void VideoPlayer::pushData(AVPacket *packet) {
 
+    std::lock_guard<std::mutex> guard(mutex);
     AVPacket *temp = av_packet_alloc();
     int rst = av_packet_ref(temp, packet);
-    std::lock_guard<std::mutex> guard(mutex);
     videoData.push(temp);
 }
 
@@ -216,7 +216,11 @@ void VideoPlayer::decode() {
     int rst;
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
-    while (!playStates.isEof() && !playStates.isStop()) {
+    while (!playStates.isStop()) {
+        if (playStates.isEof() && videoData.empty()) {
+            LOGE(VideoPlayer_TAG, "%s:全部文件解码完毕", __func__);
+            break;
+        }
 //        LOGE(VideoPlayer_TAG, "%s:开始解码", __func__);
         if (playStates.isPause()) {
             usleep(300);
@@ -267,7 +271,7 @@ void VideoPlayer::decode() {
                     av_free(pFrame420P);
                     av_free(buffer);
                     pFrame420P = nullptr;
-//                    LOGE(VideoPlayer_TAG, "line in 144:解码成功");
+                    LOGE(VideoPlayer_TAG, "line in 144:解码成功");
                 }
             }
         } else {

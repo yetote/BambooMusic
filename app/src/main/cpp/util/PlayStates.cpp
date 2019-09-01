@@ -35,4 +35,12 @@ void PlayStates::setStop(bool stop) {
     PlayStates::stop = stop;
 }
 
+PlayStates::MEDIA_TYPE PlayStates::getMediaType() const {
+    return mediaType;
+}
+
+void PlayStates::setMediaType(PlayStates::MEDIA_TYPE mediaType) {
+    PlayStates::mediaType = mediaType;
+}
+
 

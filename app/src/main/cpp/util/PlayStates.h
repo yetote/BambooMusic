@@ -16,7 +16,6 @@ class PlayStates {
 public:
     PlayStates();
 
-
     bool isEof() const;
 
     void setEof(bool eof);
@@ -29,11 +28,21 @@ public:
 
     void setStop(bool stop);
 
+    enum MEDIA_TYPE {
+        MEDIA_AUDIO,
+        MEDIAO_VIDEO
+    };
+
+    MEDIA_TYPE getMediaType() const;
+
+    void setMediaType(MEDIA_TYPE mediaType);
+
 private:
 
     bool eof = false;
     bool pause = false;
     bool stop = false;
+    MEDIA_TYPE mediaType;
 };
 
 

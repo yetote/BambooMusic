@@ -44,6 +44,7 @@ import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PREPARE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
+import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_AUDIO;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, OnFFmpegCallback {
     private static final String TAG = "MainActivity";
@@ -159,8 +160,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
         musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
-//        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
-//        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+        musicList.add("http://fs.mv.web.kugou.com/201909011024/dbd0fd13d6ec5e3ee7c58b7a4cf811b4/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4");
+        musicList.add("http://fs.mv.web.kugou.com/201909011122/81a1ac007069681296fb8d15fe3f3445/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/7.mp3");
@@ -185,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     switch (musicBinder.getState()) {
                         case STATE_STOP:
-                            musicBinder.prepare(musicList.get(playingPos));
+                            musicBinder.prepare(musicList.get(playingPos), MEDIA_AUDIO);
                             break;
                         case STATE_PLAYING:
                             musicBinder.pause();
@@ -264,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (playingPos >= musicList.size()) {
                     playingPos = 0;
                 }
-                musicBinder.prepare(musicList.get(playingPos));
+                musicBinder.prepare(musicList.get(playingPos), MEDIA_AUDIO);
             }
         });
 
@@ -277,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (playingPos < 0) {
                     playingPos = musicList.size() - 1;
                 }
-                musicBinder.prepare(musicList.get(playingPos));
+                musicBinder.prepare(musicList.get(playingPos), MEDIA_AUDIO);
             }
         });
 
@@ -290,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     musicBinder.pause();
                     musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_play));
                 } else if (musicBinder.getState() == STATE_STOP) {
-                    musicBinder.prepare(musicList.get(playingPos));
+                    musicBinder.prepare(musicList.get(playingPos), MEDIA_AUDIO);
                     musicDetailsPopPlayController.setBackground(getDrawable(R.drawable.music_state_pause));
                 }
             }
@@ -300,11 +301,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onFFmpegPrepare(boolean prepare, int totalTime) {
-        musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
-        musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
-        musicDetailsPopProgress.setMax(totalTime);
-        musicProgressButton.setTotalTime(totalTime);
-        musicBinder.play();
+        if (prepare) {
+            musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
+            musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
+            musicDetailsPopProgress.setMax(totalTime);
+            musicProgressButton.setTotalTime(totalTime);
+            musicBinder.play();
+        }
     }
 
     @Override

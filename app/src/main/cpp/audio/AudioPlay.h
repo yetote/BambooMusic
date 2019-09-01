@@ -15,6 +15,7 @@
 #include "../util/PlayStates.h"
 #include "../util/RingArray.h"
 #include <thread>
+#include <oboe/Oboe.h>
 
 extern "C" {
 #include <libswresample/swresample.h>

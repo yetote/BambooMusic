@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
+import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_VIDEO;
 
 /**
  * @author yetote QQ:503779938
@@ -267,7 +268,7 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
                     width = (int) vh.itemView.getTag(R.id.music_found_tag_width);
                 }
                 surface = (Surface) vh.itemView.getTag(R.id.music_found_tag_surface);
-                musicBinder.prepare((String) vh.itemView.getTag(R.id.music_found_tag_path));
+                musicBinder.prepare((String) vh.itemView.getTag(R.id.music_found_tag_path), MEDIA_VIDEO);
             } else {
                 if (isPausing) {
                     musicBinder.resume();

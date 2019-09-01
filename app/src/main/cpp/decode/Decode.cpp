@@ -7,8 +7,10 @@
 
 Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                      playStates(playStates1) {
+    if (playStates.getMediaType() == playStates.MEDIAO_VIDEO) {
+        videoPlayer = new VideoPlayer(callback, playStates);
+    }
     audioPlayer = new AudioPlay(callback, playStates);
-    videoPlayer = new VideoPlayer(callback, playStates);
     isFinish = false;
 }
 
@@ -133,8 +135,13 @@ void Decode::free() {
 }
 
 void Decode::resume() {
-    audioPlayer->resume();
-    videoPlayer->resume();
+    if (audioPlayer != nullptr) {
+
+        audioPlayer->resume();
+    }
+    if (videoPlayer != nullptr) {
+        videoPlayer->resume();
+    }
     callback.callResume(callback.MAIN_THREAD);
 }
 
@@ -198,10 +205,10 @@ void Decode::decode() {
     int rst = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-        if (audioPlayer->getSize() >= 40) {
-            usleep(300);
-            continue;
-        }
+//        if (audioPlayer->getSize() >= 40) {
+//            usleep(300);
+//            continue;
+//        }
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
 //        LOGE(Decode_TAG, "%s:开始分包", __func__);

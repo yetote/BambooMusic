@@ -3,7 +3,7 @@
 //
 
 
-#include <oboe/Oboe.h>
+
 #include "AudioPlay.h"
 
 using namespace oboe;
@@ -133,7 +133,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         popData();
     }
     ringArray->read(buffer, betterSize);
-    if ((currentTime - lastTime) >= 1) {
+    if (abs(currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
         lastTime = static_cast<int>(currentTime);
     }

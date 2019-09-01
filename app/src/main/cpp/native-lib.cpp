@@ -13,8 +13,8 @@ Callback *callback;
 PlayStates *playStates;
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2(JNIEnv *env, jobject thiz,
-                                                                        jstring path_) {
+Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, jstring path_,
+                                                   jint type) {
     const char *path = env->GetStringUTFChars(path_, JNI_FALSE);
     LOGE(NATIVE_TAG, "%s:调用音频", __func__);
     if (callback == nullptr) {
@@ -22,17 +22,22 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare__Ljava_lang_String_2(JNIEnv *
     }
     if (playStates == nullptr) {
         playStates = new PlayStates{};
+        if (type == 0) {
+            //只播放音频
+            playStates->setMediaType(playStates->MEDIA_AUDIO);
+        } else {
+            playStates->setMediaType(playStates->MEDIAO_VIDEO);
+        }
     }
     if (decode == nullptr) {
         decode = new Decode{*callback, *playStates};
-        LOGE(NATIVE_TAG,"%s:初始化decode",__func__);
+        LOGE(NATIVE_TAG, "%s:初始化decode", __func__);
     }
     std::thread preparedThread(&Decode::prepare, decode, path);
     preparedThread.detach();
 //    decode->prepare(path);
     env->ReleaseStringUTFChars(path_, path);
 }
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_pause(JNIEnv *env, jobject thiz) {

@@ -32,22 +32,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <Button
+            <ImageView
                 android:id="@+id/rv_music_found_item_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="play"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/music_state_play"
                 app:layout_constraintBottom_toBottomOf="@+id/rv_music_found_item_seek"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/rv_music_found_item_surface"
                 app:layout_constraintTop_toTopOf="@+id/rv_music_found_item_surface" />
 
+            <ImageView
+                android:id="@+id/rv_music_found_item_full"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/video_full_screen"
+                app:layout_constraintBottom_toBottomOf="@+id/rv_music_found_item_seek"
+                app:layout_constraintEnd_toEndOf="@+id/rv_music_found_item_surface" />
+
             <SeekBar
                 android:id="@+id/rv_music_found_item_seek"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/rv_music_found_item_full"
                 app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

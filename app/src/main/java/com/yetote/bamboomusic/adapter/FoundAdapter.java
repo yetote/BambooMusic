@@ -1,125 +1,56 @@
 package com.yetote.bamboomusic.adapter;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
+import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.SeekBar;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.yetote.bamboomusic.R;
-import com.yetote.bamboomusic.media.MusicService;
-import com.yetote.bamboomusic.media.OnFFmpegCallback;
 import com.yetote.bamboomusic.model.FoundModel;
 
 import java.util.ArrayList;
-
-import static android.content.Context.BIND_AUTO_CREATE;
-import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
-import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
-import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
-import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
-import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_VIDEO;
 
 /**
  * @author yetote QQ:503779938
  * @name BambooMusic
  * @class name：com.yetote.bamboomusic.adapter
  * @class describe
- * @time 2019/8/15 13:14
+ * @time 2019/9/2 14:17
  * @change
  * @chang time
  * @class describe
  */
-public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallback {
+public class FoundAdapter extends RecyclerView.Adapter {
     private ArrayList<FoundModel> list;
     private Context context;
-    public static final int PATH_TAG = 1;
-    RecyclerViewItemClickListener itemClickListener;
     private static final String TAG = "FoundAdapter";
-    private MusicService.MusicBinder musicBinder;
-    private SeekBar seekBar;
-    private Surface surface;
-    private int width, height;
-    private boolean isPlaying;
-    private boolean isPausing;
-    private int playingPos;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
+    private RecyclerViewItemClickListener recyclerViewItemClickListener;
 
-            musicBinder = (MusicService.MusicBinder) service;
-            callBack();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.e(TAG, "onServiceDisconnected: 销毁service");
-        }
-    };
-
-    private void callBack() {
-        musicBinder.setServiceFFmpegCallBack(this);
-    }
-
-    public void setItemClickListener(RecyclerViewItemClickListener itemClickListener) {
-        this.itemClickListener = itemClickListener;
+    public void setRecyclerViewItemClickListener(RecyclerViewItemClickListener recyclerViewItemClickListener) {
+        this.recyclerViewItemClickListener = recyclerViewItemClickListener;
     }
 
     public FoundAdapter(ArrayList<FoundModel> list, Context context) {
         this.list = list;
         this.context = context;
-        Intent musicService = new Intent(context, MusicService.class);
-        context.bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
     }
 
-    @Override
-    public void onFFmpegPrepare(boolean prepare, int totalTime) {
-        if (prepare) {
-            musicBinder.play(surface, width, height);
-            isPlaying = true;
-//            if (totalTime != 0) {
-//                seekBar.setMax(totalTime);
-//            }
-        }
-    }
-
-    @Override
-    public void onFFmpegPlaying(int currentTime) {
-//        seekBar.setProgress(currentTime);
-    }
-
-    @Override
-    public void onFFmpegPause() {
-
-    }
-
-    @Override
-    public void onFFmpegResume() {
-
-    }
-
-    @Override
-    public void onFFmpegStop() {
-
-    }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         private SurfaceView surfaceView;
         private TextView tag;
-        private Button praise, discuss, start;
+        private Button praise, discuss;
+        private ImageView fullIv, start;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -127,6 +58,11 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
             tag = itemView.findViewById(R.id.rv_music_found_item_tag);
             praise = itemView.findViewById(R.id.rv_music_found_item_praise);
             start = itemView.findViewById(R.id.rv_music_found_item_start);
+            fullIv = itemView.findViewById(R.id.rv_music_found_item_full);
+        }
+
+        public ImageView getFullIv() {
+            return fullIv;
         }
 
         public SurfaceView getSurfaceView() {
@@ -145,7 +81,7 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
             return discuss;
         }
 
-        public Button getStart() {
+        public ImageView getStart() {
             return start;
         }
     }
@@ -154,62 +90,6 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context).inflate(R.layout.rv_music_found_layout, parent, false);
-//        v.setOnClickListener(v1 -> {
-//            int pos = (int) v.getTag(R.id.music_found_tag_position);
-//            if (pos != playingPos) {
-//                if (musicBinder.getState() != STATE_STOP) {
-//                    Log.e(TAG, "onCreateViewHolder: 切换");
-//                    musicBinder.stop();
-//                }
-//                playingPos = pos;
-//                isPlaying = false;
-//                return;
-//            }
-//            if (!isPlaying) {
-//                seekBar = v1.findViewById(R.id.rv_music_found_item_seek);
-////                if (surface != null) {
-////                    surface.release();
-////                }
-//                if (width == 0 || height == 0) {
-//                    height = (int) v1.getTag(R.id.music_found_tag_height);
-//                    width = (int) v1.getTag(R.id.music_found_tag_width);
-//                }
-//                surface = (Surface) v1.getTag(R.id.music_found_tag_surface);
-//                musicBinder.prepare((String) v1.getTag(R.id.music_found_tag_path));
-//            } else {
-//                if (isPausing) {
-//                    musicBinder.resume();
-//                    isPausing = false;
-//                } else {
-//                    isPausing = true;
-//                    musicBinder.pause();
-//                }
-//            }
-//
-//
-//            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//                @Override
-//                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//
-//                }
-//
-//                @Override
-//                public void onStartTrackingTouch(SeekBar seekBar) {
-//                    if (isPlaying) {
-//                        musicBinder.pause();
-//                    }
-//                }
-//
-//                @Override
-//                public void onStopTrackingTouch(SeekBar seekBar) {
-//                    if (isPlaying) {
-//                        musicBinder.seek(seekBar.getProgress());
-//                        musicBinder.resume();
-//                    }
-//                }
-//            });
-//        });
-
         return new MyViewHolder(v);
     }
 
@@ -237,75 +117,17 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.e(TAG, "surfaceDestroyed: 销毁");
-                if (musicBinder != null) {
-                    musicBinder.stop();
-                    musicBinder.setServiceFFmpegCallBack(null);
-                    musicBinder = null;
-                }
-
+                // TODO: 2019/9/2  需要使用广播将销毁消息传递给activity
             }
         });
-        vh.getStart().setOnClickListener(v -> {
-            if (musicBinder != null) {
-                if (musicBinder.getLocal() != SERVICE_IN_FRAGMENT) {
-                    musicBinder.setServiceFFmpegCallBack(null);
-                    musicBinder.setServiceFFmpegCallBack(this);
-                }
-            }
-            int pos = position;
-            if (pos != playingPos) {
-                if (musicBinder.getState() != STATE_STOP) {
-                    Log.e(TAG, "onCreateViewHolder: 切换");
-                    musicBinder.stop();
-                }
-                playingPos = pos;
-                isPlaying = false;
-            }
-            if (musicBinder.getState() != STATE_PLAYING) {
-                seekBar = vh.itemView.findViewById(R.id.rv_music_found_item_seek);
-                if (width == 0 || height == 0) {
-                    height = (int) vh.itemView.getTag(R.id.music_found_tag_height);
-                    width = (int) vh.itemView.getTag(R.id.music_found_tag_width);
-                }
-                surface = (Surface) vh.itemView.getTag(R.id.music_found_tag_surface);
-                musicBinder.prepare((String) vh.itemView.getTag(R.id.music_found_tag_path), MEDIA_VIDEO);
-            } else {
-                if (musicBinder.getState() == STATE_PAUSE) {
-                    musicBinder.resume();
-                    isPausing = false;
-                } else {
-                    isPausing = true;
-                    musicBinder.pause();
-                }
-            }
-
-
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                    if (isPlaying) {
-                        musicBinder.pause();
-                    }
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    if (isPlaying) {
-                        musicBinder.seek(seekBar.getProgress());
-                        musicBinder.resume();
-                    }
-                }
-            });
-        });
+        vh.getStart().setOnClickListener(v -> recyclerViewItemClickListener.onItemClick(v, vh.itemView, position));
+        vh.getFullIv().setOnClickListener(v -> recyclerViewItemClickListener.onItemClick(v, vh.itemView, position));
     }
 
     @Override
     public int getItemCount() {
         return list.size();
     }
+
+
 }

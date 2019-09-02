@@ -19,4 +19,6 @@ public interface RecyclerViewItemClickListener {
      * @param v 点击的view
      */
     void onClick(View v);
+
+    void onItemClick(View v, View parent, int pos);
 }

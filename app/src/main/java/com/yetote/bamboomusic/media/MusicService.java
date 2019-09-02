@@ -41,6 +41,7 @@ public class MusicService extends Service {
     private int type;
     public static final int SERVICE_IN_MAIN_ACTIVITY = 0x0007;
     public static final int SERVICE_IN_FRAGMENT = 0x0008;
+    public static final int SERVICE_IN_VIDEO_DETAILS_ACTIVITY = 0x0009;
     public static int serviceLocal;
 
     @Nullable
@@ -150,6 +151,7 @@ public class MusicService extends Service {
                 }
                 player.prepare(path, mediaType);
                 state = STATE_PREPARE;
+                Log.e(TAG, "prepare: zhunei");
             }
         }
 

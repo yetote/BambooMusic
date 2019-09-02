@@ -90,6 +90,7 @@ public class FoundAdapter extends RecyclerView.Adapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(context).inflate(R.layout.rv_music_found_layout, parent, false);
+        v.setOnClickListener(v1 -> recyclerViewItemClickListener.onClick(v1));
         return new MyViewHolder(v);
     }
 

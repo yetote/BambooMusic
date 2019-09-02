@@ -41,12 +41,16 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, js
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_pause(JNIEnv *env, jobject thiz) {
-    decode->pause();
+    std::thread pauseThread(&Decode::pause, decode);
+    pauseThread.detach();
+//    decode->pause();
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_resume(JNIEnv *env, jobject thiz) {
-    decode->resume();
+    std::thread resumeThread(&Decode::resume, decode);
+    resumeThread.detach();
+//    decode->resume();
 }
 
 extern "C"

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.yetote.bamboomusic.R;
+import com.yetote.bamboomusic.VideoDetailsActivity;
 import com.yetote.bamboomusic.adapter.FoundAdapter;
 import com.yetote.bamboomusic.adapter.RecyclerViewItemClickListener;
 import com.yetote.bamboomusic.media.MusicService;
@@ -130,7 +131,16 @@ public class FoundFragment extends Fragment {
         adapter.setRecyclerViewItemClickListener(new RecyclerViewItemClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent i = new Intent();
+                if (musicBinder != null) {
+                    if (musicBinder.getState() != STATE_STOP) {
+                        i.putExtra("currentTime", seekBar.getProgress());
+                    }
+                    musicBinder.stop();
+                    i.putExtra("path", list.get((Integer) v.getTag(R.id.music_found_tag_position)).getPath());
+                    i.setClass(getContext(), VideoDetailsActivity.class);
+                    startActivity(i);
+                }
             }
 
             @Override
@@ -205,5 +215,12 @@ public class FoundFragment extends Fragment {
         musicBinder.setServiceFFmpegCallBack(onFFmpegCallback);
     }
 
-
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.e(TAG, "onPause: ");
+        if (musicBinder != null) {
+            musicBinder.stop();
+        }
+    }
 }

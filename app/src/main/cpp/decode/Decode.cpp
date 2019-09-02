@@ -128,7 +128,7 @@ void Decode::pause() {
         videoPlayer->pause();
     }
 
-    callback.callPause(callback.MAIN_THREAD);
+    callback.callPause(callback.CHILD_THREAD);
 }
 
 void Decode::free() {
@@ -142,7 +142,7 @@ void Decode::resume() {
     if (videoPlayer != nullptr) {
         videoPlayer->resume();
     }
-    callback.callResume(callback.MAIN_THREAD);
+    callback.callResume(callback.CHILD_THREAD);
 }
 
 void Decode::seek(int progress) {

@@ -164,7 +164,7 @@ void Decode::stop() {
     playStates.setStop(true);
     int sleepCount = 0;
     while (!isFinish) {
-        if (sleepCount >= 1000) {
+        if (sleepCount >= 100) {
             isFinish = true;
         }
         sleepCount++;
@@ -203,12 +203,10 @@ Decode::~Decode() {
 
 void Decode::decode() {
     int rst = 0;
+    int count = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-//        if (audioPlayer->getSize() >= 40) {
-//            usleep(300);
-//            continue;
-//        }
+
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
 //        LOGE(Decode_TAG, "%s:开始分包", __func__);
@@ -229,13 +227,11 @@ void Decode::decode() {
         if (packet->stream_index == audioIndex) {
             if (audioPlayer != nullptr) {
                 audioPlayer->pushData(packet);
-//                LOGE(Decode_TAG, "%s:音频入队", __func__);
                 continue;
             }
         } else if (packet->stream_index == videoIndex) {
             if (videoPlayer != nullptr) {
                 videoPlayer->pushData(packet);
-//                LOGE(Decode_TAG, "%s:视频入队", __func__);
                 continue;
             }
         }

@@ -271,7 +271,7 @@ void VideoPlayer::decode() {
                     av_free(pFrame420P);
                     av_free(buffer);
                     pFrame420P = nullptr;
-                    LOGE(VideoPlayer_TAG, "line in 144:解码成功");
+                    LOGE(VideoPlayer_TAG, "yuv420p");
                 }
             }
         } else {

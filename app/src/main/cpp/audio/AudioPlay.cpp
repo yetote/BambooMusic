@@ -127,6 +127,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     if (playStates.isStop()) {
         return DataCallbackResult::Stop;
     }
+    memset(audioData, 0, sizeof(uint8_t) * betterSize);
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
     if (ringArray->getDataSize() < betterSize) {

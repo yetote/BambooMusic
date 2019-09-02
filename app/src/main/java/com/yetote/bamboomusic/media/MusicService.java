@@ -115,6 +115,9 @@ public class MusicService extends Service {
         }
 
         public void setServiceFFmpegCallBack(OnFFmpegCallback serviceFFmpegCallBack) {
+            if (state != STATE_STOP) {
+                stop();
+            }
             this.serviceFFmpegCallBack = serviceFFmpegCallBack;
         }
 
@@ -164,7 +167,7 @@ public class MusicService extends Service {
                         TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_vertex_shader)
                         , TextRecourseReader.readTextFileFromResource(getApplicationContext(), R.raw.yuv_frag_shader)
                 );
-                state = STATE_PREPARE;
+                state = STATE_PLAYING;
                 type = TYPE_VIDEO;
             }
         }

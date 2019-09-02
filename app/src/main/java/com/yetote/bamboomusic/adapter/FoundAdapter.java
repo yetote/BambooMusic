@@ -28,6 +28,8 @@ import java.util.ArrayList;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
+import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
+import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
 import static com.yetote.bamboomusic.media.MusicService.STATE_STOP;
 import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_VIDEO;
 
@@ -246,7 +248,6 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
         vh.getStart().setOnClickListener(v -> {
             if (musicBinder != null) {
                 if (musicBinder.getLocal() != SERVICE_IN_FRAGMENT) {
-                    musicBinder.stop();
                     musicBinder.setServiceFFmpegCallBack(null);
                     musicBinder.setServiceFFmpegCallBack(this);
                 }
@@ -259,9 +260,8 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
                 }
                 playingPos = pos;
                 isPlaying = false;
-                return;
             }
-            if (!isPlaying) {
+            if (musicBinder.getState() != STATE_PLAYING) {
                 seekBar = vh.itemView.findViewById(R.id.rv_music_found_item_seek);
                 if (width == 0 || height == 0) {
                     height = (int) vh.itemView.getTag(R.id.music_found_tag_height);
@@ -270,7 +270,7 @@ public class FoundAdapter extends RecyclerView.Adapter implements OnFFmpegCallba
                 surface = (Surface) vh.itemView.getTag(R.id.music_found_tag_surface);
                 musicBinder.prepare((String) vh.itemView.getTag(R.id.music_found_tag_path), MEDIA_VIDEO);
             } else {
-                if (isPausing) {
+                if (musicBinder.getState() == STATE_PAUSE) {
                     musicBinder.resume();
                     isPausing = false;
                 } else {

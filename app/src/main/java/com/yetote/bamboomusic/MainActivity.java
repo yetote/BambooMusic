@@ -158,13 +158,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("发现");
         title.add("我的");
 
-        musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
-        musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
-        musicList.add("http://fs.mv.web.kugou.com/201909011024/dbd0fd13d6ec5e3ee7c58b7a4cf811b4/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4");
-        musicList.add("http://fs.mv.web.kugou.com/201909011122/81a1ac007069681296fb8d15fe3f3445/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4");
-//        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
-//        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
-//        musicList.add(getExternalFilesDir(null).getPath() + "/7.mp3");
+//        musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
+//        musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
+//        musicList.add("http://fs.mv.web.kugou.com/201909011024/dbd0fd13d6ec5e3ee7c58b7a4cf811b4/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4");
+//        musicList.add("http://fs.mv.web.kugou.com/201909011122/81a1ac007069681296fb8d15fe3f3445/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4");
+        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
 
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
 
@@ -182,10 +185,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (musicBinder.getLocal() != SERVICE_IN_MAIN_ACTIVITY) {
                         musicBinder.setServiceFFmpegCallBack(null);
                         musicBinder.setServiceFFmpegCallBack(this);
+                        Log.e(TAG, "onClick: 重设service接口");
                     }
-
+                    Log.e(TAG, "onClick: state为" + musicBinder.getState());
                     switch (musicBinder.getState()) {
                         case STATE_STOP:
+                            musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
                             musicBinder.prepare(musicList.get(playingPos), MEDIA_AUDIO);
                             break;
                         case STATE_PLAYING:
@@ -302,11 +307,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onFFmpegPrepare(boolean prepare, int totalTime) {
         if (prepare) {
-            musicProgressButton.changeState(MusicProgressButton.STATE_PROGRESS);
             musicDetailsPopTotalTime.setText(TextUtil.time2err(totalTime));
             musicDetailsPopProgress.setMax(totalTime);
             musicProgressButton.setTotalTime(totalTime);
             musicBinder.play();
+        } else {
+            musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
         }
     }
 

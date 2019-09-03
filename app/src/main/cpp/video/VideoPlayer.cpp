@@ -79,6 +79,7 @@ VideoPlayer::initEGL(std::string vertexCodeParam, std::string fragCodeParam,
 
 
 void VideoPlayer::draw(AVFrame *frame) {
+    glViewport(0, 0, w, h);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(glUtil->program);
 
@@ -212,7 +213,7 @@ void VideoPlayer::decode() {
         vertexArray[++i] *= changeH;
     }
     initLocation(vertexCode.c_str(), fragCode.c_str());
-    glViewport(0, 0, w, h);
+//    glViewport(0, 0, w, h);
     int rst;
     AVFrame *pFrame = av_frame_alloc();
     AVPacket *dataPacket = av_packet_alloc();
@@ -353,6 +354,12 @@ void VideoPlayer::initSwrCtx() {
                                 AV_PIX_FMT_YUV420P,
                                 SWS_BICUBIC, nullptr, nullptr, nullptr
     );
+}
+
+void VideoPlayer::fullScreen(int w, int h) {
+    this->w = w;
+    this->h = h;
+//    glViewport(0, 0, w, h);
 }
 
 

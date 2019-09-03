@@ -17,11 +17,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".VideoDetailsActivity"></activity>
-        <activity android:name=".SlpashActivity"></activity>
         <activity
-            android:name=".MainActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:name=".VideoDetailsActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+        <activity android:name=".SlpashActivity"></activity>
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

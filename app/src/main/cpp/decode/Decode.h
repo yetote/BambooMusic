@@ -47,6 +47,8 @@ public:
     void stop();
 
 
+    void fullScreen(int w, int h);
+
 private:
     AVFormatContext *pFmtCtx = nullptr;
     AVCodec *pAudioCodec = nullptr;

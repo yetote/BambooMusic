@@ -90,4 +90,5 @@ public class MyPlayer {
     }
 
 
+    public native void fullScreen(int w, int h);
 }

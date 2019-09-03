@@ -61,6 +61,8 @@ public:
 
     void stop();
 
+    void fullScreen(int w, int h);
+
 private:
     PlayStates &playStates;
     Callback callback;

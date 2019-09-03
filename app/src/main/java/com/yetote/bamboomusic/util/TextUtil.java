@@ -11,7 +11,7 @@ package com.yetote.bamboomusic.util;
  * @class describe
  */
 public class TextUtil {
-    public static String time2err(int time) {
+    public static String time2Str(int time) {
         String timeS = "";
         int min = time / 60;
         int sec = time % 60;

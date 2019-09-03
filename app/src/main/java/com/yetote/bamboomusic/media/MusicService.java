@@ -200,6 +200,13 @@ public class MusicService extends Service {
                 state = STATE_STOP;
             }
         }
+
+        public void fullScreen(int w,int h) {
+            if (player != null) {
+                player.fullScreen(w,h);
+
+            }
+        }
     }
 
 }

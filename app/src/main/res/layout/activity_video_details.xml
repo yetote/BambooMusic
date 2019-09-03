@@ -14,6 +14,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/video_details_currentTime"
+        style="@style/MusicDetails_TextView_Style"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/video_details_rv"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/video_details_seekBar"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/video_details_rv"
+        app:layout_constraintEnd_toStartOf="@+id/video_details_totalTime"
+        app:layout_constraintStart_toEndOf="@+id/video_details_currentTime"
+        app:layout_constraintTop_toTopOf="@+id/video_details_totalTime" />
+
+    <TextView
+        android:id="@+id/video_details_totalTime"
+        style="@style/MusicDetails_TextView_Style"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/video_details_rv"
+        app:layout_constraintEnd_toStartOf="@+id/video_details_fullScreen" />
+
+    <ImageView
+        android:id="@+id/video_details_fullScreen"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/video_full_screen"
+        app:layout_constraintBottom_toTopOf="@+id/video_details_rv"
+        app:layout_constraintEnd_toEndOf="@+id/video_details_sv" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/video_details_rv"
         android:layout_width="match_parent"

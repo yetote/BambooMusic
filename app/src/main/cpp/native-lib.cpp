@@ -100,4 +100,9 @@ Java_com_yetote_bamboomusic_media_MyPlayer_play__Landroid_view_Surface_2IILjava_
     decodeThread.detach();
     env->ReleaseStringUTFChars(frag_code, frag);
     env->ReleaseStringUTFChars(vertex_codec, vertex);
+}extern "C"
+JNIEXPORT void JNICALL
+Java_com_yetote_bamboomusic_media_MyPlayer_fullScreen(JNIEnv *env, jobject thiz, jint w, jint h) {
+    // TODO: implement fullScreen()
+    decode->fullScreen(w,h);
 }

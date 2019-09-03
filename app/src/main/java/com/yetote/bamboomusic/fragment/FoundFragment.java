@@ -72,6 +72,8 @@ public class FoundFragment extends Fragment {
         }
     };
 
+    private SeekBar.OnSeekBarChangeListener seekBarChangeListener;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -112,7 +114,23 @@ public class FoundFragment extends Fragment {
         };
         Intent musicService = new Intent(getContext(), MusicService.class);
         getContext().bindService(musicService, serviceConnection, BIND_AUTO_CREATE);
+        seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                musicBinder.pause();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                musicBinder.seek(seekBar.getProgress());
+                musicBinder.resume();
+            }
+        };
         return v;
     }
 
@@ -120,11 +138,12 @@ public class FoundFragment extends Fragment {
         recyclerView = v.findViewById(R.id.fragment_found_rv);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
-//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/1.mp4", 11, 11, "111"));
-        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022018/dcf610a4df507edfd6943559990e5a11/G158/M06/0E/03/PocBAF0UMW6AS_dGAJZBOJlTixY276.mp4", 11, 11, "111"));
-        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022012/47cf7e27370e6a682e1b58eb637998a0/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4", 11, 11, "111"));
-        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022020/2b5a6feef8318a07ccd226828743f236/G033/M08/1E/17/AZQEAFXdphCAbSX7AOF4GmV6uHs403.mp4", 11, 11, "111"));
-//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
+
+//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022018/dcf610a4df507edfd6943559990e5a11/G158/M06/0E/03/PocBAF0UMW6AS_dGAJZBOJlTixY276.mp4", 11, 11, "111"));
+//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022012/47cf7e27370e6a682e1b58eb637998a0/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4", 11, 11, "111"));
+//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022020/2b5a6feef8318a07ccd226828743f236/G033/M08/1E/17/AZQEAFXdphCAbSX7AOF4GmV6uHs403.mp4", 11, 11, "111"));
+        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
+        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());
         recyclerView.setAdapter(adapter);
 
@@ -176,11 +195,16 @@ public class FoundFragment extends Fragment {
                                         }
                                         playPos = pos;
                                     }
+                                    if (seekBar != null) {
+                                        seekBar.setOnSeekBarChangeListener(null);
+                                    }
                                     seekBar = parent.findViewById(R.id.rv_music_found_item_seek);
                                     surface = (Surface) parent.getTag(R.id.music_found_tag_surface);
                                     width = (int) parent.getTag(R.id.music_found_tag_width);
                                     height = (int) parent.getTag(R.id.music_found_tag_height);
                                     musicBinder.prepare((String) parent.getTag(R.id.music_found_tag_path), MEDIA_VIDEO);
+
+                                    seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
                                     break;
                                 case STATE_PAUSE:
                                     if (playPos == pos) {

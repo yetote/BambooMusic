@@ -285,8 +285,10 @@ void VideoPlayer::decode() {
 }
 
 int VideoPlayer::getSize() {
-    std::lock_guard<std::mutex> guard(mutex);
+//    std::lock_guard<std::mutex> guard(mutex);
+    mutex.lock();
     int size = videoData.size();
+    mutex.unlock();
     return size;
 }
 
@@ -330,6 +332,7 @@ void VideoPlayer::stop() {
         LOGE(VideoPlayer_TAG, "%s:pcodecCtx释放完成", __func__);
     }
     if (glUtil != nullptr) {
+        glUtil->release();
         glUtil = nullptr;
         LOGE(VideoPlayer_TAG, "%s:glutil释放完成", __func__);
     }

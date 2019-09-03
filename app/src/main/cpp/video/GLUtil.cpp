@@ -9,7 +9,6 @@ GLUtil::GLUtil(const std::string &vertexCode, const std::string &fragCode) {
 }
 
 GLUtil::~GLUtil() {
-
 }
 
 void GLUtil::createProgram(const std::string &vertexCode, const std::string &fragCode) {
@@ -21,8 +20,8 @@ void GLUtil::createProgram(const std::string &vertexCode, const std::string &fra
         LOGE(GLUtil_TAG, "创建program失败: %s ", szLog);
         return;
     }
-    GLuint vertexId = loadShader(GL_VERTEX_SHADER, vertexCode.c_str());
-    GLuint fragId = loadShader(GL_FRAGMENT_SHADER, fragCode.c_str());
+    vertexId = loadShader(GL_VERTEX_SHADER, vertexCode.c_str());
+    fragId = loadShader(GL_FRAGMENT_SHADER, fragCode.c_str());
     if (vertexId == 0 || fragId == 0) {
         LOGE(GLUtil_TAG, "创建shader失败");
         return;
@@ -80,6 +79,14 @@ GLuint GLUtil::loadShader(GLenum type, const char *code) {
     LOGE(GLUtil_TAG, "加载着色器代码成功: ,shader code:%s", code);
 
     return shader;
+}
+
+void GLUtil::release() {
+    glDetachShader(program, vertexId);
+    glDeleteShader(vertexId);
+    glDetachShader(program, fragId);
+    glDeleteShader(fragId);
+    glDeleteProgram(program);
 }
 
 

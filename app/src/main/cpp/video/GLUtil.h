@@ -9,10 +9,12 @@
 #include <android/log.h>
 #include <string>
 #include "../util/LogUtil.h"
+
 #define GLUtil_TAG "GLUtil"
+
 class GLUtil {
 public:
-    GLUtil(const std::string& vertexCode, const std::string& fragCode);
+    GLUtil(const std::string &vertexCode, const std::string &fragCode);
 
     virtual ~GLUtil();
 
@@ -20,11 +22,16 @@ public:
 
 
     GLuint *createTexture();
+
     void release();
+
 private:
-    void createProgram(const std::string& vertexCode, const std::string& fragCode);
+    void createProgram(const std::string &vertexCode, const std::string &fragCode);
 
     GLuint loadShader(GLenum type, const char *code);
+
+    GLuint vertexId = 0;
+    GLuint fragId = 0;
 };
 
 

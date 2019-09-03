@@ -15,6 +15,7 @@ import android.util.TimeUtils;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -29,6 +30,7 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+import static android.view.View.VISIBLE;
 import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_VIDEO_DETAILS_ACTIVITY;
 import static com.yetote.bamboomusic.media.MyPlayer.MEDIA_VIDEO;
@@ -84,12 +86,15 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
         full.setOnClickListener(v -> {
             setRequestedOrientation(SCREEN_ORIENTATION_LANDSCAPE);
             getWindow().getDecorView().setSystemUiVisibility(SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | SYSTEM_UI_FLAG_FULLSCREEN|SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    | SYSTEM_UI_FLAG_FULLSCREEN | SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
             ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
             surfaceView.setLayoutParams(lp);
             isFullScreen = true;
             seekBar.setVisibility(INVISIBLE);
+            currentTv.setVisibility(INVISIBLE);
+            totalTv.setVisibility(INVISIBLE);
+            full.setVisibility(INVISIBLE);
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -117,7 +122,6 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 surface = holder.getSurface();
-
             }
 
             @Override
@@ -133,7 +137,10 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-
+                seekBar.setVisibility(VISIBLE);
+                currentTv.setVisibility(VISIBLE);
+                totalTv.setVisibility(VISIBLE);
+                full.setVisibility(VISIBLE);
             }
         });
 
@@ -141,6 +148,12 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
         totalTv = findViewById(R.id.video_details_totalTime);
         full = findViewById(R.id.video_details_fullScreen);
         seekBar = findViewById(R.id.video_details_seekBar);
+        surfaceView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e(TAG, "onClick: 点击");
+            }
+        });
     }
 
     private void callBack() {

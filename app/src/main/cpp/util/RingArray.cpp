@@ -30,6 +30,8 @@ void RingArray::read(uint8_t *dst, int size) {
 }
 
 void RingArray::write(uint8_t *dst, int size) {
+//    LOGE(RingArray_TAG, "%s:写入了%d字节", __func__, size);
+//    fwrite(dst, size, 1, file);
     if (maxSize - writePos >= size) {
         //容量够用，顺序存储
         memcpy(dataArr + writePos, dst, size * sizeof(uint8_t));
@@ -53,6 +55,8 @@ int RingArray::getDataSize() const {
 RingArray::RingArray(int sampleRate, int channelCount) : dataArr(
         new uint8_t[sampleRate * channelCount * 2 * sizeof(int)]) {
     maxSize = sampleRate * channelCount * 2;
+    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+    file = fopen(path.c_str(), "wb+");
     LOGE(RingArray_TAG, "%s:数组大小%d", __func__, maxSize);
 }
 

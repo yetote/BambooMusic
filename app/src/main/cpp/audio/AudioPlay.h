@@ -53,7 +53,6 @@ public:
 
     ~AudioPlay();
 
-    SwrContext *swrCtx;
 private:
     std::queue<AVPacket *> audioQueue;
     oboe::AudioStream *audioStream;
@@ -70,6 +69,7 @@ private:
     //写入位置
     int writtenPos = 0;
     bool canPlay = false;
+    SwrContext *swrCtx= nullptr;
     AVPacket *packet;
     AVFrame *pFrame;
     Callback callback;

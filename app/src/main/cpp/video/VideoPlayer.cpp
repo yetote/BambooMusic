@@ -285,10 +285,8 @@ void VideoPlayer::decode() {
 }
 
 int VideoPlayer::getSize() {
-//    std::lock_guard<std::mutex> guard(mutex);
-    mutex.lock();
+    std::lock_guard<std::mutex> guard(mutex);
     int size = videoData.size();
-    mutex.unlock();
     return size;
 }
 

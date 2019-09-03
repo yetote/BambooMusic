@@ -7,7 +7,10 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include "LogUtil.h"
+#include <string>
+
 #define RingArray_TAG "RingArray"
 
 class RingArray {
@@ -27,6 +30,7 @@ private:
     int dataSize = 0;
     int writePos = 0;
     int maxSize = 0;
+    FILE *file;
     uint8_t *dataArr;
 };
 

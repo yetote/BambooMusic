@@ -20,10 +20,14 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.yetote.bamboomusic.media.MusicService;
 import com.yetote.bamboomusic.media.OnFFmpegCallback;
 import com.yetote.bamboomusic.util.TextUtil;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.view.View.INVISIBLE;
@@ -176,7 +180,10 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
                 Log.e(TAG, "onFFmpegPrepare: surface为空");
             }
         } else {
-            Log.e(TAG, "onFFmpegPrepare: 准备失败");
+            Observable.create(emitter -> Toast.makeText(this, "打开文件失败", Toast.LENGTH_SHORT).show())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(o -> {
+                    });
         }
     }
 

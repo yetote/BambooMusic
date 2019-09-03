@@ -29,6 +29,9 @@ import com.yetote.bamboomusic.model.FoundModel;
 
 import java.util.ArrayList;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
 import static android.content.Context.BIND_AUTO_CREATE;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
@@ -87,6 +90,11 @@ public class FoundFragment extends Fragment {
                         seekBar.setMax(totalTime);
                     }
                     musicBinder.play(surface, width, height);
+                } else {
+                    Observable.create(emitter -> Toast.makeText(getContext(), "打开文件失败", Toast.LENGTH_SHORT).show())
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe(o -> {
+                            });
                 }
             }
 
@@ -139,11 +147,11 @@ public class FoundFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
 
-//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022018/dcf610a4df507edfd6943559990e5a11/G158/M06/0E/03/PocBAF0UMW6AS_dGAJZBOJlTixY276.mp4", 11, 11, "111"));
-//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022012/47cf7e27370e6a682e1b58eb637998a0/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032159/f61a48c2859069ead3176c07ee228e0e/G089/M00/09/13/OZQEAFim1fuAHM-aAKKhoohrY5w810.mp4", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032203/f9ab1ccf6b44f8522dfef1537e37696e/G140/M03/16/07/bJQEAFuwduSAR9IdAMBndnNd6GA202.mp4", 11, 11, "111"));
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909022020/2b5a6feef8318a07ccd226828743f236/G033/M08/1E/17/AZQEAFXdphCAbSX7AOF4GmV6uHs403.mp4", 11, 11, "111"));
-        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
-        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());
         recyclerView.setAdapter(adapter);
 

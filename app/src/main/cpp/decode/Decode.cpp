@@ -206,10 +206,17 @@ void Decode::decode() {
     int count = 0;
     AVPacket *packet = av_packet_alloc();
     while (!playStates.isEof() && !playStates.isStop()) {
-        if (audioPlayer->getSize() > 40 && videoPlayer->getSize() > 40) {
+        if (audioPlayer->getSize() > 100) {
             av_usleep(1000);
             continue;
         }
+//        if (audioPlayer->getSize() < 20 && !playStates.isPause()) {
+//            playStates.setPause(true);
+//            pause();
+//        } else if (playStates.isPause() && audioPlayer->getSize() > 50) {
+//            playStates.setPause(false);
+//            resume();
+//        }
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
 //        LOGE(Decode_TAG, "%s:开始分包", __func__);
@@ -244,8 +251,8 @@ void Decode::decode() {
 }
 
 void Decode::fullScreen(int w, int h) {
-    if(videoPlayer!= nullptr){
-        videoPlayer->fullScreen(w,h);
+    if (videoPlayer != nullptr) {
+        videoPlayer->fullScreen(w, h);
     }
 }
 

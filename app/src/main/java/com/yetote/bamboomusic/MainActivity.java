@@ -37,6 +37,9 @@ import com.yetote.bamboomusic.util.TextUtil;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
 import static android.widget.ListPopupWindow.MATCH_PARENT;
 import static android.widget.ListPopupWindow.WRAP_CONTENT;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_MAIN_ACTIVITY;
@@ -136,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initView() {
         path = getExternalFilesDir(null).getPath() + "/test.avi";
+        Log.e(TAG, "initView: " + path);
         musicIcon = findViewById(R.id.main_music_playing_icon);
 
         musicProgressButton = findViewById(R.id.main_musicProgress_btn);
@@ -158,16 +162,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("发现");
         title.add("我的");
 
-//        musicList.add("http://www.170mv.com/tool/jiexi/ajax/pid/2498/vid/2240684.mp4");
-//        musicList.add("http://m.oscaches.com/mp4/djmusic/jy/20140601/14.mp4");
-//        musicList.add("http://fs.mv.web.kugou.com/201909022008/93ef8a9bc06ed378da85be3e6c9d3fac/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4");
-//        musicList.add("http://fs.mv.web.kugou.com/201909011122/81a1ac007069681296fb8d15fe3f3445/G135/M01/10/01/xw0DAFtrkvOARUjvAyqky59_O0E064.mp4");
-        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
+        musicList.add("http://fs.open.kugou.com/96fd6b9d8795dd8265dc0d4260bfe129/5d6e65c5/G095/M00/18/00/P5QEAFussHyAMPWEADaRkzG3ZHk167.mp3");
+        musicList.add("http://fs.open.kugou.com/6f91469d548bad01a56eb4254bb69efe/5d6e6861/G153/M04/11/17/2Q0DAF0D61uAHxNTADuPhCASo0k439.mp3");
+        musicList.add("http://fs.open.kugou.com/44a1493b7c6aa8af76dac8693b22b1a3/5d6e6922/G007/M07/14/01/p4YBAFS5_cGAEJxFACABJiZsH9I944.mp3");
+        musicList.add("http://fs.open.kugou.com/50c7d50ccdbd9aba8cbb7d092a18d008/5d6e6961/G120/M0B/0A/09/uA0DAFo2Ss-AKFswADMoVLzY-Hc869.mp3");
+        musicList.add("http://fs.mv.web.kugou.com/201909032125/2e88ebe077f739e92485f9064ac4f728/G090/M09/19/0D/mg0DAFi_3ECAc2ecAppbm5mv8Oc034.mp4");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
 
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
 
@@ -316,6 +321,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             musicBinder.play();
         } else {
             musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+            Observable.create(emitter -> Toast.makeText(this, "打开文件失败", Toast.LENGTH_SHORT).show())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(o -> {
+                    });
+
         }
     }
 

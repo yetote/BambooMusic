@@ -68,7 +68,7 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
         LOGE(EGLUtil_TAG, "%s:关联egl失败,错误码%d", __func__, eglGetError());
         return false;
     }
-    LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError());
+    LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError ());
     return true;
 }
 

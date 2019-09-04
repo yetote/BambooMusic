@@ -57,14 +57,21 @@ void Decode::prepare(const std::string path) {
     }
     LOGE(Decode_TAG, "%s:ffmpeg准备成功", __func__);
     audioPlayer->totalTime = pFmtCtx->duration / AV_TIME_BASE;
+
     LOGE(Decode_TAG, "%s:总时长%d", __func__, audioPlayer->totalTime);
     audioPlayer->timeBase = pAudioStream->time_base;
     callback.callPrepare(callback.CHILD_THREAD, true, audioPlayer->totalTime);
 }
 
 void Decode::playAudio() {
+    int rst = 0;
     if (audioIndex != -1 && audioPlayer != nullptr) {
-        findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
+        rst = findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
+    }
+    if (rst < 0) {
+        isFinish = true;
+        stop();
+        return;
     }
     audioPlayer->initSwr();
     audioPlayer->play();
@@ -94,30 +101,36 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h,
     playAudio();
 }
 
-void Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec) {
+int Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec) {
     int rst;
 
     *pCodec = avcodec_find_decoder((pStream)->codecpar->codec_id);
     if (*pCodec == nullptr) {
         LOGE(Decode_TAG, "%s:无法打开解码器", __func__);
-        return;
+        return -1;
+    }
+    if (callback.callHardwareSupport(callback.CHILD_THREAD, (*pCodec)->name)) {
+        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
+        LOGE(Decode_TAG, "%s:支持硬解", __func__);
+        return -1;
     }
     *avCodecContext = avcodec_alloc_context3(*pCodec);
     if (*avCodecContext == nullptr) {
         LOGE(Decode_TAG, "%s:无法分配解码器上下文", __func__);
-        return;
+        return -1;
     }
     rst = avcodec_parameters_to_context(*avCodecContext, (pStream)->codecpar);
     if (rst < 0) {
         LOGE(Decode_TAG, "%s:复制解码器上下文失败%s", __func__, av_err2str(rst));
-        return;
+        return -1;
     }
     rst = avcodec_open2(*avCodecContext, *pCodec, nullptr);
     if (rst != 0) {
         LOGE(Decode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
-        return;
+        return -1;
     }
     LOGE(Decode_TAG, "%s:解码器准备完成", __func__);
+    return 0;
 }
 
 void Decode::pause() {

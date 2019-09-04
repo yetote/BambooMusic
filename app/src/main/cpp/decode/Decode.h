@@ -65,7 +65,7 @@ private:
 
     void free();
 
-    void findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec);
+    int findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec);
 
     void decode();
 

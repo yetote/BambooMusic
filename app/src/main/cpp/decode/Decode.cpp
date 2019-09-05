@@ -11,11 +11,19 @@ Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(ca
         videoPlayer = new VideoPlayer(callback, playStates);
     }
     audioPlayer = new AudioPlay(callback, playStates);
+    hardwareDecode = new HardwareDecode();
     isFinish = false;
 }
 
 void Decode::prepare(const std::string path) {
     wpath = path;
+
+    if (hardwareDecode->checkSupport(path)) {
+        LOGE(Decode_TAG, "%s:支持硬解", __func__);
+        callback.callPrepare(callback.MAIN_THREAD, false, 0);
+        return;
+    }
+    return;
     av_register_all();
     avformat_network_init();
     int rst;
@@ -109,11 +117,11 @@ int Decode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCode
         LOGE(Decode_TAG, "%s:无法打开解码器", __func__);
         return -1;
     }
-    if (callback.callHardwareSupport(callback.CHILD_THREAD, (*pCodec)->name)) {
-        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
-        LOGE(Decode_TAG, "%s:支持硬解", __func__);
-        return -1;
-    }
+//    if (callback.callHardwareSupport(callback.CHILD_THREAD, (*pCodec)->name)) {
+//        callback.callHardwareCodec(callback.CHILD_THREAD, wpath);
+//        LOGE(Decode_TAG, "%s:支持硬解", __func__);
+//        return -1;
+//    }
     *avCodecContext = avcodec_alloc_context3(*pCodec);
     if (*avCodecContext == nullptr) {
         LOGE(Decode_TAG, "%s:无法分配解码器上下文", __func__);
@@ -223,13 +231,6 @@ void Decode::decode() {
             av_usleep(1000);
             continue;
         }
-//        if (audioPlayer->getSize() < 20 && !playStates.isPause()) {
-//            playStates.setPause(true);
-//            pause();
-//        } else if (playStates.isPause() && audioPlayer->getSize() > 50) {
-//            playStates.setPause(false);
-//            resume();
-//        }
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
 //        LOGE(Decode_TAG, "%s:开始分包", __func__);

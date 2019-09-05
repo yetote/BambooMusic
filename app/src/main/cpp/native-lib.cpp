@@ -33,9 +33,9 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, js
         decode = new Decode{*callback, *playStates};
         LOGE(NATIVE_TAG, "%s:初始化decode", __func__);
     }
-    std::thread preparedThread(&Decode::prepare, decode, path);
-    preparedThread.detach();
-//    decode->prepare(path);
+//    std::thread preparedThread(&Decode::prepare, decode, path);
+//    preparedThread.detach();
+    decode->prepare(path);
     env->ReleaseStringUTFChars(path_, path);
 }
 extern "C"
@@ -65,7 +65,6 @@ Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
     if (decode != nullptr) {
         std::thread stopThread(&Decode::stop, decode);
         stopThread.join();
-//        decode->stop();
         delete decode;
         decode = nullptr;
         LOGE(NATIVE_TAG, "%s:decode释放完毕", __func__);
@@ -80,6 +79,7 @@ Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
         callback = nullptr;
         LOGE(NATIVE_TAG, "%s:callback释放完毕", __func__);
     }
+
 }
 
 extern "C"

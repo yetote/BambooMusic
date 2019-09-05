@@ -321,6 +321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             musicBinder.play();
         } else {
             musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+            Log.e(TAG, "onFFmpegPrepare: 打开文件失败");
             Observable.create(emitter -> Toast.makeText(this, "打开文件失败", Toast.LENGTH_SHORT).show())
                     .subscribeOn(AndroidSchedulers.mainThread())
                     .subscribe(o -> {

@@ -11,6 +11,7 @@
 #include "../audio/AudioPlay.h"
 #include "../util/PlayStates.h"
 #include "../video/VideoPlayer.h"
+#include "HardwareDecode.h"
 #include <thread>
 #include <android/native_window.h>
 
@@ -62,6 +63,7 @@ private:
     std::string wpath;
     std::mutex mutex, initMutex;
     bool isFinish;
+    HardwareDecode *hardwareDecode = nullptr;
 
     void free();
 

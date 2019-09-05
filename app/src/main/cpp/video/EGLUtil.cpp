@@ -2,16 +2,18 @@
 // Created by ether on 2019/8/15.
 //
 
+
 #include "EGLUtil.h"
 
 EGLUtil::EGLUtil(ANativeWindow *aNativeWindow) {
     initEGL(aNativeWindow);
 }
 
-bool EGLUtil::initEGL(ANativeWindow *window) {
-    if (window == nullptr) {
+bool EGLUtil::initEGL(ANativeWindow *_window) {
+    if (_window == nullptr) {
         LOGE(EGLUtil_TAG, "%s:window为null", __func__);
     }
+    window = _window;
     eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (eglGetError() != EGL_SUCCESS) {
         LOGE(EGLUtil_TAG, "%s:获取display失败,错误码%d", __func__, eglGetError());
@@ -68,7 +70,7 @@ bool EGLUtil::initEGL(ANativeWindow *window) {
         LOGE(EGLUtil_TAG, "%s:关联egl失败,错误码%d", __func__, eglGetError());
         return false;
     }
-    LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError ());
+    LOGE(EGLUtil_TAG, "%s:配置egl成功", __func__, eglGetError());
     return true;
 }
 
@@ -87,5 +89,6 @@ void EGLUtil::release() {
     if (eglDisplay != nullptr) {
         eglDisplay = nullptr;
     }
+    ANativeWindow_release(window);
     LOGE(EGLUtil_TAG, "%s:egl释放完成", __func__);
 }

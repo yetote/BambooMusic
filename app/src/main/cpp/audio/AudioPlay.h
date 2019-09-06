@@ -20,6 +20,7 @@
 extern "C" {
 #include <libswresample/swresample.h>
 #include <libavcodec/avcodec.h>
+#include <libavutil/time.h>
 };
 #define AudioPlay_TAG "AudioPlay"
 #define LOGE(LOG_TAG, ...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -55,6 +56,8 @@ public:
 
 private:
     std::queue<AVPacket *> audioQueue;
+//    std::queue<char *> hardwareAudioQueue;
+
     oboe::AudioStream *audioStream;
     oboe::AudioStreamBuilder *builder;
     oboe::LatencyTuner *latencyTuner;
@@ -69,7 +72,7 @@ private:
     //写入位置
     int writtenPos = 0;
     bool canPlay = false;
-    SwrContext *swrCtx= nullptr;
+    SwrContext *swrCtx = nullptr;
     AVPacket *packet;
     AVFrame *pFrame;
     Callback callback;
@@ -85,6 +88,8 @@ private:
 
     int32_t outSampleRate;
     int32_t outChannelCount;
+
+    void pushData(const char *data, size_t size);
 };
 
 

@@ -43,4 +43,12 @@ void PlayStates::setMediaType(PlayStates::MEDIA_TYPE mediaType) {
     PlayStates::mediaType = mediaType;
 }
 
+bool PlayStates::isHardware() const {
+    return hardware;
+}
+
+void PlayStates::setHardware(bool hardware) {
+    PlayStates::hardware = hardware;
+}
+
 

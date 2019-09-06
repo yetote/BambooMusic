@@ -4,6 +4,7 @@
 
 
 
+
 #include "AudioPlay.h"
 
 using namespace oboe;
@@ -95,6 +96,7 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
     builder->setSharingMode(SharingMode::Exclusive);
     builder->setDirection(Direction::Output);
     builder->setFormat(AudioFormat::I16);
+    builder->setSampleRate(44100);
     builder->setCallback(this);
     std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
     Result result;
@@ -131,6 +133,10 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     auto buffer = static_cast<uint8_t *> (audioData);
     latencyTuner->tune();
     while (ringArray->getDataSize() < betterSize) {
+        if (playStates.isHardware()) {
+            av_usleep(100);
+            continue;
+        }
         popData();
     }
     ringArray->read(buffer, betterSize);
@@ -151,6 +157,15 @@ void AudioPlay::pushData(AVPacket *packet) {
     AVPacket *temp = av_packet_alloc();
     av_packet_ref(temp, packet);
     audioQueue.push(temp);
+}
+
+void AudioPlay::pushData(const char *data, size_t size) {
+    std::lock_guard<std::mutex> guard(codecMutex);
+    canPlay = true;
+    if (ringArray == nullptr) {
+//        ringArray = new RingArray();
+    }
+    ringArray->write((uint8_t *) data, size);
 }
 
 void AudioPlay::popData() {
@@ -292,6 +307,7 @@ void AudioPlay::stop() {
 
 int AudioPlay::getSize() {
     std::lock_guard<std::mutex> guard(codecMutex);
+
     int size = audioQueue.size();
     return size;
 }

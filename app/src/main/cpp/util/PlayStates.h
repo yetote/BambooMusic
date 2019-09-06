@@ -37,11 +37,16 @@ public:
 
     void setMediaType(MEDIA_TYPE mediaType);
 
+    bool isHardware() const;
+
+    void setHardware(bool hardware);
+
 private:
 
     bool eof = false;
     bool pause = false;
     bool stop = false;
+    bool hardware = false;
     MEDIA_TYPE mediaType;
 };
 

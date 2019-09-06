@@ -10,28 +10,30 @@
 #include <cstdio>
 #include "LogUtil.h"
 #include <string>
+#include <mutex>
 
 #define RingArray_TAG "RingArray"
-
+template <typename T>
 class RingArray {
 public:
     RingArray(int sampleRate, int channelCount);
 
     virtual ~RingArray();
 
-    void read(uint8_t *dst, int size);
+    void read(T *dst, int size);
 
-    void write(uint8_t *dst, int size);
+    void write(T *dst, int size);
 
     int getDataSize() const;
-
+    bool canWrite(size_t size);
 private:
     int readPos = 0;
     int dataSize = 0;
     int writePos = 0;
     int maxSize = 0;
     FILE *file;
-    uint8_t *dataArr;
+    T *dataArr;
+    std::mutex mutex;
 };
 
 

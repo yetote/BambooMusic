@@ -6,10 +6,11 @@
 #define BAMBOOMUSIC_HARDWAREDECODE_H
 
 #include <string>
+#include <thread>
 #include "media/NdkMediaCodec.h"
 #include "media/NdkMediaExtractor.h"
 #include "../util/LogUtil.h"
-#include <thread>
+#include "../audio/AudioPlay.h"
 
 #define HardwareDecode_TAG "HardwareDecode"
 
@@ -17,7 +18,7 @@ class HardwareDecode {
 public:
     bool checkSupport(std::string path);
 
-    HardwareDecode();
+    HardwareDecode(AudioPlay *audioPlay);
 
     virtual ~HardwareDecode();
 
@@ -26,6 +27,7 @@ private:
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;
     AMediaFormat *pAudioFmt = nullptr, *pVideoFmt = nullptr;
     FILE *file;
+    AudioPlay *audioPlay = nullptr;
 
     void doDecodeWork();
 };

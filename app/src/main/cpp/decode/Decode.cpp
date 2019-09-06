@@ -20,10 +20,11 @@ void Decode::prepare(const std::string path) {
 
     if (hardwareDecode->checkSupport(path)) {
         LOGE(Decode_TAG, "%s:支持硬解", __func__);
-        callback.callPrepare(callback.MAIN_THREAD, false, 0);
+        playStates.setHardware(true);
+        callback.callPrepare(callback.MAIN_THREAD, true, 0);
         return;
     }
-    return;
+//    return;
     av_register_all();
     avformat_network_init();
     int rst;
@@ -81,9 +82,11 @@ void Decode::playAudio() {
         stop();
         return;
     }
-    audioPlayer->initSwr();
     audioPlayer->play();
-    decode();
+    if (!playStates.isHardware()) {
+        audioPlayer->initSwr();
+        decode();
+    }
 }
 
 void Decode::playVideo(ANativeWindow *pWindow, int w, int h,

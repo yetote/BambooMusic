@@ -111,6 +111,9 @@ void HardwareDecode::doDecodeWork() {
                     continue;
                 }
                 char *data = new char[bufSize];
+                if () {
+
+                }
                 memcpy(data, buffer + info.offset, info.size);
                 fwrite(data, info.size, 1, file);
                 delete[] data;
@@ -127,5 +130,9 @@ void HardwareDecode::doDecodeWork() {
         count++;
         LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
+
+}
+
+HardwareDecode::HardwareDecode(AudioPlay *_audioPlay) : audioPlay(_audioPlay) {
 
 }

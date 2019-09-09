@@ -4,6 +4,24 @@
 
 #include "HardwareDecode.h"
 
+//    @formatter:off
+HardwareDecode::HardwareDecode(PlayStates &playStates, const Callback &callback) : playStates(playStates),callback(callback) {
+//    @formatter:on
+
+}
+
+//    @formatter:off
+HardwareDecode::HardwareDecode(AudioPlay *audioPlay, PlayStates &playStates, const Callback &callback): audioPlay(audioPlay), playStates(playStates), callback(callback) {
+//    @formatter:on
+
+}
+
+//    @formatter:off
+HardwareDecode::HardwareDecode(AudioPlay *audioPlay, VideoPlayer *videoPlayer,PlayStates &playStates, const Callback &callback) : audioPlay(audioPlay),videoPlayer(videoPlayer),playStates(playStates),callback(callback) {
+//    @formatter:on
+
+}
+
 bool HardwareDecode::checkSupport(std::string path) {
 
     media_status_t rst;
@@ -93,16 +111,21 @@ void HardwareDecode::doDecodeWork() {
 //                }
                 auto readSize = info.size;
                 size_t bufSize;
-                auto buffer = AMediaCodec_getOutputBuffer(pAudioCodec, outputIndex, &bufSize);
+                uint8_t *buffer = AMediaCodec_getOutputBuffer(pAudioCodec, outputIndex, &bufSize);
                 if (bufSize < 0) {
                     LOGE(HardwareDecode_TAG, "%s:未读出解码数据%d", __func__, bufSize);
                     continue;
                 }
-                char *data = new char[bufSize];
+                uint8_t *data = new uint8_t[bufSize];
 //                if () {
 //
 //                }
                 memcpy(data, buffer + info.offset, info.size);
+                while (!audioPlay->canPush(info.size)) {
+                    usleep(100000);
+                    LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
+                }
+                audioPlay->pushData(data, info.size);
                 delete[] data;
                 AMediaCodec_releaseOutputBuffer(pAudioCodec, outputIndex, info.size != 0);
             }
@@ -149,29 +172,18 @@ void HardwareDecode::decode() {
     decodeThread.detach();
 }
 
-//    @formatter:off
-HardwareDecode::HardwareDecode(PlayStates &playStates, const Callback &callback) : playStates(playStates),callback(callback) {
-//    @formatter:on
 
+void HardwareDecode::playAudio() {
+    if (audioPlay != nullptr) {
+        audioPlay->play();
+        decode();
+    }
 }
 
-//    @formatter:off
-HardwareDecode::HardwareDecode(AudioPlay *audioPlay, PlayStates &playStates, const Callback &callback): audioPlay(audioPlay), playStates(playStates), callback(callback) {
-//    @formatter:on
-
-}
-
-//    @formatter:off
-HardwareDecode::HardwareDecode(AudioPlay *audioPlay, VideoPlayer *videoPlayer,PlayStates &playStates, const Callback &callback) : audioPlay(audioPlay),videoPlayer(videoPlayer),playStates(playStates),callback(callback) {
-//    @formatter:on
-
-}
 
 HardwareDecode::~HardwareDecode() {
 
 }
-
-
 
 
 

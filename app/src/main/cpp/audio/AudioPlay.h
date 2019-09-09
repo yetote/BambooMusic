@@ -39,6 +39,8 @@ public:
 
     void pushData(AVPacket *packet);
 
+    void pushData(char *data);
+
     void pause();
 
     void resume();
@@ -53,6 +55,10 @@ public:
     int getSize();
 
     ~AudioPlay();
+
+    void pushData(uint8_t *data, size_t size);
+
+    bool canPush(size_t size);
 
 private:
     std::queue<AVPacket *> audioQueue;
@@ -78,8 +84,10 @@ private:
     Callback callback;
     int lastTime = 0;
     bool eof;
+    FILE *file;
     std::mutex codecMutex;
-    RingArray<uint8_t > *ringArray = nullptr;
+    RingArray<uint8_t> *ringArray = nullptr;
+    RingArray<uint8_t> *hardwareArr = nullptr;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
@@ -89,7 +97,6 @@ private:
     int32_t outSampleRate;
     int32_t outChannelCount;
 
-    void pushData(const char *data, size_t size);
 };
 
 

@@ -5,65 +5,76 @@
 #include <unistd.h>
 #include "Decode.h"
 
-Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
-                                                                     playStates(playStates1) {
+//    @formatter:off
+Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),playStates(playStates1) {
+//    @formatter:on
 
     audioPlayer = new AudioPlay(callback, playStates);
     if (playStates.getMediaType() == playStates.MEDIAO_VIDEO) {
         videoPlayer = new VideoPlayer(callback, playStates);
         hardwareDecode = new HardwareDecode(audioPlayer, videoPlayer, playStates, callback);
-        fFmpegDecode = new FFmpegDecode(playStates, audioPlayer, videoPlayer);
+        ffmpegDecode = new FFmpegDecode(playStates, audioPlayer, videoPlayer);
     } else {
         hardwareDecode = new HardwareDecode(audioPlayer, playStates, callback);
-        fFmpegDecode = new FFmpegDecode(playStates, audioPlayer);
+        ffmpegDecode = new FFmpegDecode(playStates, audioPlayer);
     }
-    isFinish = false;
 }
 
-void Decode::prepare(const std::string path) {
-//
-//    if (hardwareDecode->checkSupport(path)) {
-//        LOGE(Decode_TAG, "%s:支持硬解", __func__);
-//        playStates.setHardware(true);
-//        callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
-//    } else
-    if (fFmpegDecode->prepare(path)) {
+void Decode::prepare(const std::string &path) {
+    if (hardwareDecode->checkSupport(path)) {
+        LOGE(Decode_TAG, "%s:支持硬解", __func__);
+        playStates.setHardware(true);
+        callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
+    } else if (ffmpegDecode->prepare(path)) {
         playStates.setHardware(false);
         callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
     } else {
         callback.callPrepare(callback.CHILD_THREAD, false, 0);
     }
-
 }
 
 void Decode::playAudio() {
-    fFmpegDecode->playAudio();
+    if (!playStates.isHardware()) {
+        ffmpegDecode->playAudio();
+    } else {
+        hardwareDecode->playAudio();
+    }
 }
 
-void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode,
-                       std::string fragCode) {
-    fFmpegDecode->playVideo(pWindow, w, h, vertexCode, fragCode);
+//    @formatter:off
+void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode,std::string fragCode) {
+//    @formatter:on
+    if (!playStates.isHardware()) {
+        ffmpegDecode->playVideo(pWindow, w, h, vertexCode, fragCode);
+    }
 }
 
 void Decode::pause() {
-    fFmpegDecode->pause();
+    if (!playStates.isHardware()) {
+        ffmpegDecode->pause();
+    }
     callback.callPause(callback.CHILD_THREAD);
 }
 
 
 void Decode::resume() {
-    fFmpegDecode->resume();
+    if (!playStates.isHardware()) {
+        ffmpegDecode->resume();
+    }
     callback.callResume(callback.CHILD_THREAD);
 }
 
 void Decode::seek(int progress) {
-
-    fFmpegDecode->seek(progress);
+    if (!playStates.isHardware()) {
+        ffmpegDecode->seek(progress);
+    }
 }
 
 void Decode::stop() {
     playStates.setStop(true);
-    fFmpegDecode->stop();
+    if (!playStates.isHardware()) {
+        ffmpegDecode->stop();
+    }
     LOGE(Decode_TAG, "%s:开始释放", __func__);
     std::lock_guard<std::mutex> guard(mutex);
     LOGE(Decode_TAG, "%s:准备释放audioPlayer", __func__);
@@ -81,16 +92,15 @@ void Decode::stop() {
     callback.callStop(callback.CHILD_THREAD);
 }
 
+void Decode::fullScreen(int w, int h) {
+    if (!playStates.isHardware()) {
+        ffmpegDecode->fullScreen(w, h);
+    }
+}
+
 Decode::~Decode() {
 
 }
-
-
-void Decode::fullScreen(int w, int h) {
-    fFmpegDecode->fullScreen(w, h);
-}
-
-
 
 
 

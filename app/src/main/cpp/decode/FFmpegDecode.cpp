@@ -72,10 +72,8 @@ void FFmpegDecode::playAudio() {
         return;
     }
     audioPlayer->play();
-    if (!playStates.isHardware()) {
-        audioPlayer->initSwr();
-        decode();
-    }
+    audioPlayer->initSwr();
+    decode();
 }
 
 void FFmpegDecode::playVideo(ANativeWindow *pWindow, int w, int h,

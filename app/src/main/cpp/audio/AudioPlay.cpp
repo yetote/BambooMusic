@@ -99,6 +99,7 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
     builder->setSampleRate(44100);
     builder->setCallback(this);
     std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+    file = fopen(path.c_str(), "wb+");
     Result result;
     builder->setCallback(this);
     result = builder->openStream(&audioStream);
@@ -110,9 +111,10 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
     printAudioStreamInfo(audioStream);
     outSampleRate = audioStream->getSampleRate();
     outChannelCount = audioStream->getChannelCount();
-    if (ringArray == nullptr) {
-        ringArray = new RingArray<uint8_t >(outSampleRate, outChannelCount);
-    }
+//    if (ringArray == nullptr) {
+    ringArray = new RingArray<uint8_t>(outSampleRate, outChannelCount);
+//    }
+    hardwareArr = new RingArray<uint8_t>(outSampleRate, outChannelCount);
     data = new uint8_t[outSampleRate * outChannelCount * 2];
     outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));
 //    audioStream->requestStart();
@@ -129,17 +131,26 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
     if (playStates.isStop()) {
         return DataCallbackResult::Stop;
     }
-    memset(audioData, 0, sizeof(uint8_t) * betterSize);
-    auto buffer = static_cast<uint8_t *> (audioData);
+
     latencyTuner->tune();
-    while (ringArray->getDataSize() < betterSize) {
-        if (playStates.isHardware()) {
-            av_usleep(100);
-            continue;
+    if (!playStates.isHardware()) {
+        memset(audioData, 0, sizeof(uint8_t) * betterSize);
+        auto buffer = static_cast<uint8_t *> (audioData);
+        while (ringArray->getDataSize() < betterSize) {
+            if (playStates.isHardware()) {
+                av_usleep(100);
+                continue;
+            }
+            popData();
         }
-        popData();
+        ringArray->read(buffer, betterSize);
+    } else {
+        memset(audioData, 0, sizeof(uint8_t) * betterSize);
+        auto buffer = static_cast<uint8_t * > (audioData);
+        hardwareArr->read(buffer, betterSize);
+//        convertPcm16ToFloat(reinterpret_cast<const int16_t *>(decodeData), buffer, numFrames * 4);
+//        fwrite(file, betterSize, 1, file);
     }
-    ringArray->read(buffer, betterSize);
     if (abs(currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
         lastTime = static_cast<int>(currentTime);
@@ -159,13 +170,11 @@ void AudioPlay::pushData(AVPacket *packet) {
     audioQueue.push(temp);
 }
 
-void AudioPlay::pushData(const char *data, size_t size) {
+
+void AudioPlay::pushData(uint8_t *data, size_t size) {
     std::lock_guard<std::mutex> guard(codecMutex);
     canPlay = true;
-    if (ringArray == nullptr) {
-//        ringArray = new RingArray();
-    }
-    ringArray->write((uint8_t *) data, size);
+    hardwareArr->write(data, size);
 }
 
 void AudioPlay::popData() {
@@ -316,4 +325,12 @@ void AudioPlay::play() {
     if (audioStream != nullptr) {
         audioStream->requestStart();
     }
+    LOGE(AudioPlay_TAG, "%s:准备播放", __func__);
 }
+
+bool AudioPlay::canPush(size_t size) {
+
+    return hardwareArr->canWrite(size);
+}
+
+

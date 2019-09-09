@@ -15,7 +15,6 @@
 #define RingArray_TAG "RingArray"
 
 
-
 template<typename T>
 class RingArray {
 public:
@@ -35,7 +34,7 @@ public:
     }
 
     void read(T *dst, int size) {
-        std::lock_guard <std::mutex> guard(mutex);
+        std::lock_guard<std::mutex> guard(mutex);
         if (maxSize - readPos >= size) {
             //可用数据足够，顺序读取
             memcpy(dst, dataArr + readPos, size * sizeof(T));
@@ -49,12 +48,14 @@ public:
             readPos += (size - remainingSize);
         }
         dataSize -= size;
+        LOGE(RingArray_TAG, "%s:读取索引%d", __func__, readPos);
+//        fwrite(dst, size, 1, file);
     }
 
-    void write(T *dst, int size) {
-        std::lock_guard <std::mutex> guard(mutex);
+    void write(const T *dst, int size) {
+        std::lock_guard<std::mutex> guard(mutex);
 //    LOGE(RingArray_TAG, "%s:写入了%d字节", __func__, size);
-//    fwrite(dst, size, 1, file);
+//        fwrite(dst, size, 1, file);
         if (maxSize - writePos >= size) {
             //容量够用，顺序存储
             memcpy(dataArr + writePos, dst, size * sizeof(T));
@@ -70,14 +71,23 @@ public:
         dataSize += size;
     }
 
-    int getDataSize()  {
-        std::lock_guard <std::mutex> guard(mutex);
+    int getDataSize() {
+        std::lock_guard<std::mutex> guard(mutex);
         return dataSize;
     }
 
     bool canWrite(size_t size) {
-        std::lock_guard <std::mutex> guard(mutex);
-        return abs(maxSize - writePos + readPos) >= size;
+        std::lock_guard<std::mutex> guard(mutex);
+        if (writePos >= readPos) {
+            LOGE(RingArray_TAG, "%s:剩余容量%d，最大容量%d,写入索引%d，读取索引%d", __func__,
+                 maxSize - writePos + readPos,
+                 maxSize, writePos, readPos);
+
+            return maxSize - writePos + readPos >= size * sizeof(T);
+        } else {
+            LOGE(RingArray_TAG, "%s:写入索引%d，读取索引%d", __func__, writePos, readPos);
+            return readPos - writePos >= size * sizeof(T);
+        }
     }
 
 private:

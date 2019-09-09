@@ -32,6 +32,8 @@ public:
 
     void decode();
 
+    void playAudio();
+
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;

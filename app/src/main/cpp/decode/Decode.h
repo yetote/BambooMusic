@@ -25,7 +25,7 @@ public:
 
     Decode(const Callback &callback, PlayStates &playStates);
 
-    void prepare(const std::string path);
+    void prepare(const std::string& path);
 
     void playAudio();
 
@@ -49,9 +49,8 @@ private:
     AudioPlay *audioPlayer = nullptr;
     VideoPlayer *videoPlayer = nullptr;
     std::mutex mutex;
-    bool isFinish;
     HardwareDecode *hardwareDecode = nullptr;
-    FFmpegDecode *fFmpegDecode = nullptr;
+    FFmpegDecode *ffmpegDecode = nullptr;
     Callback callback;
     PlayStates &playStates;
 };

@@ -33,7 +33,7 @@ public class MusicService extends Service {
     public static final int STATE_PLAYING = 0x0002;
     public static final int STATE_PAUSE = 0x0003;
     public static final int STATE_STOP = 0x0004;
-    private int state = STATE_STOP;
+    private static int state = STATE_STOP;
     public static final int TYPE_AUDIO = 0x0005;
     public static final int TYPE_VIDEO = 0x0006;
     private Surface surface;
@@ -149,17 +149,18 @@ public class MusicService extends Service {
                     Log.e(TAG, "prepare: 多媒体类别不正确");
                     return;
                 }
-                player.prepare(path, mediaType);
                 state = STATE_PREPARE;
+                player.prepare(path, mediaType);
                 Log.e(TAG, "prepare: zhunei");
             }
         }
 
         public void play() {
             if (player != null) {
-                player.play();
                 state = STATE_PLAYING;
                 type = TYPE_AUDIO;
+                player.play();
+                Log.e(TAG, "play: 播放");
             }
         }
 
@@ -201,9 +202,9 @@ public class MusicService extends Service {
             }
         }
 
-        public void fullScreen(int w,int h) {
+        public void fullScreen(int w, int h) {
             if (player != null) {
-                player.fullScreen(w,h);
+                player.fullScreen(w, h);
 
             }
         }

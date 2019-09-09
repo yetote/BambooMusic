@@ -319,8 +319,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             musicDetailsPopProgress.setMax(totalTime);
             musicProgressButton.setTotalTime(totalTime);
             musicBinder.play();
+            Log.e(TAG, "onFFmpegPrepare: 准备播放");
         } else {
             musicProgressButton.changeState(MusicProgressButton.STATE_STOP);
+            musicBinder.stop();
             Log.e(TAG, "onFFmpegPrepare: 打开文件失败");
             Observable.create(emitter -> Toast.makeText(this, "打开文件失败", Toast.LENGTH_SHORT).show())
                     .subscribeOn(AndroidSchedulers.mainThread())

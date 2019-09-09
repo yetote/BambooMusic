@@ -20,49 +20,37 @@ bool HardwareDecode::checkSupport(std::string path) {
         const char *mime;
         if (!AMediaFormat_getString(pFmt, AMEDIAFORMAT_KEY_MIME, &mime)) {
             LOGE(HardwareDecode_TAG, "%s:未找到对应的解码器", __func__);
+            stop();
             return false;
         } else if (strncmp(mime, "video/", 6) == 0) {
             LOGE(HardwareDecode_TAG, "%s:找到视频解码器", __func__);
             pVideoMediaExtractor = pMediaExtractor;
-            pVideoFmt = pFmt;
             AMediaExtractor_selectTrack(pVideoMediaExtractor, i);
             pVideoCodec = AMediaCodec_createDecoderByType(mime);
-            AMediaCodec_configure(pVideoCodec, pVideoFmt, nullptr, nullptr, 0);
+            AMediaCodec_configure(pVideoCodec, pFmt, nullptr, nullptr, 0);
         } else if (strncmp(mime, "audio/", 6) == 0) {
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
-            pAudioFmt = pFmt;
             pAudioMediaExtractor = pMediaExtractor;
             AMediaExtractor_selectTrack(pAudioMediaExtractor, i);
             pAudioCodec = AMediaCodec_createDecoderByType(mime);
-            AMediaCodec_configure(pAudioCodec, pAudioFmt, nullptr, nullptr, 0);
+            AMediaCodec_configure(pAudioCodec, pFmt, nullptr, nullptr, 0);
             AMediaCodec_start(pAudioCodec);
-            std::thread decodeThread(&HardwareDecode::doDecodeWork, this);
-            decodeThread.detach();
-//            doDecodeWork();
         } else {
             LOGE(HardwareDecode_TAG, "%s:非音轨或视频轨", __func__);
         }
         LOGE(HardwareDecode_TAG, "%s:释放fmt", __func__);
         AMediaFormat_delete(pFmt);
-
     }
+
     return true;
 }
 
-HardwareDecode::HardwareDecode() {
-    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
-    file = fopen(path.c_str(), "wb+");
-}
-
-HardwareDecode::~HardwareDecode() {
-
-}
 
 void HardwareDecode::doDecodeWork() {
     bool isInputEOF = false;
     bool isOutputEOF = false;
     int count = 0;
-    while (true) {
+    while (!playStates.isStop()) {
         if (!isInputEOF) {
             auto inputIndex = AMediaCodec_dequeueInputBuffer(pAudioCodec, 2000);
             if (inputIndex >= 0) {
@@ -111,11 +99,10 @@ void HardwareDecode::doDecodeWork() {
                     continue;
                 }
                 char *data = new char[bufSize];
-                if () {
-
-                }
+//                if () {
+//
+//                }
                 memcpy(data, buffer + info.offset, info.size);
-                fwrite(data, info.size, 1, file);
                 delete[] data;
                 AMediaCodec_releaseOutputBuffer(pAudioCodec, outputIndex, info.size != 0);
             }
@@ -125,6 +112,7 @@ void HardwareDecode::doDecodeWork() {
         }
         if (isInputEOF && isOutputEOF) {
             LOGE(HardwareDecode_TAG, "%s:退出解码", __func__);
+            playStates.setEof(true);
             break;
         }
         count++;
@@ -133,6 +121,57 @@ void HardwareDecode::doDecodeWork() {
 
 }
 
-HardwareDecode::HardwareDecode(AudioPlay *_audioPlay) : audioPlay(_audioPlay) {
+void HardwareDecode::stop() {
+    if (pAudioCodec != nullptr) {
+        AMediaCodec_stop(pAudioCodec);
+        AMediaCodec_delete(pAudioCodec);
+        pAudioCodec = nullptr;
+    }
+    if (pVideoCodec != nullptr) {
+        AMediaCodec_stop(pVideoCodec);
+        AMediaCodec_delete(pVideoCodec);
+        pVideoCodec = nullptr;
+    }
+    if (pAudioMediaExtractor != nullptr) {
+        AMediaExtractor_delete(pAudioMediaExtractor);
+        pAudioMediaExtractor = nullptr;
+    }
+    if (pVideoMediaExtractor != nullptr) {
+        AMediaExtractor_delete(pVideoMediaExtractor);
+        pVideoMediaExtractor = nullptr;
+    }
+    audioPlay = nullptr;
+    videoPlayer = nullptr;
+}
+
+void HardwareDecode::decode() {
+    std::thread decodeThread(&HardwareDecode::doDecodeWork, this);
+    decodeThread.detach();
+}
+
+//    @formatter:off
+HardwareDecode::HardwareDecode(PlayStates &playStates, const Callback &callback) : playStates(playStates),callback(callback) {
+//    @formatter:on
 
 }
+
+//    @formatter:off
+HardwareDecode::HardwareDecode(AudioPlay *audioPlay, PlayStates &playStates, const Callback &callback): audioPlay(audioPlay), playStates(playStates), callback(callback) {
+//    @formatter:on
+
+}
+
+//    @formatter:off
+HardwareDecode::HardwareDecode(AudioPlay *audioPlay, VideoPlayer *videoPlayer,PlayStates &playStates, const Callback &callback) : audioPlay(audioPlay),videoPlayer(videoPlayer),playStates(playStates),callback(callback) {
+//    @formatter:on
+
+}
+
+HardwareDecode::~HardwareDecode() {
+
+}
+
+
+
+
+

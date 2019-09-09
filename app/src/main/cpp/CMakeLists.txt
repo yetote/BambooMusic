@@ -92,10 +92,10 @@ add_library( # Sets the name of the library.
         native-lib.cpp
         Test.cpp
         decode/Decode.cpp
+        decode/FFmpegDecode.cpp
         decode/HardwareDecode.cpp
         util/Callback.cpp
         util/PlayStates.cpp
-        util/RingArray.cpp
         audio/AudioPlay.cpp
         video/EGLUtil.cpp
         video/GLUtil.cpp

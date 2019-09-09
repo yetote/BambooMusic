@@ -79,7 +79,7 @@ private:
     int lastTime = 0;
     bool eof;
     std::mutex codecMutex;
-    RingArray *ringArray = nullptr;
+    RingArray<uint8_t > *ringArray = nullptr;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;

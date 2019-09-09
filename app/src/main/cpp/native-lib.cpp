@@ -40,6 +40,26 @@ Java_com_yetote_bamboomusic_media_MyPlayer_prepare(JNIEnv *env, jobject thiz, js
 }
 extern "C"
 JNIEXPORT void JNICALL
+Java_com_yetote_bamboomusic_media_MyPlayer_play__(JNIEnv *env, jobject thiz) {
+    std::thread decodeThread(&Decode::playAudio, decode);
+    decodeThread.detach();
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_yetote_bamboomusic_media_MyPlayer_play__Landroid_view_Surface_2IILjava_lang_String_2Ljava_lang_String_2(
+        JNIEnv *env, jobject thiz, jobject surface, jint w, jint h, jstring vertex_codec,
+        jstring frag_code) {
+
+    const char *vertex = env->GetStringUTFChars(vertex_codec, JNI_FALSE);
+    const char *frag = env->GetStringUTFChars(frag_code, JNI_FALSE);
+    ANativeWindow *aNativeWindow = ANativeWindow_fromSurface(env, surface);
+    std::thread decodeThread(&Decode::playVideo, decode, aNativeWindow, w, h, vertex, frag);
+    decodeThread.detach();
+    env->ReleaseStringUTFChars(frag_code, frag);
+    env->ReleaseStringUTFChars(vertex_codec, vertex);
+}
+extern "C"
+JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_pause(JNIEnv *env, jobject thiz) {
     std::thread pauseThread(&Decode::pause, decode);
     pauseThread.detach();
@@ -82,25 +102,8 @@ Java_com_yetote_bamboomusic_media_MyPlayer_stop(JNIEnv *env, jobject thiz) {
 
 }
 
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_play__(JNIEnv *env, jobject thiz) {
-    std::thread decodeThread(&Decode::playAudio, decode);
-    decodeThread.detach();
-}extern "C"
-JNIEXPORT void JNICALL
-Java_com_yetote_bamboomusic_media_MyPlayer_play__Landroid_view_Surface_2IILjava_lang_String_2Ljava_lang_String_2(
-        JNIEnv *env, jobject thiz, jobject surface, jint w, jint h, jstring vertex_codec,
-        jstring frag_code) {
 
-    const char *vertex = env->GetStringUTFChars(vertex_codec, JNI_FALSE);
-    const char *frag = env->GetStringUTFChars(frag_code, JNI_FALSE);
-    ANativeWindow *aNativeWindow = ANativeWindow_fromSurface(env, surface);
-    std::thread decodeThread(&Decode::playVideo, decode, aNativeWindow, w, h, vertex, frag);
-    decodeThread.detach();
-    env->ReleaseStringUTFChars(frag_code, frag);
-    env->ReleaseStringUTFChars(vertex_codec, vertex);
-}extern "C"
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_fullScreen(JNIEnv *env, jobject thiz, jint w, jint h) {
     // TODO: implement fullScreen()

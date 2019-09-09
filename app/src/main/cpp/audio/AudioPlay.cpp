@@ -111,7 +111,7 @@ AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callb
     outSampleRate = audioStream->getSampleRate();
     outChannelCount = audioStream->getChannelCount();
     if (ringArray == nullptr) {
-        ringArray = new RingArray(outSampleRate, outChannelCount);
+        ringArray = new RingArray<uint8_t >(outSampleRate, outChannelCount);
     }
     data = new uint8_t[outSampleRate * outChannelCount * 2];
     outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));

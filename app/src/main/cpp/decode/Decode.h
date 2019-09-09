@@ -12,21 +12,16 @@
 #include "../util/PlayStates.h"
 #include "../video/VideoPlayer.h"
 #include "HardwareDecode.h"
+#include "FFmpegDecode.h"
 #include <thread>
 #include <android/native_window.h>
 
-extern "C" {
-#include "../includes/libavformat/avformat.h"
-#include "../includes/libavcodec/avcodec.h"
-};
 
 #define Decode_TAG "Decode"
 #define LOGE(LOG_TAG, ...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 class Decode {
 public:
-    Callback callback;
-    PlayStates &playStates;
 
     Decode(const Callback &callback, PlayStates &playStates);
 
@@ -41,36 +36,24 @@ public:
 
     void resume();
 
-    ~Decode();
 
     void seek(int progress);
 
     void stop();
 
+    ~Decode();
 
     void fullScreen(int w, int h);
 
 private:
-    AVFormatContext *pFmtCtx = nullptr;
-    AVCodec *pAudioCodec = nullptr;
-    AVCodec *pVideoCodec = nullptr;
-    AVStream *pAudioStream = nullptr;
-    AVStream *pVideoStream = nullptr;
-    int audioIndex = -1;
-    int videoIndex = -1;
     AudioPlay *audioPlayer = nullptr;
     VideoPlayer *videoPlayer = nullptr;
-    std::string wpath;
-    std::mutex mutex, initMutex;
+    std::mutex mutex;
     bool isFinish;
     HardwareDecode *hardwareDecode = nullptr;
-
-    void free();
-
-    int findCodec(AVStream *pStream, AVCodecContext **avCodecContext, AVCodec **pCodec);
-
-    void decode();
-
+    FFmpegDecode *fFmpegDecode = nullptr;
+    Callback callback;
+    PlayStates &playStates;
 };
 
 

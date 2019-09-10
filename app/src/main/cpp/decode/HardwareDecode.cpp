@@ -85,15 +85,14 @@ bool HardwareDecode::checkSupport(std::string path) {
 
 
 void HardwareDecode::doDecodeWork() {
-    bool isInputEOF = false;
-    bool isOutputEOF = false;
+
     int count = 0;
     while (!playStates.isStop()) {
         if (playStates.isPause()) {
             usleep(300000);
             continue;
         }
-//        mutex.lock();
+        mutex.lock();
         if (!isInputEOF) {
             auto inputIndex = AMediaCodec_dequeueInputBuffer(pAudioCodec, 2000);
             if (inputIndex >= 0) {
@@ -114,7 +113,7 @@ void HardwareDecode::doDecodeWork() {
                 AMediaExtractor_advance(pAudioMediaExtractor);
             } else {
                 LOGE(HardwareDecode_TAG, "%s:放入数据失败", __func__);
-//                mutex.unlock();
+                mutex.unlock();
                 continue;
             }
         }
@@ -154,17 +153,18 @@ void HardwareDecode::doDecodeWork() {
             }
         } else {
             LOGE(HardwareDecode_TAG, "%s:取出解码数据失败", __func__);
-//            mutex.unlock();
+            mutex.unlock();
             continue;
         }
         if (isInputEOF && isOutputEOF) {
             LOGE(HardwareDecode_TAG, "%s:退出解码", __func__);
             playStates.setEof(true);
             isFinish = true;
-//            mutex.unlock();
+            mutex.unlock();
             break;
         }
         count++;
+        mutex.unlock();
 //        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
     isFinish = true;
@@ -181,6 +181,14 @@ void HardwareDecode::stop() {
         sleepCount++;
     }
     std::lock_guard<std::mutex> guard(mutex);
+    if (audioPlay != nullptr) {
+        audioPlay->stop();
+        audioPlay = nullptr;
+    }
+    if (videoPlayer != nullptr) {
+        videoPlayer->stop();
+        videoPlayer = nullptr;
+    }
 
     if (pAudioCodec != nullptr) {
         AMediaCodec_stop(pAudioCodec);
@@ -200,8 +208,7 @@ void HardwareDecode::stop() {
         AMediaExtractor_delete(pVideoMediaExtractor);
         pVideoMediaExtractor = nullptr;
     }
-    audioPlay = nullptr;
-    videoPlayer = nullptr;
+
 }
 
 void HardwareDecode::decode() {
@@ -230,9 +237,22 @@ void HardwareDecode::resume() {
     }
 }
 
+void HardwareDecode::seek(int progress) {
+    audioPlay->clear();
+//    audioPlay->flush();
+    AMediaExtractor_seekTo(pAudioMediaExtractor, progress * 1000000,
+                           AMEDIAEXTRACTOR_SEEK_NEXT_SYNC);
+    AMediaCodec_flush(pAudioCodec);
+    renderstart = -1;
+    isInputEOF = false;
+    isOutputEOF = false;
+}
+
 HardwareDecode::~HardwareDecode() {
 
 }
+
+
 
 
 

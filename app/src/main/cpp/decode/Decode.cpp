@@ -74,6 +74,8 @@ void Decode::resume() {
 void Decode::seek(int progress) {
     if (!playStates.isHardware()) {
         ffmpegDecode->seek(progress);
+    } else {
+        hardwareDecode->seek(progress);
     }
 }
 

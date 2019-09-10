@@ -246,6 +246,11 @@ void AudioPlay::clear() {
     while (!audioQueue.empty()) {
         audioQueue.pop();
     }
+
+    if (playStates.isHardware()) {
+        hardwareArr->clear();
+    }
+
     dataSize = 0;
     readPos = 0;
     writtenPos = 0;
@@ -348,6 +353,10 @@ void AudioPlay::init(int32_t _sampleRate, int32_t _channelCount) {
     if (!playStates.isHardware()) {
         initSwr();
     }
+}
+
+void AudioPlay::flush() {
+    audioStream->requestFlush();
 }
 
 

@@ -38,6 +38,8 @@ public:
 
     void resume();
 
+    void seek(int progress);
+
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;
@@ -51,7 +53,8 @@ private:
     int64_t totalTime = 0;
     std::mutex mutex;
     bool isFinish = false;
-
+    bool isInputEOF = false;
+    bool isOutputEOF = false;
     void doDecodeWork();
 
     int64_t renderstart = -1;

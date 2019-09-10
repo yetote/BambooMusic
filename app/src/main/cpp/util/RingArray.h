@@ -90,6 +90,14 @@ public:
         }
     }
 
+    void clear() {
+        memset(dataArr, 0, 200* sizeof(T));
+        readPos = 0;
+        dataSize = 0;
+        writePos = 0;
+//        writePos = readPos;
+    }
+
 private:
     int readPos = 0;
     int dataSize = 0;

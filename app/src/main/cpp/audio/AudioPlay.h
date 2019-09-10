@@ -46,7 +46,7 @@ public:
 
     void resume();
 
-
+    void flush();
     void stop();
 
 

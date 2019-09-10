@@ -56,7 +56,7 @@ bool HardwareDecode::checkSupport(std::string path) {
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
             int64_t totalTime = 0;
             AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);
-            audioPlay->totalTime = totalTime/1000000;
+            audioPlay->totalTime = totalTime / 1000000;
             auto srst = AMediaFormat_getInt32(pFmt, "sample-rate", &sampleRate);
             if (!srst) {
                 LOGE(HardwareDecode_TAG, "%s:获取采样率失败", __func__);
@@ -89,6 +89,11 @@ void HardwareDecode::doDecodeWork() {
     bool isOutputEOF = false;
     int count = 0;
     while (!playStates.isStop()) {
+        if (playStates.isPause()) {
+            usleep(300000);
+            continue;
+        }
+//        mutex.lock();
         if (!isInputEOF) {
             auto inputIndex = AMediaCodec_dequeueInputBuffer(pAudioCodec, 2000);
             if (inputIndex >= 0) {
@@ -109,6 +114,7 @@ void HardwareDecode::doDecodeWork() {
                 AMediaExtractor_advance(pAudioMediaExtractor);
             } else {
                 LOGE(HardwareDecode_TAG, "%s:放入数据失败", __func__);
+//                mutex.unlock();
                 continue;
             }
         }
@@ -123,53 +129,59 @@ void HardwareDecode::doDecodeWork() {
                 }
                 int64_t presentationNano = info.presentationTimeUs * 1000;
                 if (renderstart < 0) {
-//                    renderstart = systemnanotime() - presentationNano;
                     renderstart = presentationNano;
                 }
-                int64_t delay = (renderstart + presentationNano) - systemnanotime();
-//                if (delay > 0) {
-//                    usleep(delay / 1000);
-//                }
                 audioPlay->currentTime = (info.presentationTimeUs) / 1000000;
-//                LOGE(HardwareDecode_TAG, "%s:delay=%d", __func__,
-//                     (info.presentationTimeUs) / 1000000);
 
                 auto readSize = info.size;
                 size_t bufSize;
                 uint8_t *buffer = AMediaCodec_getOutputBuffer(pAudioCodec, outputIndex, &bufSize);
                 if (bufSize < 0) {
                     LOGE(HardwareDecode_TAG, "%s:未读出解码数据%d", __func__, bufSize);
+//                    mutex.unlock();
                     continue;
                 }
                 uint8_t *data = new uint8_t[bufSize];
-//                if () {
-//
-//                }
                 memcpy(data, buffer + info.offset, info.size);
                 while (!audioPlay->canPush(info.size)) {
-                    usleep(100000);
-//                    LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
+                    usleep(300000);
+                    LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
                 }
                 audioPlay->pushData(data, info.size);
                 delete[] data;
                 AMediaCodec_releaseOutputBuffer(pAudioCodec, outputIndex, info.size != 0);
+//                mutex.unlock();
             }
         } else {
             LOGE(HardwareDecode_TAG, "%s:取出解码数据失败", __func__);
+//            mutex.unlock();
             continue;
         }
         if (isInputEOF && isOutputEOF) {
             LOGE(HardwareDecode_TAG, "%s:退出解码", __func__);
             playStates.setEof(true);
+            isFinish = true;
+//            mutex.unlock();
             break;
         }
         count++;
 //        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
-
+    isFinish = true;
+    LOGE(HardwareDecode_TAG, "%s:结束解码", __func__);
 }
 
 void HardwareDecode::stop() {
+    int sleepCount = 0;
+    while (!isFinish) {
+        if (sleepCount >= 100) {
+            isFinish = true;
+        }
+        usleep(3000);
+        sleepCount++;
+    }
+    std::lock_guard<std::mutex> guard(mutex);
+
     if (pAudioCodec != nullptr) {
         AMediaCodec_stop(pAudioCodec);
         AMediaCodec_delete(pAudioCodec);
@@ -206,10 +218,25 @@ void HardwareDecode::playAudio() {
     }
 }
 
+void HardwareDecode::pause() {
+    if (audioPlay != nullptr) {
+        audioPlay->pause();
+    }
+}
+
+void HardwareDecode::resume() {
+    if (audioPlay != nullptr) {
+        audioPlay->resume();
+    }
+}
 
 HardwareDecode::~HardwareDecode() {
 
 }
+
+
+
+
 
 
 

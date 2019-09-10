@@ -6,9 +6,12 @@
 #define BAMBOOMUSIC_TEST_H
 
 #include <vector>
+
 class Test {
 public:
     int removeDuplicates(std::vector<int> &nums);
+
+    int singleNumber(std::vector<int> &nums);
 
 private:
 };

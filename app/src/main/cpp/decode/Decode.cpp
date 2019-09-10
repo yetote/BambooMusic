@@ -51,16 +51,22 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexC
 }
 
 void Decode::pause() {
+    playStates.setPause(true);
     if (!playStates.isHardware()) {
         ffmpegDecode->pause();
+    } else {
+        hardwareDecode->pause();
     }
     callback.callPause(callback.CHILD_THREAD);
 }
 
 
 void Decode::resume() {
+    playStates.setPause(false);
     if (!playStates.isHardware()) {
         ffmpegDecode->resume();
+    } else {
+        hardwareDecode->resume();
     }
     callback.callResume(callback.CHILD_THREAD);
 }
@@ -75,6 +81,12 @@ void Decode::stop() {
     playStates.setStop(true);
     if (!playStates.isHardware()) {
         ffmpegDecode->stop();
+        delete ffmpegDecode;
+        ffmpegDecode = nullptr;
+    } else {
+        hardwareDecode->stop();
+        delete hardwareDecode;
+        hardwareDecode = nullptr;
     }
     LOGE(Decode_TAG, "%s:开始释放", __func__);
     std::lock_guard<std::mutex> guard(mutex);
@@ -90,6 +102,7 @@ void Decode::stop() {
         videoPlayer = nullptr;
         LOGE(Decode_TAG, "%s:videoPlayer释放完成", __func__);
     }
+
     callback.callStop(callback.CHILD_THREAD);
 }
 

@@ -283,6 +283,9 @@ void AudioPlay::stop() {
     if (ringArray != nullptr) {
         delete ringArray;
     }
+    if (hardwareArr != nullptr) {
+        delete hardwareArr;
+    }
 }
 
 int AudioPlay::getSize() {
@@ -300,7 +303,7 @@ void AudioPlay::play() {
 }
 
 bool AudioPlay::canPush(size_t size) {
-
+    std::lock_guard<std::mutex> guard(codecMutex);
     return hardwareArr->canWrite(size);
 }
 

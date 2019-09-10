@@ -41,7 +41,6 @@ public:
 
     void pushData(AVPacket *packet);
 
-    void pushData(char *data);
 
     void pause();
 

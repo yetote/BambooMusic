@@ -34,6 +34,10 @@ public:
 
     void playAudio();
 
+    void pause();
+
+    void resume();
+
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;
@@ -45,6 +49,8 @@ private:
     int32_t sampleRate = 0;
     int32_t channelCount = 0;
     int64_t totalTime = 0;
+    std::mutex mutex;
+    bool isFinish = false;
 
     void doDecodeWork();
 

@@ -19,3 +19,11 @@ int Test::removeDuplicates(std::vector<int> &nums) {
 
     return changePos;
 }
+
+int Test::singleNumber(std::vector<int> &nums) {
+    int temp = 0;
+    for (int i = 0; i < nums.size(); i++) {
+        temp ^= nums[i];
+    }
+    return temp;
+}

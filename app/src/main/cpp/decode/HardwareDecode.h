@@ -42,8 +42,13 @@ private:
     VideoPlayer *videoPlayer = nullptr;
     PlayStates &playStates;
     const Callback &callback;
+    int32_t sampleRate = 0;
+    int32_t channelCount = 0;
+    int64_t totalTime = 0;
 
     void doDecodeWork();
+
+    int64_t renderstart = -1;
 };
 
 

@@ -4,6 +4,12 @@
 
 #include "HardwareDecode.h"
 
+int64_t systemnanotime() {
+    timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000000000LL + now.tv_nsec;
+}
+
 //    @formatter:off
 HardwareDecode::HardwareDecode(PlayStates &playStates, const Callback &callback) : playStates(playStates),callback(callback) {
 //    @formatter:on
@@ -48,6 +54,20 @@ bool HardwareDecode::checkSupport(std::string path) {
             AMediaCodec_configure(pVideoCodec, pFmt, nullptr, nullptr, 0);
         } else if (strncmp(mime, "audio/", 6) == 0) {
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
+            int64_t totalTime = 0;
+            AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);
+            audioPlay->totalTime = totalTime/1000000;
+            auto srst = AMediaFormat_getInt32(pFmt, "sample-rate", &sampleRate);
+            if (!srst) {
+                LOGE(HardwareDecode_TAG, "%s:获取采样率失败", __func__);
+                sampleRate = 0;
+            }
+            auto crst = AMediaFormat_getInt32(pFmt, "channel-count", &channelCount);
+            if (!crst) {
+                LOGE(HardwareDecode_TAG, "%s:获取音频通道数失败", __func__);
+                channelCount = 0;
+            }
+
             pAudioMediaExtractor = pMediaExtractor;
             AMediaExtractor_selectTrack(pAudioMediaExtractor, i);
             pAudioCodec = AMediaCodec_createDecoderByType(mime);
@@ -102,13 +122,18 @@ void HardwareDecode::doDecodeWork() {
                     isOutputEOF = true;
                 }
                 int64_t presentationNano = info.presentationTimeUs * 1000;
-//                if (d->renderstart < 0) {
-//                    d->renderstart = systemnanotime() - presentationNano;
-//                }
-//                int64_t delay = (d->renderstart + presentationNano) - systemnanotime();
+                if (renderstart < 0) {
+//                    renderstart = systemnanotime() - presentationNano;
+                    renderstart = presentationNano;
+                }
+                int64_t delay = (renderstart + presentationNano) - systemnanotime();
 //                if (delay > 0) {
 //                    usleep(delay / 1000);
 //                }
+                audioPlay->currentTime = (info.presentationTimeUs) / 1000000;
+//                LOGE(HardwareDecode_TAG, "%s:delay=%d", __func__,
+//                     (info.presentationTimeUs) / 1000000);
+
                 auto readSize = info.size;
                 size_t bufSize;
                 uint8_t *buffer = AMediaCodec_getOutputBuffer(pAudioCodec, outputIndex, &bufSize);
@@ -123,7 +148,7 @@ void HardwareDecode::doDecodeWork() {
                 memcpy(data, buffer + info.offset, info.size);
                 while (!audioPlay->canPush(info.size)) {
                     usleep(100000);
-                    LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
+//                    LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
                 }
                 audioPlay->pushData(data, info.size);
                 delete[] data;
@@ -139,7 +164,7 @@ void HardwareDecode::doDecodeWork() {
             break;
         }
         count++;
-        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
+//        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
 
 }
@@ -175,6 +200,7 @@ void HardwareDecode::decode() {
 
 void HardwareDecode::playAudio() {
     if (audioPlay != nullptr) {
+        audioPlay->init(sampleRate, channelCount);
         audioPlay->play();
         decode();
     }

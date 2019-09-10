@@ -35,6 +35,8 @@ public:
 
     AudioPlay(const Callback &callback, PlayStates &playStates);
 
+    void init(int32_t _sampleRate = 0, int32_t _channelCount = 0);
+
     void play();
 
     void pushData(AVPacket *packet);
@@ -45,7 +47,6 @@ public:
 
     void resume();
 
-    void initSwr();
 
     void stop();
 
@@ -88,14 +89,16 @@ private:
     std::mutex codecMutex;
     RingArray<uint8_t> *ringArray = nullptr;
     RingArray<uint8_t> *hardwareArr = nullptr;
+    int32_t outSampleRate;
+    int32_t outChannelCount;
 
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
     void popData();
 
-    int32_t outSampleRate;
-    int32_t outChannelCount;
+    void initSwr();
+
 
 };
 

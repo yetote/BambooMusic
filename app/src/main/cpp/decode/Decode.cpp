@@ -25,6 +25,7 @@ void Decode::prepare(const std::string &path) {
         LOGE(Decode_TAG, "%s:支持硬解", __func__);
         playStates.setHardware(true);
         callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
+        LOGE(Decode_TAG, "%s:总时长=%d", __func__, audioPlayer->totalTime);
     } else if (ffmpegDecode->prepare(path)) {
         playStates.setHardware(false);
         callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);

@@ -71,8 +71,8 @@ void FFmpegDecode::playAudio() {
         stop();
         return;
     }
+    audioPlayer->init();
     audioPlayer->play();
-    audioPlayer->initSwr();
     decode();
 }
 

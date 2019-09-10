@@ -89,35 +89,8 @@ void printAudioStreamInfo(AudioStream *stream) {
 AudioPlay::AudioPlay(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
                                                                            playStates(playStates1) {
     packet = av_packet_alloc();
-
     pFrame = av_frame_alloc();
-    builder = new AudioStreamBuilder();
-    builder->setPerformanceMode(PerformanceMode::LowLatency);
-    builder->setSharingMode(SharingMode::Exclusive);
-    builder->setDirection(Direction::Output);
-    builder->setFormat(AudioFormat::I16);
-    builder->setSampleRate(44100);
-    builder->setCallback(this);
-    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
-    file = fopen(path.c_str(), "wb+");
-    Result result;
-    builder->setCallback(this);
-    result = builder->openStream(&audioStream);
-    if (result != Result::OK) {
-        LOGE(AudioPlay_TAG, "%s:打开流失败", __func__);
-    }
 
-    latencyTuner = new LatencyTuner(*audioStream);
-    printAudioStreamInfo(audioStream);
-    outSampleRate = audioStream->getSampleRate();
-    outChannelCount = audioStream->getChannelCount();
-//    if (ringArray == nullptr) {
-    ringArray = new RingArray<uint8_t>(outSampleRate, outChannelCount);
-//    }
-    hardwareArr = new RingArray<uint8_t>(outSampleRate, outChannelCount);
-    data = new uint8_t[outSampleRate * outChannelCount * 2];
-    outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));
-//    audioStream->requestStart();
 }
 
 DataCallbackResult
@@ -148,8 +121,6 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         memset(audioData, 0, sizeof(uint8_t) * betterSize);
         auto buffer = static_cast<uint8_t * > (audioData);
         hardwareArr->read(buffer, betterSize);
-//        convertPcm16ToFloat(reinterpret_cast<const int16_t *>(decodeData), buffer, numFrames * 4);
-//        fwrite(file, betterSize, 1, file);
     }
     if (abs(currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
@@ -331,6 +302,49 @@ void AudioPlay::play() {
 bool AudioPlay::canPush(size_t size) {
 
     return hardwareArr->canWrite(size);
+}
+
+
+void AudioPlay::init(int32_t _sampleRate, int32_t _channelCount) {
+    builder = new AudioStreamBuilder();
+    builder->setPerformanceMode(PerformanceMode::LowLatency);
+    builder->setSharingMode(SharingMode::Exclusive);
+    builder->setDirection(Direction::Output);
+    builder->setFormat(AudioFormat::I16);
+    if (_sampleRate != 0) {
+        builder->setSampleRate(_sampleRate);
+    }
+    if (_channelCount == 1) {
+        builder->setChannelCount(ChannelCount::Mono);
+    } else if (_channelCount == 2) {
+        builder->setChannelCount(ChannelCount::Stereo);
+    } else {
+        LOGE(AudioPlay_TAG, "%s:不支持%d音频通道，使用默认通道", __func__, _channelCount);
+    }
+    builder->setCallback(this);
+    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+    file = fopen(path.c_str(), "wb+");
+    Result result;
+    builder->setCallback(this);
+    result = builder->openStream(&audioStream);
+    if (result != Result::OK) {
+        LOGE(AudioPlay_TAG, "%s:打开流失败", __func__);
+    }
+
+    latencyTuner = new LatencyTuner(*audioStream);
+    printAudioStreamInfo(audioStream);
+    outSampleRate = audioStream->getSampleRate();
+    outChannelCount = audioStream->getChannelCount();
+//    if (ringArray == nullptr) {
+    ringArray = new RingArray<uint8_t>(outSampleRate, outChannelCount);
+//    }
+    hardwareArr = new RingArray<uint8_t>(outSampleRate, outChannelCount);
+    data = new uint8_t[outSampleRate * outChannelCount * 2];
+    outBuffer = static_cast<uint8_t *>(av_malloc(outSampleRate * outChannelCount * 2));
+
+    if (!playStates.isHardware()) {
+        initSwr();
+    }
 }
 
 

@@ -48,7 +48,7 @@ public:
             readPos += (size - remainingSize);
         }
         dataSize -= size;
-        LOGE(RingArray_TAG, "%s:读取索引%d", __func__, readPos);
+//        LOGE(RingArray_TAG, "%s:读取索引%d", __func__, readPos);
 //        fwrite(dst, size, 1, file);
     }
 
@@ -79,13 +79,13 @@ public:
     bool canWrite(size_t size) {
         std::lock_guard<std::mutex> guard(mutex);
         if (writePos >= readPos) {
-            LOGE(RingArray_TAG, "%s:剩余容量%d，最大容量%d,写入索引%d，读取索引%d", __func__,
-                 maxSize - writePos + readPos,
-                 maxSize, writePos, readPos);
+//            LOGE(RingArray_TAG, "%s:剩余容量%d，最大容量%d,写入索引%d，读取索引%d", __func__,
+//                 maxSize - writePos + readPos,
+//                 maxSize, writePos, readPos);
 
             return maxSize - writePos + readPos >= size * sizeof(T);
         } else {
-            LOGE(RingArray_TAG, "%s:写入索引%d，读取索引%d", __func__, writePos, readPos);
+//            LOGE(RingArray_TAG, "%s:写入索引%d，读取索引%d", __func__, writePos, readPos);
             return readPos - writePos >= size * sizeof(T);
         }
     }

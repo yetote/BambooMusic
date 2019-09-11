@@ -40,6 +40,8 @@ public:
 
     void seek(int progress);
 
+    void playVideo();
+
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;

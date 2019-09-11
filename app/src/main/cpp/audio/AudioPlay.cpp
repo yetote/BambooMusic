@@ -178,6 +178,7 @@ void AudioPlay::popData() {
                                       outSampleRate * outChannelCount,
                                       (const uint8_t **) (pFrame->data),
                                       pFrame->nb_samples);
+        LOGE(AudioPlay_TAG, "%s:pFrame->nb_samples=%d", __func__, pFrame->nb_samples);
         auto bufferSize = av_samples_get_buffer_size(nullptr, outChannelNum, frameCount,
                                                      AV_SAMPLE_FMT_S16, 1);
 

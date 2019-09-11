@@ -52,7 +52,9 @@ bool HardwareDecode::checkSupport(std::string path) {
             AMediaExtractor_selectTrack(pVideoMediaExtractor, i);
             pVideoCodec = AMediaCodec_createDecoderByType(mime);
             AMediaCodec_configure(pVideoCodec, pFmt, nullptr, nullptr, 0);
+//            return false;
         } else if (strncmp(mime, "audio/", 6) == 0) {
+//            return false;
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
             int64_t totalTime = 0;
             AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);
@@ -94,7 +96,7 @@ void HardwareDecode::doDecodeWork() {
         }
         mutex.lock();
         if (!isInputEOF) {
-            auto inputIndex = AMediaCodec_dequeueInputBuffer(pAudioCodec, 2000);
+            auto inputIndex = AMediaCodec_dequeueInputBuffer(pAudioCodec, -1);
             if (inputIndex >= 0) {
                 size_t bufsize;
                 auto inputBuffer = AMediaCodec_getInputBuffer(pAudioCodec, inputIndex, &bufsize);
@@ -112,7 +114,8 @@ void HardwareDecode::doDecodeWork() {
                                                         : 0);
                 AMediaExtractor_advance(pAudioMediaExtractor);
             } else {
-                LOGE(HardwareDecode_TAG, "%s:放入数据失败", __func__);
+                LOGE(HardwareDecode_TAG, "%s:放入数据失败,索引=%d", __func__, inputIndex);
+//                LOGE(HardwareDecode_TAG,"%s:s",__func__);
                 mutex.unlock();
                 continue;
             }
@@ -225,6 +228,10 @@ void HardwareDecode::playAudio() {
     }
 }
 
+void HardwareDecode::playVideo() {
+    playAudio();
+}
+
 void HardwareDecode::pause() {
     if (audioPlay != nullptr) {
         audioPlay->pause();
@@ -251,6 +258,7 @@ void HardwareDecode::seek(int progress) {
 HardwareDecode::~HardwareDecode() {
 
 }
+
 
 
 

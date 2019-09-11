@@ -87,7 +87,7 @@ private:
     void initLocation(const char *vertexCode, const char *fragCode);
 
     void draw(AVFrame *frame);
-
+    FILE *file= nullptr;
     void initSwrCtx();
 };
 

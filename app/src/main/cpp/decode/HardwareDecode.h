@@ -40,7 +40,7 @@ public:
 
     void seek(int progress);
 
-    void playVideo();
+    void playVideo(ANativeWindow *_pWindow);
 
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
@@ -57,8 +57,11 @@ private:
     bool isFinish = false;
     bool isInputEOF = false;
     bool isOutputEOF = false;
+    FILE *file;
+
     void doDecodeWork();
 
+    ANativeWindow *pWindow = nullptr;
     int64_t renderstart = -1;
 };
 

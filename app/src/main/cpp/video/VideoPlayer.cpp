@@ -73,7 +73,8 @@ VideoPlayer::initEGL(std::string vertexCodeParam, std::string fragCodeParam,
     this->window = windowParam;
     this->w = wParam;
     this->h = hParam;
-
+//    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.yuv";
+//    file = fopen(path.c_str(), "wb+");
 
 }
 
@@ -95,7 +96,7 @@ void VideoPlayer::draw(AVFrame *frame) {
                  GL_UNSIGNED_BYTE,
                  frame->data[0]);
     glUniform1i(uTexY, 0);
-
+//    fwrite(frame->data[0], frame->width * frame->height, 1, file);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, textureArr[1]);
     glTexImage2D(GL_TEXTURE_2D,

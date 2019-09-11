@@ -149,6 +149,7 @@ public class FoundFragment extends Fragment {
 
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032159/f61a48c2859069ead3176c07ee228e0e/G089/M00/09/13/OZQEAFim1fuAHM-aAKKhoohrY5w810.mp4", 11, 11, "111"));
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032203/f9ab1ccf6b44f8522dfef1537e37696e/G140/M03/16/07/bJQEAFuwduSAR9IdAMBndnNd6GA202.mp4", 11, 11, "111"));
+        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/output.mp4", 11, 11, "111"));
         list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
         list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());

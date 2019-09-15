@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
@@ -167,13 +168,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        musicList.add("http://fs.open.kugou.com/44a1493b7c6aa8af76dac8693b22b1a3/5d6e6922/G007/M07/14/01/p4YBAFS5_cGAEJxFACABJiZsH9I944.mp3");
 //        musicList.add("http://fs.open.kugou.com/50c7d50ccdbd9aba8cbb7d092a18d008/5d6e6961/G120/M0B/0A/09/uA0DAFo2Ss-AKFswADMoVLzY-Hc869.mp3");
 //        musicList.add("http://fs.mv.web.kugou.com/201909032125/2e88ebe077f739e92485f9064ac4f728/G090/M09/19/0D/mg0DAFi_3ECAc2ecAppbm5mv8Oc034.mp4");
-        musicList.add(getExternalFilesDir(null).getPath() + "/test2.aac");
-        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
-        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
+        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/4.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/5.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/6.mp3");
 
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), fragments, title);
 

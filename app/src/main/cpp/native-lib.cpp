@@ -49,7 +49,7 @@ JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_play__Landroid_view_Surface_2IILjava_lang_String_2Ljava_lang_String_2(
         JNIEnv *env, jobject thiz, jobject surface, jint w, jint h, jstring vertex_codec,
         jstring frag_code) {
-
+    LOGE(NATIVE_TAG, "%s:视频", __func__);
     const char *vertex = env->GetStringUTFChars(vertex_codec, JNI_FALSE);
     const char *frag = env->GetStringUTFChars(frag_code, JNI_FALSE);
     ANativeWindow *aNativeWindow = ANativeWindow_fromSurface(env, surface);
@@ -107,5 +107,5 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_yetote_bamboomusic_media_MyPlayer_fullScreen(JNIEnv *env, jobject thiz, jint w, jint h) {
     // TODO: implement fullScreen()
-    decode->fullScreen(w,h);
+    decode->fullScreen(w, h);
 }

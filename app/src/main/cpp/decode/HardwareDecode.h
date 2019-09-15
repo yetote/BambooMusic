@@ -45,7 +45,7 @@ public:
 private:
     AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
     AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;
-//    AMediaFormat *pAudioFmt = nullptr, *pVideoFmt = nullptr;
+    AMediaFormat *pAudioFmt = nullptr, *pVideoFmt = nullptr;
     AudioPlay *audioPlay = nullptr;
     VideoPlayer *videoPlayer = nullptr;
     PlayStates &playStates;

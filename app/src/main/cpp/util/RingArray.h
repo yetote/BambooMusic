@@ -21,8 +21,6 @@ public:
     RingArray(int sampleRate, int channelCount) : dataArr(
             new T[sampleRate * channelCount * 2]) {
         maxSize = sampleRate * channelCount * 2;
-        std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
-        file = fopen(path.c_str(), "wb+");
         LOGE(RingArray_TAG, "%s:数组大小%d", __func__, maxSize);
     }
 
@@ -48,14 +46,10 @@ public:
             readPos += (size - remainingSize);
         }
         dataSize -= size;
-//        LOGE(RingArray_TAG, "%s:读取索引%d", __func__, readPos);
-        fwrite(dst, size, 1, file);
     }
 
     void write(const T *dst, int size) {
         std::lock_guard<std::mutex> guard(mutex);
-//    LOGE(RingArray_TAG, "%s:写入了%d字节", __func__, size);
-//        fwrite(dst, size, 1, file);
         if (maxSize - writePos >= size) {
             //容量够用，顺序存储
             memcpy(dataArr + writePos, dst, size * sizeof(T));
@@ -79,12 +73,8 @@ public:
     bool canWrite(size_t size) {
         std::lock_guard<std::mutex> guard(mutex);
         if (writePos > readPos) {
-//            LOGE(RingArray_TAG, "%s:剩余容量%d，最大容量%d,写入索引%d，读取索引%d", __func__,
-//                 maxSize - writePos + readPos,
-//                 maxSize, writePos, readPos);
             return maxSize - writePos + readPos >= size * sizeof(T);
         } else if (writePos < readPos) {
-//            LOGE(RingArray_TAG, "%s:写入索引%d，读取索引%d", __func__, writePos, readPos);
             return readPos - writePos >= size * sizeof(T);
         } else {
             if (dataSize == 0) {
@@ -100,7 +90,6 @@ public:
         readPos = 0;
         dataSize = 0;
         writePos = 0;
-//        writePos = readPos;
     }
 
 private:

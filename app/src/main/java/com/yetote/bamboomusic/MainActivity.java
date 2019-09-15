@@ -167,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        musicList.add("http://fs.open.kugou.com/6f91469d548bad01a56eb4254bb69efe/5d6e6861/G153/M04/11/17/2Q0DAF0D61uAHxNTADuPhCASo0k439.mp3");
 //        musicList.add("http://fs.open.kugou.com/44a1493b7c6aa8af76dac8693b22b1a3/5d6e6922/G007/M07/14/01/p4YBAFS5_cGAEJxFACABJiZsH9I944.mp3");
 //        musicList.add("http://fs.open.kugou.com/50c7d50ccdbd9aba8cbb7d092a18d008/5d6e6961/G120/M0B/0A/09/uA0DAFo2Ss-AKFswADMoVLzY-Hc869.mp3");
-//        musicList.add("http://fs.mv.web.kugou.com/201909032125/2e88ebe077f739e92485f9064ac4f728/G090/M09/19/0D/mg0DAFi_3ECAc2ecAppbm5mv8Oc034.mp4");
-        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
+        musicList.add("http://fs.open.kugou.com/d0811b4fc1b721ab5b1e1def686939e7/5d7de448/G153/M04/11/17/2Q0DAF0D61uAHxNTADuPhCASo0k439.mp3");
+//        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/3.mp3");

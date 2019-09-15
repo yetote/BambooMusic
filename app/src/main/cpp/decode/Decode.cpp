@@ -48,6 +48,7 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexC
     if (!playStates.isHardware()) {
         ffmpegDecode->playVideo(pWindow, w, h, vertexCode, fragCode);
     } else {
+         LOGE(Decode_TAG, "%s:pwindow=%p", __func__,pWindow);
         hardwareDecode->playVideo(pWindow);
     }
 }

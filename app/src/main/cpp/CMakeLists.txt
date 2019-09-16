@@ -4,10 +4,10 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.4.1)
-set(PATH_PROJECT D:/AndroidStudioWorkSpace/BambooMusic)
-set(LIBS_PATH ${PATH_PROJECT}/app/libs)
-set(OBOE_PATH D:/otherlib/oboe-1.2.0)
 
+set(PATH_PROJECT D:/AndroidStudioProjects/BambooMusic)
+set(LIBS_PATH ${PATH_PROJECT}/app/libs)
+set(OBOE_PATH D:/audiotest/oboe-1.2.0)
 file(GLOB util_lib "util/*.cpp")
 
 add_subdirectory(${OBOE_PATH} ./oboe)
@@ -95,6 +95,7 @@ add_library( # Sets the name of the library.
         decode/HardwareDecode.cpp
         util/Callback.cpp
         util/PlayStates.cpp
+        util/MediaInfo.cpp
         audio/AudioPlay.cpp
         video/EGLUtil.cpp
         video/GLUtil.cpp

@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -147,11 +148,11 @@ public class FoundFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
 
-        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909151715/1e9d2d889609ea8d218e9a5d3dc14e2d/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
+//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909151715/1e9d2d889609ea8d218e9a5d3dc14e2d/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032203/f9ab1ccf6b44f8522dfef1537e37696e/G140/M03/16/07/bJQEAFuwduSAR9IdAMBndnNd6GA202.mp4", 11, 11, "111"));
-//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/2.mp4", 11, 11, "111"));
-//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.mp4", 11, 11, "111"));
-//        list.add(new FoundModel(getContext().getExternalFilesDir(null).getPath() + "/test.avi", 11, 11, "111"));
+        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());
         recyclerView.setAdapter(adapter);
 

@@ -7,11 +7,11 @@
 
 #include <string>
 #include <thread>
-#include "media/NdkMediaCodec.h"
-#include "media/NdkMediaExtractor.h"
+
 #include "../util/LogUtil.h"
 #include "../audio/AudioPlay.h"
 #include "../video/VideoPlayer.h"
+#include "../util/MediaInfo.h"
 
 #define HardwareDecode_TAG "HardwareDecode"
 
@@ -43,9 +43,6 @@ public:
     void playVideo(ANativeWindow *_pWindow);
 
 private:
-    AMediaExtractor *pVideoMediaExtractor = nullptr, *pAudioMediaExtractor = nullptr;
-    AMediaCodec *pVideoCodec = nullptr, *pAudioCodec = nullptr;
-    AMediaFormat *pAudioFmt = nullptr, *pVideoFmt = nullptr;
     AudioPlay *audioPlay = nullptr;
     VideoPlayer *videoPlayer = nullptr;
     PlayStates &playStates;
@@ -55,11 +52,10 @@ private:
     int64_t totalTime = 0;
     std::mutex mutex;
     bool isFinish = false;
-    bool isInputEOF = false;
-    bool isOutputEOF = false;
     FILE *file;
+    std::shared_ptr<MediaInfo> audioInfo, videoInfo;
 
-    void doDecodeWork();
+    void doDecodeWork(std::shared_ptr<MediaInfo>);
 
     ANativeWindow *pWindow = nullptr;
     int64_t renderstart = -1;

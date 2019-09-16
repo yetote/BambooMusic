@@ -7,6 +7,9 @@
 
 #include "media/NdkMediaCodec.h"
 #include "media/NdkMediaExtractor.h"
+#include "LogUtil.h"
+
+#define MediaInfo_TAG "MediaInfo"
 
 class MediaInfo {
 public:
@@ -19,12 +22,17 @@ public:
     bool isOutputEof = false;
     AMediaCodec *codec = nullptr;
     AMediaExtractor *extractor = nullptr;
+    AMediaFormat *pFmt = nullptr;
     int64_t renderStart = -1;
     bool isSuccess = false;
+    bool isFinish = false;
 
     MediaInfo(MEDIA_TYPE type);
 
+    void destroy();
+
     virtual ~MediaInfo();
+
 private:
 };
 

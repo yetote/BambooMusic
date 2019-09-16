@@ -149,8 +149,8 @@ public class FoundFragment extends Fragment {
         list = new ArrayList<>();
 
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909151715/1e9d2d889609ea8d218e9a5d3dc14e2d/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
-//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909032203/f9ab1ccf6b44f8522dfef1537e37696e/G140/M03/16/07/bJQEAFuwduSAR9IdAMBndnNd6GA202.mp4", 11, 11, "111"));
-        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909162023/5654962e6377b30857e501197a3cad45/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
 //        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
 //        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());

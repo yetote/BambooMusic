@@ -165,9 +165,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //        musicList.add("http://fs.open.kugou.com/96fd6b9d8795dd8265dc0d4260bfe129/5d6e65c5/G095/M00/18/00/P5QEAFussHyAMPWEADaRkzG3ZHk167.mp3");
 //        musicList.add("http://fs.open.kugou.com/6f91469d548bad01a56eb4254bb69efe/5d6e6861/G153/M04/11/17/2Q0DAF0D61uAHxNTADuPhCASo0k439.mp3");
-//        musicList.add("http://fs.open.kugou.com/44a1493b7c6aa8af76dac8693b22b1a3/5d6e6922/G007/M07/14/01/p4YBAFS5_cGAEJxFACABJiZsH9I944.mp3");
-//        musicList.add("http://fs.open.kugou.com/50c7d50ccdbd9aba8cbb7d092a18d008/5d6e6961/G120/M0B/0A/09/uA0DAFo2Ss-AKFswADMoVLzY-Hc869.mp3");
-        musicList.add("http://fs.open.kugou.com/d0811b4fc1b721ab5b1e1def686939e7/5d7de448/G153/M04/11/17/2Q0DAF0D61uAHxNTADuPhCASo0k439.mp3");
+        musicList.add("http://fs.open.kugou.com/f3bd8f6aeb4efab069604da80d03b4af/5d7f8b6f/G079/M02/1A/04/jw0DAFhHEBmAMsPYAChSJvSXqn4945.mp3");
+        musicList.add("http://fs.open.kugou.com/a77f152e7922c90d8a9f44422cfe2273/5d7f8b46/G006/M06/1E/17/Rg0DAFS4zk-ASqyoABLcGPv2a0M093.mp3");
+        musicList.add("http://fs.open.kugou.com/ce42151c7db957f311e60484984529ac/5d7f83be/G153/M04/13/14/OYcBAFz3fF6AbF0fADS_2OPt0ag626.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/1.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/2.mp3");

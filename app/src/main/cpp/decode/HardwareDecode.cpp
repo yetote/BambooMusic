@@ -11,13 +11,17 @@ int64_t systemnanotime() {
 }
 
 //    @formatter:off
-HardwareDecode::HardwareDecode(PlayStates &_playStates, const Callback &_callback) : playStates(_playStates), callback(_callback) {
+HardwareDecode::HardwareDecode(PlayStates &_playStates, const Callback &_callback) : playStates(
+        _playStates), callback(_callback) {
 //    @formatter:on
 
 }
 
 //    @formatter:off
-HardwareDecode::HardwareDecode(AudioPlay *_audioPlay, PlayStates &_playStates,const Callback &_callback) : audioPlay(_audioPlay),playStates(_playStates),callback(_callback) {
+HardwareDecode::HardwareDecode(AudioPlay *_audioPlay, PlayStates &_playStates,
+                               const Callback &_callback) : audioPlay(_audioPlay),
+                                                            playStates(_playStates),
+                                                            callback(_callback) {
 //    @formatter:on
     std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
     file = fopen(path.c_str(), "wb+");
@@ -25,10 +29,13 @@ HardwareDecode::HardwareDecode(AudioPlay *_audioPlay, PlayStates &_playStates,co
 }
 
 //    @formatter:off
-HardwareDecode::HardwareDecode(AudioPlay *_audioPlay, VideoPlayer *_videoPlayer,PlayStates &_playStates, const Callback &_callback) : audioPlay(_audioPlay), videoPlayer(_videoPlayer), playStates(_playStates), callback(_callback) {
+HardwareDecode::HardwareDecode(AudioPlay *_audioPlay, VideoPlayer *_videoPlayer,
+                               PlayStates &_playStates, const Callback &_callback) : audioPlay(
+        _audioPlay), videoPlayer(_videoPlayer), playStates(_playStates), callback(_callback) {
 //    @formatter:on
     audioInfo = std::make_shared<MediaInfo>(MediaInfo::MEDIA_TYPE_AUDIO);
     videoInfo = std::make_shared<MediaInfo>(MediaInfo::MEDIA_TYPE_VIDEO);
+
 }
 
 bool HardwareDecode::checkSupport(std::string _path) {
@@ -61,7 +68,9 @@ bool HardwareDecode::checkSupport(std::string _path) {
                 AMediaExtractor_selectTrack(videoInfo->extractor, i);
                 videoInfo->codec = AMediaCodec_createDecoderByType(mime);
                 //todo pwindow这时无法获取
-                AMediaCodec_configure(audioInfo->codec, pFmt, nullptr, nullptr, 0);
+//                AMediaCodec_configure(videoInfo->codec, pFmt, nullptr, nullptr, 0);
+                videoInfo->pFmt = AMediaExtractor_getTrackFormat(videoInfo->extractor, i);
+                videoInfo->isSuccess = true;
             }
         } else if (strncmp(mime, "audio/", 6) == 0) {
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
@@ -89,6 +98,7 @@ bool HardwareDecode::checkSupport(std::string _path) {
                 audioInfo->codec = AMediaCodec_createDecoderByType(mime);
                 AMediaCodec_configure(audioInfo->codec, pFmt, nullptr, nullptr, 0);
 //                AMediaCodec_start(pAudioCodec);
+                audioInfo->isSuccess = true;
             }
         } else {
             LOGE(HardwareDecode_TAG, "%s:非音轨或视频轨", __func__);
@@ -97,6 +107,8 @@ bool HardwareDecode::checkSupport(std::string _path) {
         AMediaFormat_delete(pFmt);
     }
     AMediaExtractor_delete(pMediaExtractor);
+    playStates.setHardware(true);
+    audioPlay->init(sampleRate, channelCount);
     return true;
 }
 
@@ -106,13 +118,16 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
     if (!_sharedPtr->isSuccess) {
         return;
     }
+
+    AMediaCodec_start(_sharedPtr->codec);
+
     //todo 这时需要启动codec
     while (!playStates.isStop()) {
         if (playStates.isPause()) {
             usleep(300000);
             continue;
         }
-        mutex.lock();
+//        mutex.lock();
         if (!_sharedPtr->isInputEof) {
             auto inputIndex = AMediaCodec_dequeueInputBuffer(_sharedPtr->codec, -1);
             if (inputIndex >= 0) {
@@ -136,7 +151,7 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
             } else {
                 LOGE(HardwareDecode_TAG, "%s:放入数据失败,索引=%d", __func__, inputIndex);
 //                LOGE(HardwareDecode_TAG,"%s:s",__func__);
-                mutex.unlock();
+//                mutex.unlock();
                 continue;
             }
         }
@@ -155,6 +170,7 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
                     size_t bufSize;
                     uint8_t *buffer = AMediaCodec_getOutputBuffer(_sharedPtr->codec, outputIndex,
                                                                   &bufSize);
+                    audioPlay->currentTime = (info.presentationTimeUs) / 1000000;
                     if (bufSize < 0) {
                         LOGE(HardwareDecode_TAG, "%s:未读出解码数据%d", __func__, bufSize);
                         continue;
@@ -184,30 +200,49 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
             }
         } else {
             LOGE(HardwareDecode_TAG, "%s:取出解码数据失败", __func__);
-            mutex.unlock();
+//            mutex.unlock();
             continue;
         }
         if (_sharedPtr->isInputEof && _sharedPtr->isOutputEof) {
             LOGE(HardwareDecode_TAG, "%s:退出解码", __func__);
             playStates.setEof(true);
-            isFinish = true;
-            mutex.unlock();
+            _sharedPtr->isFinish = true;
+//            mutex.unlock();
             break;
         }
         count++;
-        mutex.unlock();
+//        mutex.unlock();
         LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
-    isFinish = true;
+    _sharedPtr->isFinish = true;
     LOGE(HardwareDecode_TAG, "%s:结束解码", __func__);
 }
 
 void HardwareDecode::stop() {
+    LOGE(HardwareDecode_TAG, "%s:准备释放", __func__);
     int sleepCount = 0;
     while (!isFinish) {
+        if (videoInfo && videoInfo->isFinish) {
+            videoInfo->destroy();
+        }
+        if (audioInfo->isFinish) {
+            audioInfo->destroy();
+        }
+
+        if (playStates.getMediaType() == PlayStates::MEDIAO_VIDEO) {
+            if (audioInfo->isFinish && videoInfo->isFinish) {
+                isFinish = true;
+            }
+        } else {
+            if (audioInfo->isFinish) {
+                isFinish = true;
+            }
+        }
+
         if (sleepCount >= 100) {
             isFinish = true;
         }
+        LOGE(HardwareDecode_TAG, "%s:sleepcount=%d", __func__, sleepCount);
         usleep(100000);
         sleepCount++;
     }
@@ -220,53 +255,32 @@ void HardwareDecode::stop() {
         videoPlayer->stop();
         videoPlayer = nullptr;
     }
-//    if (pAudioFmt != nullptr) {
-//        AMediaFormat_delete(pAudioFmt);
-//        pAudioFmt = nullptr;
-//    }
-//    if (pVideoFmt != nullptr) {
-//        AMediaFormat_delete(pVideoFmt);
-//        pVideoFmt = nullptr;
-//    }
-//    if (pAudioCodec != nullptr) {
-//        AMediaCodec_stop(pAudioCodec);
-//        AMediaCodec_delete(pAudioCodec);
-//        pAudioCodec = nullptr;
-//    }
-//    if (pVideoCodec != nullptr) {
-//        AMediaCodec_stop(pVideoCodec);
-//        AMediaCodec_delete(pVideoCodec);
-//        pVideoCodec = nullptr;
-//    }
-//    if (pAudioMediaExtractor != nullptr) {
-//        AMediaExtractor_delete(pAudioMediaExtractor);
-//        pAudioMediaExtractor = nullptr;
-//    }
-//    if (pVideoMediaExtractor != nullptr) {
-//        AMediaExtractor_delete(pVideoMediaExtractor);
-//        pVideoMediaExtractor = nullptr;
-//    }
+//
 }
 
 void HardwareDecode::decode() {
-    std::thread decodeThread(&HardwareDecode::doDecodeWork, this);
-    decodeThread.detach();
+//    std::thread decodeThread(&HardwareDecode::doDecodeWork, this);
+//    decodeThread.detach();
 }
 
 
 void HardwareDecode::playAudio() {
     if (audioPlay != nullptr) {
-        audioPlay->init(sampleRate, channelCount);
         audioPlay->play();
-        std::thread decodeThread(&HardwareDecode::doDecodeWork, this, audioInfo);
-        decodeThread.detach();
+        LOGE(HardwareDecode_TAG, "%s:audio", __func__);
+        std::thread audioThread(&HardwareDecode::doDecodeWork, this, audioInfo);
+        audioThread.detach();
+    } else {
+        LOGE(HardwareDecode_TAG, "%s:nullptr", __func__);
     }
 }
 
 void HardwareDecode::playVideo(ANativeWindow *_pWindow) {
     this->pWindow = _pWindow;
-    std::thread decodeThread(&HardwareDecode::doDecodeWork, this, videoInfo);
-    decodeThread.detach();
+    AMediaCodec_configure(videoInfo->codec, videoInfo->pFmt, _pWindow, nullptr, 0);
+    playAudio();
+    std::thread videoThread(&HardwareDecode::doDecodeWork, this, videoInfo);
+    videoThread.detach();
 }
 
 void HardwareDecode::pause() {

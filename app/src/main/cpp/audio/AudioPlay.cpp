@@ -123,7 +123,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
             continue;
         }
         hardwareArr->read(buffer, betterSize);
-        fwrite(buffer, betterSize, 1, file);
+//        fwrite(buffer, betterSize, 1, file);
     }
     if (abs(currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));

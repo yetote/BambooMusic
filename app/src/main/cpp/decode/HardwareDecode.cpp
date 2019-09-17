@@ -246,7 +246,7 @@ void HardwareDecode::stop() {
         }
         LOGE(HardwareDecode_TAG, "%s:sleepcount=%d", __func__, sleepCount);
         usleep(100000);
-        sleepCount++;
+        ++sleepCount;
     }
     std::lock_guard<std::mutex> guard(mutex);
     if (audioPlay != nullptr) {

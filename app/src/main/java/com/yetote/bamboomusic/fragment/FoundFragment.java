@@ -35,6 +35,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_FRAGMENT;
+import static com.yetote.bamboomusic.media.MusicService.SERVICE_IN_MAIN_ACTIVITY;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PAUSE;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PLAYING;
 import static com.yetote.bamboomusic.media.MusicService.STATE_PREPARE;
@@ -67,6 +68,7 @@ public class FoundFragment extends Fragment {
         public void onServiceConnected(ComponentName name, IBinder service) {
 
             musicBinder = (MusicService.MusicBinder) service;
+            musicBinder.setLocal(SERVICE_IN_FRAGMENT);
             callBack();
         }
 
@@ -153,7 +155,7 @@ public class FoundFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
 
-//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909151715/1e9d2d889609ea8d218e9a5d3dc14e2d/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909172035/7ef7ba8d7838f70e3b2d06167cb78c11/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4", 11, 11, "111"));
 //        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909162023/5654962e6377b30857e501197a3cad45/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
         list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
         list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.avi", 11, 11, "111"));

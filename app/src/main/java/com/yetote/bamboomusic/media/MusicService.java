@@ -110,6 +110,10 @@ public class MusicService extends Service {
             return state;
         }
 
+        public void setLocal(int serviceLocalP) {
+            serviceLocal = serviceLocalP;
+        }
+
         public int getLocal() {
             return serviceLocal;
         }

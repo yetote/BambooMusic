@@ -6,7 +6,8 @@
 #include "Decode.h"
 
 //    @formatter:off
-Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),playStates(playStates1) {
+Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(callback1),
+                                                                     playStates(playStates1) {
 //    @formatter:on
 
     audioPlayer = new AudioPlay(callback, playStates);
@@ -23,7 +24,6 @@ Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(ca
 void Decode::prepare(const std::string &path) {
     if (hardwareDecode->checkSupport(path)) {
         LOGE(Decode_TAG, "%s:支持硬解", __func__);
-
         callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
         LOGE(Decode_TAG, "%s:总时长=%d", __func__, audioPlayer->totalTime);
     } else if (ffmpegDecode->prepare(path)) {
@@ -43,7 +43,8 @@ void Decode::playAudio() {
 }
 
 //    @formatter:off
-void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode,std::string fragCode) {
+void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexCode,
+                       std::string fragCode) {
 //    @formatter:on
     if (!playStates.isHardware()) {
         ffmpegDecode->playVideo(pWindow, w, h, vertexCode, fragCode);

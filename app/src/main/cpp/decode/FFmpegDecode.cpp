@@ -5,13 +5,16 @@
 #include "FFmpegDecode.h"
 
 //    @formatter:off
-FFmpegDecode::FFmpegDecode(PlayStates &playStates, AudioPlay *audioPlayer) : playStates(playStates),audioPlayer(audioPlayer) {
+FFmpegDecode::FFmpegDecode(PlayStates &playStates, AudioPlay *audioPlayer) : playStates(playStates),
+                                                                             audioPlayer(
+                                                                                     audioPlayer) {
 //    @formatter:on
 
 }
 
 //    @formatter:off
-FFmpegDecode::FFmpegDecode(PlayStates &playStates, AudioPlay *audioPlayer, VideoPlayer *videoPlayer): playStates(playStates), audioPlayer(audioPlayer), videoPlayer(videoPlayer) {
+FFmpegDecode::FFmpegDecode(PlayStates &playStates, AudioPlay *audioPlayer, VideoPlayer *videoPlayer)
+        : playStates(playStates), audioPlayer(audioPlayer), videoPlayer(videoPlayer) {
 //    @formatter:on
 }
 
@@ -62,6 +65,7 @@ bool FFmpegDecode::prepare(const std::string path) {
 
 
 void FFmpegDecode::playAudio() {
+    LOGE(FFmpegDecode_TAG, "%s:fmfpeg", __func__);
     int rst = 0;
     if (audioIndex != -1 && audioPlayer != nullptr) {
         rst = findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
@@ -138,7 +142,7 @@ void FFmpegDecode::decode() {
         }
         std::lock_guard<std::mutex> guard(mutex);
         rst = av_read_frame(pFmtCtx, packet);
-//        LOGE(FFmpegDecode_tag, "%s:开始分包", __func__);
+        LOGE(FFmpegDecode_TAG, "%s:开始分包", __func__);
         if (rst < 0) {
             switch (rst) {
                 case AVERROR_EOF:

@@ -53,7 +53,7 @@ public:
 
     void write(const T *dst, int size) {
         std::lock_guard<std::mutex> guard(mutex);
-//        fwrite(dst, size, 1, file);
+        fwrite(dst, size, 1, file);
         if (maxSize - writePos >= size) {
             //容量够用，顺序存储
             memcpy(dataArr + writePos, dst, size * sizeof(T));

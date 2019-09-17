@@ -102,6 +102,7 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         return DataCallbackResult::Continue;
     }
     if (playStates.isStop()) {
+        LOGE(AudioPlay_TAG, "%s:已停止", __func__);
         return DataCallbackResult::Stop;
     }
 
@@ -110,11 +111,13 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         memset(audioData, 0, sizeof(uint8_t) * betterSize);
         auto buffer = static_cast<uint8_t *> (audioData);
         while (ringArray->getDataSize() < betterSize) {
-            av_usleep(100);
+            popData();
+            LOGE(AudioPlay_TAG, "%s:休眠", __func__);
             continue;
         }
-        popData();
+
         ringArray->read(buffer, betterSize);
+        LOGE(AudioPlay_TAG, "%s:读取数据", __func__);
     } else {
         memset(audioData, 0, sizeof(uint8_t) * betterSize);
         auto buffer = static_cast<uint8_t * > (audioData);

@@ -210,6 +210,11 @@ public class VideoDetailsActivity extends AppCompatActivity implements OnFFmpegC
     }
 
     @Override
+    public void onFFmpegSeek() {
+
+    }
+
+    @Override
     public void onFFmpegStop() {
 
     }

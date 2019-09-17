@@ -37,6 +37,11 @@ public interface OnFFmpegCallback {
     void onFFmpegResume();
 
     /**
+     * seek后回调
+     */
+    void onFFmpegSeek();
+
+    /**
      * 销毁回调
      */
     void onFFmpegStop();

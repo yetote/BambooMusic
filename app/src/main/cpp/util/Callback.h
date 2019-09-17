@@ -33,12 +33,16 @@ public:
 
     void callResume(CALL_THREAD thread);
 
+    void callSeek(CALL_THREAD thread);
     void callStop(CALL_THREAD thread);
+
+
 private:
     jmethodID callPrepareId;
     jmethodID callPlayingId;
     jmethodID callPauseId;
     jmethodID callResumeId;
+    jmethodID callSeekId;
     jmethodID callStopId;
 
     jmethodID callHardwareSupportId;

@@ -78,6 +78,11 @@ public class MusicService extends Service {
             }
 
             @Override
+            public void onFFmpegSeek() {
+                musicBinder.callSeek();
+            }
+
+            @Override
             public void onFFmpegStop() {
                 musicBinder.callStop();
             }
@@ -137,6 +142,10 @@ public class MusicService extends Service {
 
         void callResume() {
             serviceFFmpegCallBack.onFFmpegResume();
+        }
+
+        public void callSeek() {
+            serviceFFmpegCallBack.onFFmpegSeek();
         }
 
         void callStop() {
@@ -208,6 +217,8 @@ public class MusicService extends Service {
 
             }
         }
+
+
     }
 
 }

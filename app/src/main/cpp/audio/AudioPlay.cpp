@@ -110,17 +110,20 @@ AudioPlay::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFra
         memset(audioData, 0, sizeof(uint8_t) * betterSize);
         auto buffer = static_cast<uint8_t *> (audioData);
         while (ringArray->getDataSize() < betterSize) {
-            if (playStates.isHardware()) {
-                av_usleep(100);
-                continue;
-            }
-            popData();
+            av_usleep(100);
+            continue;
         }
+        popData();
         ringArray->read(buffer, betterSize);
     } else {
         memset(audioData, 0, sizeof(uint8_t) * betterSize);
         auto buffer = static_cast<uint8_t * > (audioData);
+        while (hardwareArr->getDataSize() < betterSize) {
+            av_usleep(100);
+            continue;
+        }
         hardwareArr->read(buffer, betterSize);
+        fwrite(buffer, betterSize, 1, file);
     }
     if (abs(currentTime - lastTime) >= 1) {
         callback.callPlay(callback.CHILD_THREAD, static_cast<int>(currentTime));
@@ -229,6 +232,10 @@ void AudioPlay::initSwr() {
 
 void AudioPlay::pause() {
     audioStream->requestPause();
+    auto inputState = oboe::StreamState::Pausing;
+    auto nextState = oboe::StreamState::Uninitialized;
+    auto timeoutNanos = 100 * oboe::kNanosPerMillisecond;;
+    auto result = audioStream->waitForStateChange(inputState, &nextState, timeoutNanos);
     LOGE(AudioPlay_TAG, "%s:暂停", __func__);
 }
 
@@ -244,6 +251,7 @@ AudioPlay::~AudioPlay() {
 
 void AudioPlay::clear() {
     std::lock_guard<std::mutex> guard(codecMutex);
+
     while (!audioQueue.empty()) {
         audioQueue.pop();
     }
@@ -255,6 +263,7 @@ void AudioPlay::clear() {
     dataSize = 0;
     readPos = 0;
     writtenPos = 0;
+    audioStream->requestFlush();
 }
 
 void AudioPlay::stop() {
@@ -296,7 +305,9 @@ void AudioPlay::stop() {
 
 int AudioPlay::getSize() {
     std::lock_guard<std::mutex> guard(codecMutex);
-
+    if (playStates.isHardware()) {
+        return hardwareArr->getDataSize();
+    }
     int size = audioQueue.size();
     return size;
 }
@@ -331,7 +342,7 @@ void AudioPlay::init(int32_t _sampleRate, int32_t _channelCount) {
         LOGE(AudioPlay_TAG, "%s:不支持%d音频通道，使用默认通道", __func__, _channelCount);
     }
     builder->setCallback(this);
-    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+    std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test2.pcm";
     file = fopen(path.c_str(), "wb+");
     Result result;
     builder->setCallback(this);

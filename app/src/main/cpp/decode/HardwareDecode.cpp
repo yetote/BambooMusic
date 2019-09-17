@@ -125,6 +125,8 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
     while (!playStates.isStop()) {
         if (playStates.isPause()) {
             usleep(300000);
+            canPause = true;
+            LOGE(HardwareDecode_TAG, "%s:pause等待", __func__);
             continue;
         }
 //        mutex.lock();
@@ -177,14 +179,14 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
                     }
                     uint8_t *data = new uint8_t[bufSize];
                     memcpy(data, buffer + info.offset, info.size);
-                    LOGE(HardwareDecode_TAG, "%s:size=%d", __func__, info.size);
+//                    LOGE(HardwareDecode_TAG, "%s:size=%d", __func__, info.size);
                     while (!audioPlay->canPush(info.size)) {
                         usleep(300000);
-                        LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
+//                        LOGE(HardwareDecode_TAG, "%s:休眠", __func__);
                     }
-                    LOGE(HardwareDecode_TAG, "%s:开始填充数据", __func__);
+//                    LOGE(HardwareDecode_TAG, "%s:开始填充数据", __func__);
                     audioPlay->pushData(data, info.size);
-                    LOGE(HardwareDecode_TAG, "%s:数据填充完成", __func__);
+//                    LOGE(HardwareDecode_TAG, "%s:数据填充完成", __func__);
                     delete[] data;
                 } else {
                     int64_t presentationNano = info.presentationTimeUs * 1000;
@@ -212,7 +214,7 @@ void HardwareDecode::doDecodeWork(std::shared_ptr<MediaInfo> _sharedPtr) {
         }
         count++;
 //        mutex.unlock();
-        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
+//        LOGE(HardwareDecode_TAG, "%s:解码了%d帧", __func__, count);
     }
     _sharedPtr->isFinish = true;
     LOGE(HardwareDecode_TAG, "%s:结束解码", __func__);
@@ -296,10 +298,26 @@ void HardwareDecode::resume() {
 }
 
 void HardwareDecode::seek(int progress) {
+    std::lock_guard<std::mutex> guard(mutex);
     audioPlay->clear();
-//    AMediaExtractor_seekTo(pAudioMediaExtractor, progress * 1000000,
-//                           AMEDIAEXTRACTOR_SEEK_NEXT_SYNC);
-//    AMediaCodec_flush(pAudioCodec);
+    while (!canPause) {
+        usleep(300000);
+    }
+    LOGE(HardwareDecode_TAG, "%s:start seek", __func__);
+    AMediaCodec_flush(audioInfo->codec);
+    AMediaExtractor_seekTo(audioInfo->extractor, progress * 1000000,
+                           AMEDIAEXTRACTOR_SEEK_NEXT_SYNC);
+
+    if (videoInfo) {
+        AMediaExtractor_seekTo(videoInfo->extractor, progress * 1000000,
+                               AMEDIAEXTRACTOR_SEEK_NEXT_SYNC);
+        AMediaCodec_flush(videoInfo->codec);
+    }
+    playStates.setPause(false);
+    while (!audioPlay->getSize()) {
+        usleep(300000);
+    }
+    canPause = false;
 //    renderstart = -1;
 //    isInputEOF = false;
 //    isOutputEOF = false;

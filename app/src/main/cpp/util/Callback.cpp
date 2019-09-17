@@ -14,6 +14,7 @@ Callback::Callback(JNIEnv *env, _jobject *jobject) : env(env) {
     callHardwareCodecId = env->GetMethodID(jlz, "callHardwareCodec", "(Ljava/lang/String;)V");
     callPauseId = env->GetMethodID(jlz, "callPause", "()V");
     callResumeId = env->GetMethodID(jlz, "callResume", "()V");
+    callSeekId = env->GetMethodID(jlz, "callSeek", "()V");
     callStopId = env->GetMethodID(jlz, "callStop", "()V");
 }
 
@@ -100,7 +101,18 @@ void Callback::callResume(Callback::CALL_THREAD thread) {
         jvm->DetachCurrentThread();
     }
 }
-
+void Callback::callSeek(Callback::CALL_THREAD thread) {
+    if (thread == MAIN_THREAD) {
+        env->CallVoidMethod(jobj, callSeekId);
+    } else {
+        JNIEnv *jniEnv;
+        if ((jvm->AttachCurrentThread(&jniEnv, nullptr)) != JNI_OK) {
+            //todo 此处应该有log
+        }
+        jniEnv->CallVoidMethod(jobj, callSeekId);
+        jvm->DetachCurrentThread();
+    }
+}
 void Callback::callStop(Callback::CALL_THREAD thread) {
     if (thread == MAIN_THREAD) {
         env->CallVoidMethod(jobj, callStopId);
@@ -113,3 +125,5 @@ void Callback::callStop(Callback::CALL_THREAD thread) {
         jvm->DetachCurrentThread();
     }
 }
+
+

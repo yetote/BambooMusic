@@ -22,6 +22,8 @@ public:
             new T[sampleRate * channelCount * 2]) {
         maxSize = sampleRate * channelCount * 2;
         LOGE(RingArray_TAG, "%s:数组大小%d", __func__, maxSize);
+        std::string path = "/storage/emulated/0/Android/data/com.yetote.bamboomusic/files/test.pcm";
+        file = fopen(path.c_str(), "wb+");
     }
 
     ~RingArray() {
@@ -46,10 +48,12 @@ public:
             readPos += (size - remainingSize);
         }
         dataSize -= size;
+        LOGE(RingArray_TAG, "%s:dataSize=%d", __func__, dataSize);
     }
 
     void write(const T *dst, int size) {
         std::lock_guard<std::mutex> guard(mutex);
+        fwrite(dst, size, 1, file);
         if (maxSize - writePos >= size) {
             //容量够用，顺序存储
             memcpy(dataArr + writePos, dst, size * sizeof(T));

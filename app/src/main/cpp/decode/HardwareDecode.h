@@ -52,6 +52,7 @@ private:
     int64_t totalTime = 0;
     std::mutex mutex;
     bool isFinish = false;
+    bool canPause = false;
     FILE *file;
     std::shared_ptr<MediaInfo> audioInfo, videoInfo;
 

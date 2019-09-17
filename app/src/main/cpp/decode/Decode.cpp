@@ -24,13 +24,13 @@ void Decode::prepare(const std::string &path) {
     if (hardwareDecode->checkSupport(path)) {
         LOGE(Decode_TAG, "%s:支持硬解", __func__);
 
-        callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
+        callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
         LOGE(Decode_TAG, "%s:总时长=%d", __func__, audioPlayer->totalTime);
     } else if (ffmpegDecode->prepare(path)) {
         playStates.setHardware(false);
-        callback.callPrepare(callback.MAIN_THREAD, true, audioPlayer->totalTime);
+        callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
     } else {
-        callback.callPrepare(callback.CHILD_THREAD, false, 0);
+        callback.callPrepare(Callback::MAIN_THREAD, false, 0);
     }
 }
 
@@ -48,7 +48,7 @@ void Decode::playVideo(ANativeWindow *pWindow, int w, int h, std::string vertexC
     if (!playStates.isHardware()) {
         ffmpegDecode->playVideo(pWindow, w, h, vertexCode, fragCode);
     } else {
-         LOGE(Decode_TAG, "%s:pwindow=%p", __func__,pWindow);
+        LOGE(Decode_TAG, "%s:pwindow=%p", __func__, pWindow);
         hardwareDecode->playVideo(pWindow);
     }
 }
@@ -60,7 +60,7 @@ void Decode::pause() {
     } else {
         hardwareDecode->pause();
     }
-    callback.callPause(callback.CHILD_THREAD);
+    callback.callPause(Callback::CHILD_THREAD);
 }
 
 
@@ -71,7 +71,7 @@ void Decode::resume() {
     } else {
         hardwareDecode->resume();
     }
-    callback.callResume(callback.CHILD_THREAD);
+    callback.callResume(Callback::CHILD_THREAD);
 }
 
 void Decode::seek(int progress) {
@@ -80,6 +80,7 @@ void Decode::seek(int progress) {
     } else {
         hardwareDecode->seek(progress);
     }
+    callback.callSeek(Callback::MAIN_THREAD);
 }
 
 void Decode::stop() {
@@ -108,7 +109,7 @@ void Decode::stop() {
         LOGE(Decode_TAG, "%s:videoPlayer释放完成", __func__);
     }
 
-    callback.callStop(callback.CHILD_THREAD);
+    callback.callStop(Callback::CHILD_THREAD);
 }
 
 void Decode::fullScreen(int w, int h) {

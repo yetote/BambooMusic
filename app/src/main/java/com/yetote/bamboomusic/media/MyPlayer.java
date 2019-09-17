@@ -79,6 +79,12 @@ public class MyPlayer {
         }
     }
 
+    public void callSeek() {
+        if (ffmpegCallback != null) {
+            ffmpegCallback.onFFmpegSeek();
+        }
+    }
+
     public boolean callHardwareSupport(String name) {
         return MediaUtil.hardwareSupport(name);
     }

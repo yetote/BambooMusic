@@ -34,7 +34,9 @@ public:
                    std::string vertexCode, std::string fragCode);
 
     void pause();
+
     void resume();
+
     virtual ~FFmpegDecode();
 
 

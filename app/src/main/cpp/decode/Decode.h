@@ -15,7 +15,7 @@
 #include "FFmpegDecode.h"
 #include <thread>
 #include <android/native_window.h>
-
+#include <unistd.h>
 
 #define Decode_TAG "Decode"
 #define LOGE(LOG_TAG, ...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -25,7 +25,7 @@ public:
 
     Decode(const Callback &callback, PlayStates &playStates);
 
-    void prepare(const std::string& path);
+    void prepare(const std::string &path);
 
     void playAudio();
 
@@ -53,6 +53,8 @@ private:
     FFmpegDecode *ffmpegDecode = nullptr;
     Callback callback;
     PlayStates &playStates;
+    int32_t sampleRate = 0;
+    int32_t channelCount = 0;
 };
 
 

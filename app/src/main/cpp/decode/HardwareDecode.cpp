@@ -67,7 +67,6 @@ bool HardwareDecode::checkSupport(std::string _path) {
                 }
                 AMediaExtractor_selectTrack(videoInfo->extractor, i);
                 videoInfo->codec = AMediaCodec_createDecoderByType(mime);
-                //todo pwindow这时无法获取
 //                AMediaCodec_configure(videoInfo->codec, pFmt, nullptr, nullptr, 0);
                 videoInfo->pFmt = AMediaExtractor_getTrackFormat(videoInfo->extractor, i);
                 videoInfo->isSuccess = true;
@@ -77,16 +76,23 @@ bool HardwareDecode::checkSupport(std::string _path) {
             int64_t totalTime = 0;
             AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);
             audioPlay->totalTime = totalTime / 1000000;
-            auto srst = AMediaFormat_getInt32(pFmt, "sample-rate", &sampleRate);
+            //todo 这里由于无论硬解软解,pcodecCtx都会被初始化,所以需要考虑删除这里设置aaudio的采样率和声道布局
+            AMediaFormat_setInt32(pFmt, AMEDIAFORMAT_KEY_SAMPLE_RATE,
+                                  audioPlay->pCodecCtx->sample_rate);
+            auto srst = AMediaFormat_getInt32(pFmt, AMEDIAFORMAT_KEY_SAMPLE_RATE, &sampleRate);
             if (!srst) {
                 LOGE(HardwareDecode_TAG, "%s:获取采样率失败", __func__);
                 sampleRate = 0;
             }
-            auto crst = AMediaFormat_getInt32(pFmt, "channel-count", &channelCount);
+            AMediaFormat_setInt32(pFmt, AMEDIAFORMAT_KEY_CHANNEL_COUNT,
+                                  audioPlay->pCodecCtx->channels);
+            auto crst = AMediaFormat_getInt32(pFmt, AMEDIAFORMAT_KEY_CHANNEL_COUNT, &channelCount);
+
             if (!crst) {
                 LOGE(HardwareDecode_TAG, "%s:获取音频通道数失败", __func__);
                 channelCount = 0;
             }
+//            AMediaFormat_setInt32(pFmt, "aac-profile", AMEDIAFORMAT_KEY_AAC_SBR_MODE);
             if (audioInfo) {
                 audioInfo->extractor = AMediaExtractor_new();
                 rst = AMediaExtractor_setDataSource(audioInfo->extractor, _path.c_str());

@@ -2,7 +2,7 @@
 // Created by ether on 2019/8/6.
 //
 
-#include <unistd.h>
+
 #include "Decode.h"
 
 //    @formatter:off
@@ -22,17 +22,19 @@ Decode::Decode(const Callback &callback1, PlayStates &playStates1) : callback(ca
 }
 
 void Decode::prepare(const std::string &path) {
-//    if (hardwareDecode->checkSupport(path)) {
-//        LOGE(Decode_TAG, "%s:支持硬解", __func__);
-//        callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
-//        LOGE(Decode_TAG, "%s:总时长=%d", __func__, audioPlayer->totalTime);
-//    } else
-        if (ffmpegDecode->prepare(path)) {
-        playStates.setHardware(false);
-        callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
+    if (ffmpegDecode->prepare(path)) {
+        if (hardwareDecode->checkSupport(path)) {
+            LOGE(Decode_TAG, "%s:支持硬解", __func__);
+            callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
+            LOGE(Decode_TAG, "%s:总时长=%d", __func__, audioPlayer->totalTime);
+        } else {
+            playStates.setHardware(false);
+            callback.callPrepare(Callback::MAIN_THREAD, true, audioPlayer->totalTime);
+        }
     } else {
         callback.callPrepare(Callback::MAIN_THREAD, false, 0);
     }
+
 }
 
 void Decode::playAudio() {

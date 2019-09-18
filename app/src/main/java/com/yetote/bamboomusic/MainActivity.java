@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        musicList.add("http://fs.open.kugou.com/36b4d9283ccf764fa5a2d60eefd01433/5d80d309/G009/M00/08/11/SQ0DAFUMq2WASS7-ADfoAWywlaw669.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
 //        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/track1.mp3");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/track1.mp3");
         musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/1.m4a");
         musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/2.mp3");
         musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/3.mp3");

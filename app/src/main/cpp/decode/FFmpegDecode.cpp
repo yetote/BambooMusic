@@ -60,6 +60,9 @@ bool FFmpegDecode::prepare(const std::string path) {
     audioPlayer->totalTime = pFmtCtx->duration / AV_TIME_BASE;
     LOGE(FFmpegDecode_TAG, "%s:总时长%d", __func__, audioPlayer->totalTime);
     audioPlayer->timeBase = pAudioStream->time_base;
+    if (audioIndex != -1 && audioPlayer != nullptr) {
+        rst = findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
+    }
     return true;
 }
 
@@ -67,14 +70,6 @@ bool FFmpegDecode::prepare(const std::string path) {
 void FFmpegDecode::playAudio() {
     LOGE(FFmpegDecode_TAG, "%s:fmfpeg", __func__);
     int rst = 0;
-    if (audioIndex != -1 && audioPlayer != nullptr) {
-        rst = findCodec(pAudioStream, &audioPlayer->pCodecCtx, &pAudioCodec);
-    }
-    if (rst < 0) {
-        isFinish = true;
-        stop();
-        return;
-    }
     audioPlayer->init();
     audioPlayer->play();
     decode();

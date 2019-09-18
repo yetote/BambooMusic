@@ -57,6 +57,12 @@ bool HardwareDecode::checkSupport(std::string _path) {
             stop();
             return false;
         } else if (strncmp(mime, "video/", 6) == 0) {
+            if (!videoInfo) {
+                continue;
+            }
+            if (videoInfo->isSuccess) {
+                continue;
+            }
             LOGE(HardwareDecode_TAG, "%s:找到视频解码器", __func__);
             if (videoInfo) {
                 videoInfo->extractor = AMediaExtractor_new();
@@ -72,6 +78,9 @@ bool HardwareDecode::checkSupport(std::string _path) {
                 videoInfo->isSuccess = true;
             }
         } else if (strncmp(mime, "audio/", 6) == 0) {
+            if (audioInfo->isSuccess) {
+                continue;
+            }
             LOGE(HardwareDecode_TAG, "%s:找到音频解码器", __func__);
             int64_t totalTime = 0;
             AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);

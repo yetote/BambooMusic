@@ -39,8 +39,14 @@ bool FFmpegDecode::prepare(const std::string path) {
     LOGE(FFmpegDecode_TAG, "%s:流信息寻找完成", __func__);
     for (int i = 0; i < pFmtCtx->nb_streams; ++i) {
         if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+            if (audioIndex != -1) {
+                continue;
+            }
             audioIndex = i;
         } else if (pFmtCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            if (videoIndex != -1) {
+                continue;
+            }
             videoIndex = i;
         }
     }

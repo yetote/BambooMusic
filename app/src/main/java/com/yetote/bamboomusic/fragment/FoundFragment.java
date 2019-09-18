@@ -155,10 +155,10 @@ public class FoundFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         list = new ArrayList<>();
 
-        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909172035/7ef7ba8d7838f70e3b2d06167cb78c11/G139/M05/0A/0D/yw0DAFtrE_SAMm5CAMOFQ0-isyk330.mp4", 11, 11, "111"));
-//        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909162023/5654962e6377b30857e501197a3cad45/G087/M02/1C/04/94YBAFi_3C6AXmdHALSycsuFu_Y957.mp4", 11, 11, "111"));
-        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
-        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.avi", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909182050/fb7452c0c32bf39ad6c4c013caab1cea/G093/M03/03/03/nQ0DAFiGt_GAHYfqARzAC7-4EaM815.mp4", 11, 11, "111"));
+        list.add(new FoundModel("http://fs.mv.web.kugou.com/201909182048/28ec4643c9049cfb29c63f9d383419ea/G165/M02/03/07/RYcBAF1Lvn2AT8T8AJ2usytgf68498.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.mp4", 11, 11, "111"));
+//        list.add(new FoundModel(getContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES).getPath() + "/test.avi", 11, 11, "111"));
         adapter = new FoundAdapter(list, getContext());
         recyclerView.setAdapter(adapter);
 

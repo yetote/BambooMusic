@@ -126,6 +126,7 @@ int FFmpegDecode::findCodec(AVStream *pStream, AVCodecContext **avCodecContext, 
         LOGE(FFmpegDecode_TAG, "%s:打开解码器失败#%s", __func__, av_err2str(rst));
         return -1;
     }
+    LOGE(FFmpegDecode_TAG, "%s:name=%s", __func__, (*pCodec)->name);
     LOGE(FFmpegDecode_TAG, "%s:解码器准备完成", __func__);
     return 0;
 }

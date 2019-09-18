@@ -164,19 +164,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         title.add("发现");
         title.add("我的");
 
-        musicList.add("http://fs.open.kugou.com/75aee6a59c439a00adba7c95f13f61e9/5d80d3b1/G060/M00/1F/19/HJQEAFcfOXWAMoJrAD-H_ff5eCk921.mp3");
-        musicList.add("http://fs.open.kugou.com/1ce8e78d329dc367d001035c5095cf8d/5d80d135/G083/M08/00/04/84YBAFhks0aAYGsBADl8RUL2DXQ825.mp3");
-        musicList.add("http://fs.open.kugou.com/3a450183391821e41d7da37053bc98ae/5d80d41b/G010/M00/17/08/Sg0DAFUK1CyAJobYADD5RKQ6Has681.mp3");
-        musicList.add("http://fs.open.kugou.com/e9c421d0f3496aecf4ee052585fb6877/5d80d12a/G102/M09/06/1F/BocBAFjmRAWALvLzADxfadBBz6c483.mp3");
-        musicList.add("http://fs.open.kugou.com/0fab86fb9d1d451fb516d91f5140efc9/5d80d4af/G105/M08/00/15/SZQEAFk7mXGABcPPADX6Isq_Z6A813.mp3");
-        musicList.add("http://fs.open.kugou.com/36b4d9283ccf764fa5a2d60eefd01433/5d80d309/G009/M00/08/11/SQ0DAFUMq2WASS7-ADfoAWywlaw669.mp3");
+//        musicList.add("http://fs.open.kugou.com/75aee6a59c439a00adba7c95f13f61e9/5d80d3b1/G060/M00/1F/19/HJQEAFcfOXWAMoJrAD-H_ff5eCk921.mp3");
+//        musicList.add("http://fs.open.kugou.com/1ce8e78d329dc367d001035c5095cf8d/5d80d135/G083/M08/00/04/84YBAFhks0aAYGsBADl8RUL2DXQ825.mp3");
+//        musicList.add("http://fs.open.kugou.com/3a450183391821e41d7da37053bc98ae/5d80d41b/G010/M00/17/08/Sg0DAFUK1CyAJobYADD5RKQ6Has681.mp3");
+//        musicList.add("http://fs.open.kugou.com/e9c421d0f3496aecf4ee052585fb6877/5d80d12a/G102/M09/06/1F/BocBAFjmRAWALvLzADxfadBBz6c483.mp3");
+//        musicList.add("http://fs.open.kugou.com/0fab86fb9d1d451fb516d91f5140efc9/5d80d4af/G105/M08/00/15/SZQEAFk7mXGABcPPADX6Isq_Z6A813.mp3");
+//        musicList.add("http://fs.open.kugou.com/36b4d9283ccf764fa5a2d60eefd01433/5d80d309/G009/M00/08/11/SQ0DAFUMq2WASS7-ADfoAWywlaw669.mp3");
 //        musicList.add(getExternalFilesDir(null).getPath() + "/test.aac");
 //        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/track1.mp3");
-//        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/3.aac");
-//        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/1.mp3");
-//        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/2.mp3");
-//        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/3.mp3");
-//        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/4.mp3");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/1.m4a");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/2.mp3");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/3.mp3");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/4.mp3");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/5.aac");
+        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/6.aac");
 //        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/5.mp3");
 //        musicList.add(getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath() + "/6.mp3");
 

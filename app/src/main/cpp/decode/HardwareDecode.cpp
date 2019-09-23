@@ -49,7 +49,7 @@ bool HardwareDecode::checkSupport(std::string _path) {
     }
     auto trackNum = AMediaExtractor_getTrackCount(pMediaExtractor);
     for (int i = 0; i < trackNum; ++i) {
-        auto *pFmt = AMediaExtractor_getTrackFormat(pMediaExtractor, i);
+        auto pFmt = AMediaExtractor_getTrackFormat(pMediaExtractor, i);
         LOGE(HardwareDecode_TAG, "%s:fmt=%s", __func__, AMediaFormat_toString(pFmt));
         const char *mime;
         if (!AMediaFormat_getString(pFmt, AMEDIAFORMAT_KEY_MIME, &mime)) {
@@ -76,7 +76,6 @@ bool HardwareDecode::checkSupport(std::string _path) {
             int64_t totalTime = 0;
             AMediaFormat_getInt64(pFmt, "durationUs", &totalTime);
             audioPlay->totalTime = totalTime / 1000000;
-            //todo 这里由于无论硬解软解,pcodecCtx都会被初始化,所以需要考虑删除这里设置aaudio的采样率和声道布局
             AMediaFormat_setInt32(pFmt, AMEDIAFORMAT_KEY_SAMPLE_RATE,
                                   audioPlay->pCodecCtx->sample_rate);
             auto srst = AMediaFormat_getInt32(pFmt, AMEDIAFORMAT_KEY_SAMPLE_RATE, &sampleRate);
